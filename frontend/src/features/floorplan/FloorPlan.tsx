@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { SimTag } from "../../components/ui";
 import type { MachineSummary } from "../../api/types";
 import type { FloorPlanData, PlanUnit } from "./planApi";
 import "./floorplan.css";
@@ -17,11 +19,14 @@ export function statusOf(m: MachineSummary): { word: string; tone: string; probl
 
 /** Top-down plan of the site. Machines GhostShift monitors are links with their status; the rest are muted placeholders. */
 export function FloorPlan({ plan, machines }: { plan: FloorPlanData; machines: MachineSummary[] }) {
+  const [picked, setPicked] = useState<string | null>(null);
+  const pickedUnit = plan.units.find((u) => u.id === picked && !u.machine_id);
   const byId = new Map(machines.map((m) => [m.id, m]));
   const unit = new Map(plan.units.map((u) => [u.id, u]));
   const pct = (v: number, total: number) => `${(v / total) * 100}%`;
 
   return (
+    <>
     <div className="plan" style={{ aspectRatio: `${plan.width} / ${plan.height}` }}>
       <svg className="plan-bg" viewBox={`0 0 ${plan.width} ${plan.height}`} aria-hidden>
         {plan.zones.map((z) => (
@@ -54,12 +59,23 @@ export function FloorPlan({ plan, machines }: { plan: FloorPlanData; machines: M
         };
         if (!m) {
           return (
-            <div key={u.id} className={`tile ${u.kind} idle`} style={style} title={`${u.label}: not monitored in this demo`}>
+            <button
+              key={u.id}
+              type="button"
+              className={`tile ${u.kind} live sev-normal sim ${picked === u.id ? "picked" : ""}`}
+              style={style}
+              aria-pressed={picked === u.id}
+              aria-label={`${u.label}: Normal. Simulated equipment. Show details`}
+              onClick={() => setPicked((cur) => (cur === u.id ? null : u.id))}
+            >
               <Photo name={u.photo} />
               <span className="tile-bar">
                 <span className="mono tile-id">{u.label}</span>
+                <span className="tile-status">
+                  <i aria-hidden /> Normal
+                </span>
               </span>
-            </div>
+            </button>
           );
         }
         const st = statusOf(m);
@@ -82,6 +98,17 @@ export function FloorPlan({ plan, machines }: { plan: FloorPlanData; machines: M
         );
       })}
     </div>
+    {pickedUnit && (
+      <div className="plan-info" role="status">
+        <span className="mono strong">{pickedUnit.label}</span>
+        <span className="small">Normal. Running within its usual ranges.</span>
+        <SimTag title="Placeholder equipment with no sensor feed in this demo" />
+        <button type="button" className="btn sm ghost" onClick={() => setPicked(null)}>
+          Close
+        </button>
+      </div>
+    )}
+    </>
   );
 }
 

@@ -57,7 +57,6 @@ export function HomePage() {
   const watching = states.filter((s) => !s.st.problem && s.m.status !== "normal");
   const normal = states.length - attention.length - watching.length;
   const next = [...bookings].sort((a, b) => a.start.localeCompare(b.start))[0];
-  const placeholders = plan ? plan.units.filter((u) => !u.machine_id).length : 0;
 
   return (
     <div className="app">
@@ -97,8 +96,7 @@ export function HomePage() {
           <Panel title={<>Floor plan <SimTag title="Simplified demo layout" /></>} id="plan" bodyClass="panel-body plan-body">
             <FloorPlan plan={plan} machines={machines} />
             <p className="xs muted plan-note">
-              Solid tiles are monitored by GhostShift. Dashed tiles are placeholders: {placeholders} units with no data in this demo.
-            </p>
+              Tap a tile to open it. Machines with their own page open it; the others show details and are simulated equipment with no sensor feed in this demo.</p>
           </Panel>
         ) : (
           !error && <p className="muted">Loading…</p>

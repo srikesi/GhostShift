@@ -53,13 +53,6 @@
 .tile.rack .tile-photo {
   object-position: 50% 30%;
 }
-.tile.idle {
-  border: 1px dashed var(--line-strong);
-}
-.tile.idle .tile-photo {
-  filter: grayscale(1);
-  opacity: 0.38;
-}
 .tile.live {
   border: 3px solid var(--line-strong);
   color: var(--ink);
@@ -67,8 +60,28 @@
   cursor: pointer;
   box-shadow: var(--shadow-1);
 }
+.tile.live {
+  padding: 0;
+  font: inherit;
+}
 .tile.live:hover {
   border-color: var(--ink);
+  box-shadow: 0 3px 10px rgba(29, 32, 36, 0.22);
+  transform: translateY(-2px);
+}
+.tile.live.picked {
+  border-color: var(--ink);
+}
+.tile.live .tile-bar::after {
+  content: "Open ›";
+  font-size: 10px;
+  color: var(--ink-3);
+}
+.tile.sim .tile-bar::after {
+  content: "Details ›";
+}
+.tile.live {
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 .tile.live:focus-visible {
   outline: none;
@@ -88,10 +101,6 @@
   background: rgba(251, 250, 247, 0.92);
   color: var(--ink);
   text-align: center;
-}
-.tile.idle .tile-bar {
-  background: rgba(235, 232, 225, 0.85);
-  color: var(--ink-3);
 }
 .tile-id {
   font-size: 11px;
@@ -115,6 +124,36 @@
   height: 8px;
   border-radius: 50%;
   background: var(--ok);
+  animation: live-blink 1.8s ease-in-out infinite;
+}
+@keyframes live-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tile-status i {
+    animation: none;
+  }
+  .tile.live {
+    transition: none;
+  }
+}
+.plan-info {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+  margin: var(--s-3) auto 0;
+  max-width: 980px;
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
 }
 .tile.sev-watch,
 .tile.tier-elevated {
@@ -154,6 +193,9 @@
 }
 
 @media (max-width: 640px) {
+  .tile.live .tile-bar::after {
+    display: none;
+  }
   .tile.rack .tile-id {
     display: none; /* too narrow to read; the machine list below names them */
   }
@@ -171,4 +213,7 @@
   .tile.chiller .tile-status {
     font-size: 10px;
   }
+}
+.tile.rack .tile-bar::after {
+  display: none;
 }
