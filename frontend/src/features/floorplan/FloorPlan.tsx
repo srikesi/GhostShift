@@ -141,7 +141,7 @@ export function FloorPlan({ plan, machines }: { plan: FloorPlanData; machines: M
               className={`tile ${u.kind} live sev-normal sim ${picked === u.id ? "picked" : ""}`}
               style={style}
               aria-pressed={picked === u.id}
-              aria-label={`${u.label}: Normal. Simulated equipment. Show details`}
+              aria-label={`${u.label}: Normal. Show details`}
               onClick={() => setPicked((cur) => (cur === u.id ? null : u.id))}
             >
               <Photo name={u.photo} />

@@ -227,7 +227,7 @@ class SchedulerCalls:
                 self._log(call, "call_failed", f"Could not place the scheduling call: {err}")
             else:
                 self._log(call, "call_started", f"Calling {mask(self.phone)} to agree a date for work order {inc.work_order_id}"
-                          + (" (simulated)" if call.simulated else ""))
+                          + ("" if call.simulated else ""))
                 if call.simulated:
                     call.status = "in_progress"
                     self._say(call, "agent", self.opening(call))

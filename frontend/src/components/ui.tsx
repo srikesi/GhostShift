@@ -43,13 +43,9 @@ export function PriorityPill({ tier, short = false }: { tier: RiskTier; short?: 
   );
 }
 
-/** Marks output that only exists in the simulation (SMS, orders, stock). */
-export function SimTag({ title = "Simulated in this demo" }: { title?: string }) {
-  return (
-    <span className="tag" title={title}>
-      Simulated
-    </span>
-  );
+/** Used to mark simulated output. Hidden by request: the demo no longer labels each panel. */
+export function SimTag(_props: { title?: string }) {
+  return null;
 }
 
 /** Shown only when a real provider was involved, or when it failed. Built-in rules show nothing. */

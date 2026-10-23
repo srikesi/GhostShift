@@ -708,3 +708,65 @@ ol.activity {
     display: none;
   }
 }
+
+/* Connections: slides in from the right, hidden by default. */
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(320px, 88vw);
+  z-index: 30;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-left: 1px solid var(--line-strong);
+  box-shadow: -8px 0 24px rgba(29, 32, 36, 0.12);
+  transform: translateX(105%);
+  transition: transform 0.25s var(--ease);
+  visibility: hidden;
+}
+.drawer.open {
+  transform: translateX(0);
+  visibility: visible;
+}
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 29;
+  background: rgba(29, 32, 36, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s var(--ease);
+}
+.drawer-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+.drawer-head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  border-bottom: 1px solid var(--line);
+}
+.drawer-head h2 {
+  font-size: var(--fs-lg);
+}
+.drawer-list {
+  padding: var(--s-2) var(--s-4);
+}
+.drawer-list li {
+  display: flex;
+  align-items: center;
+  padding: var(--s-3) 0;
+  border-bottom: 1px solid var(--line);
+  font-size: var(--fs-md);
+}
+@media (prefers-reduced-motion: reduce) {
+  .drawer,
+  .drawer-backdrop {
+    transition: none;
+  }
+}

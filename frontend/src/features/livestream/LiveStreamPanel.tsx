@@ -222,7 +222,6 @@ export function LiveStreamPanel({ machineId }: LiveStreamPanelProps) {
       actions={
         <span className="live-badges">
           <SeverityPill severity={severity} />
-          <span className="tag">{telemetry?.phase ?? "connecting"}</span>
         </span>
       }
     >

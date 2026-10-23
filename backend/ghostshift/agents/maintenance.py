@@ -83,7 +83,7 @@ class MaintenanceSupplyAgent:
         if inp.safety.required_approvals:
             steps.insert(0, "Maintenance supervisor reviews the requisition and work order (approval required).")
         if part and (part.availability.on_hand or 0) < qty:
-            steps.append(f"Confirm lead time for {part.sku} with the supplier; GhostShift shows simulated availability only.")
+            steps.append(f"Confirm lead time for {part.sku} with the supplier.")
 
         return MaintenanceProposal(
             component_id=comp_id,
@@ -121,9 +121,9 @@ class MaintenanceSupplyAgent:
         if fm and fm.id in p.fault_modes:
             rationale.append(f"Catalog lists it as a remedy for {fm.name} (fit {p.fault_modes[fm.id]:.0%})")
         if (avail.on_hand or 0) > 0:
-            rationale.append(f"{avail.on_hand} on hand at {avail.location} (simulated stock)")
+            rationale.append(f"{avail.on_hand} on hand at {avail.location}")
         elif avail.lead_time_days is not None:
-            rationale.append(f"Not stocked; {avail.lead_time_days:g} day lead time (simulated)"
+            rationale.append(f"Not stocked; {avail.lead_time_days:g} day lead time"
                              + ("" if in_time else ", later than the RUL lower bound"))
         return PartCandidate(
             sku=p.sku,

@@ -77,7 +77,7 @@ class InventoryService:
             supplier_id=o["supplier_id"], supplier_name=sup.name if sup else None,
             unit_price_usd=o["unit_price_usd"], total_usd=round(o["unit_price_usd"] * o["quantity"], 2),
             status=POStatus.ordered, storeroom=self._stock[o["sku"]]["storeroom"], ordered_at=ordered, eta=eta,
-            choice_reasons=["Restock order placed before this incident (simulated)"], timeline=timeline)
+            choice_reasons=["Restock order placed before this incident"], timeline=timeline)
         self._orders[po.id] = po
 
     def _supplier(self, supplier_id: str | None) -> Supplier | None:
@@ -174,12 +174,12 @@ class InventoryService:
                     choice_reasons=[f"{row['on_hand']} on hand in {row['storeroom']}, so no supplier order is needed"],
                     timeline=[POEvent(status=POStatus.reserved, at=now,
                                       note=f"Reserved {req.quantity} from {row['storeroom']}")])
-                text = f"Reserved {req.quantity} × {req.sku} from {row['storeroom']} ({po_id}, simulated)"
+                text = f"Reserved {req.quantity} × {req.sku} from {row['storeroom']} ({po_id})"
             else:
                 po = self._supplier_order(base, req, inc, now, row)
                 when = po.eta.strftime("%a %d %b %H:%M UTC") if po.eta else "an unknown date"
                 text = (f"Ordered {req.quantity} × {req.sku} from {po.supplier_name} "
-                        f"(${po.total_usd:,.0f}, arrives {when}; {po_id}, simulated)")
+                        f"(${po.total_usd:,.0f}, arrives {when}; {po_id})")
             self._orders[po.id] = po
             self.store.log(req.incident_id, "ghostshift", "GhostShift", "po_created", text, now)
             self._warn_if_low(po.sku, req.incident_id, now)
@@ -217,7 +217,7 @@ class InventoryService:
                     why = "ranked lower on price and reliability"
                 reasons.append(f"Not chosen: {s.name}, {o.lead_days:g} d at ${o.unit_price_usd:,.0f} ({why})")
             sup_id, sup_name, price, chosen_lead = best[0].id, best[0].name, best[1].unit_price_usd, best[1].lead_days
-            reasons.append(f"{best[0].name} delivers on time {best[0].on_time_rate:.0%} of the time (simulated)")
+            reasons.append(f"{best[0].name} delivers on time {best[0].on_time_rate:.0%} of the time")
         eta = now + timedelta(days=chosen_lead)
         total = round(price * req.quantity, 2) if price is not None else None
         return PurchaseOrder(

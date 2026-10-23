@@ -394,8 +394,8 @@ class Orchestrator:
         st.work_orders[wo.id] = wo
 
         targets = {ActionKind.submit_requisition: inc.requisition_id, ActionKind.dispatch_work_order: inc.work_order_id}
-        titles = {ActionKind.submit_requisition: "Submit purchase requisition (simulated)",
-                  ActionKind.dispatch_work_order: "Dispatch work order to maintenance queue (simulated)"}
+        titles = {ActionKind.submit_requisition: "Submit purchase requisition",
+                  ActionKind.dispatch_work_order: "Dispatch work order to maintenance queue"}
         existing = {st.actions[a].kind: st.actions[a] for a in inc.action_ids}
         for policy in safety.required_approvals:
             target = targets.get(policy.action_kind)
@@ -575,7 +575,7 @@ class Orchestrator:
                 self.store.notified_tier[incident.id] = tier.value
         who = tech.label.split(" · ")[0]
         if status in (NotificationStatus.sent, NotificationStatus.simulated_sent):
-            text = f"Texted {who} a link to the technician view" + (" (simulated)" if status == NotificationStatus.simulated_sent else "")
+            text = f"Texted {who} a link to the technician view" + ("" if status == NotificationStatus.simulated_sent else "")
         else:
             text = f"Text to {who} was not sent: {error}"
         self.store.log(incident.id, "ghostshift", "GhostShift", "notified", text, as_of)

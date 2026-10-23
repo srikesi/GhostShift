@@ -96,7 +96,7 @@ export function HomePage() {
           <Panel title={<>Floor plan <SimTag title="Simplified demo layout" /></>} id="plan" bodyClass="panel-body plan-body">
             <FloorPlan plan={plan} machines={machines} />
             <p className="xs muted plan-note">
-              Tap a tile to open it. Machines with their own page open it; the others show details and are simulated equipment with no sensor feed in this demo.</p>
+              Tap a tile to open it.</p>
           </Panel>
         ) : (
           !error && <p className="muted">Loading…</p>

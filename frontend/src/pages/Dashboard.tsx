@@ -158,7 +158,6 @@ export function Dashboard() {
             ← Floor plan
           </Link>
           <MachineList machines={machines} selected={machineId} onSelect={setMachineId} />
-          {health && <Connections health={health} />}
         </aside>
         <main className="main" id="main">
           {error && (
@@ -265,6 +264,7 @@ export function TopBar({
   onToggleAutopilot: () => void;
   onReset: () => void;
 }) {
+  const [connOpen, setConnOpen] = useState(false);
   const on = autonomy?.level === "autopilot";
   const live = health?.providers.filter((p) => p.provider.real && p.configured).map((p) => p.provider.name) ?? [];
   return (
@@ -292,12 +292,18 @@ export function TopBar({
       )}
       {health && (
         <span className="mode-chip" title={health.providers.map((p) => `${p.capability}: ${p.detail}`).join("\n")}>
-          {live.length ? `Live: ${live.join(", ")}` : "Demo · simulated data"}
+          {live.length ? `Live: ${live.join(", ")}` : "Demo mode"}
         </span>
+      )}
+      {health && (
+        <button className="btn sm" aria-expanded={connOpen} onClick={() => setConnOpen((o) => !o)}>
+          Connections
+        </button>
       )}
       <button className="btn sm topbar-btn" onClick={onReset} title="Clear incidents and start over" aria-label="Reset">
         <Icon name="reset" /> <span className="label">Reset</span>
       </button>
+      {health && <ConnectionsDrawer health={health} open={connOpen} onClose={() => setConnOpen(false)} />}
     </header>
   );
 }
@@ -338,22 +344,38 @@ const CAPABILITY_LABEL: Record<string, string> = {
   calls: "Scheduling calls",
 };
 
-function Connections({ health }: { health: HealthResponse }) {
+/** Slide-out window listing what GhostShift is connected to. Hidden until opened. */
+function ConnectionsDrawer({ health, open, onClose }: { health: HealthResponse; open: boolean; onClose: () => void }) {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
   return (
-    <section className="connections" aria-label="Connections">
-      <p className="eyebrow side-title">Connections</p>
-      <ul className="clean">
-        {health.providers.map((p) => (
-          <li key={`${p.capability}-${p.provider.name}`} title={p.detail}>
-            <span>{CAPABILITY_LABEL[p.capability] ?? p.capability}</span>
-            <span className="spacer" />
-            <span className={p.provider.real ? (p.configured ? "conn-live" : "conn-off") : "muted"}>
-              {p.provider.real ? (p.configured ? "Live" : "Not set up") : p.provider.kind === "deterministic" ? "Built-in" : "Simulated"}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </section>
+    <>
+      <div className={`drawer-backdrop ${open ? "open" : ""}`} onClick={onClose} aria-hidden />
+      <aside className={`drawer ${open ? "open" : ""}`} aria-label="Connections" aria-hidden={!open}>
+        <header className="drawer-head">
+          <h2>Connections</h2>
+          <span className="spacer" />
+          <button className="btn sm" onClick={onClose} aria-label="Hide connections">
+            Hide
+          </button>
+        </header>
+        <ul className="clean drawer-list">
+          {health.providers.map((p) => (
+            <li key={`${p.capability}-${p.provider.name}`} title={p.detail}>
+              <span>{CAPABILITY_LABEL[p.capability] ?? p.capability}</span>
+              <span className="spacer" />
+              <span className={p.provider.real ? (p.configured ? "conn-live" : "conn-off") : "muted"}>
+                {p.provider.real ? (p.configured ? "Live" : "Not set up") : "On"}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </aside>
+    </>
   );
 }
 
