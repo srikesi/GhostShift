@@ -4,6 +4,7 @@ import { api, ApiError } from "../api/client";
 import { ops, type Booking } from "../api/ops";
 import type { AutonomySettings, HealthResponse, MachineSummary } from "../api/types";
 import { Icon, Panel, SimTag } from "../components/ui";
+import { MachineThumb } from "../features/machine/MachinePhoto";
 import { FloorPlan, statusOf } from "../features/floorplan/FloorPlan";
 import { getFloorPlan, type FloorPlanData } from "../features/floorplan/planApi";
 import { fmtDateTime } from "../lib/format";
@@ -71,7 +72,7 @@ export function HomePage() {
         <header className="home-head">
           <div>
             <h1>{plan?.site ?? "Austin DC-2"}</h1>
-            <p className="small muted">Pick a machine to see its readings, problems and schedule.</p>
+            <p className="small muted">Welcome back. Pick a machine to see how it is doing and who is on it.</p>
           </div>
           <ul className="clean summary" aria-label="Summary">
             <li className={attention.length ? "needs" : ""}>
@@ -85,6 +86,17 @@ export function HomePage() {
             </li>
           </ul>
         </header>
+
+        <div className="home-photos">
+          <figure>
+            <img src="/images/data-hall.jpg" alt="A data hall: rows of black server racks with cabling, and a UPS cabinet in the foreground" />
+            <figcaption className="xs muted">A data hall, like Data hall 2</figcaption>
+          </figure>
+          <figure>
+            <img src="/images/technician-at-rack.jpg" alt="A technician crouching at an open server rack with a laptop on the raised floor" />
+            <figcaption className="xs muted">A technician at a rack: the person GhostShift texts and schedules</figcaption>
+          </figure>
+        </div>
 
         {next && (
           <p className="small next-job">
@@ -108,6 +120,7 @@ export function HomePage() {
             {states.map(({ m, st }) => (
               <li key={m.id}>
                 <Link to={`/machines/${m.id}`} className={`home-row ${st.tone}`}>
+                  <MachineThumb drawing={m.machine_type === "rack" ? "rack" : "chiller"} />
                   <span className="mono strong">{m.id}</span>
                   <span className="small">{m.display_name.replace(`${m.id} `, "")}</span>
                   <span className="spacer" />
