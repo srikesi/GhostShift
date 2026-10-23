@@ -14,7 +14,24 @@ The **GhostMode agent** is the one agent a person talks to. It takes a question 
 
 It delegates and does not decide. It has no tool to approve, reject or execute an action, change a priority or send a message, so tiers, approvals and lockout/tagout stay in code. It would run on Bedrock tool use (design in [docs/workstreams/1-agentic-copilot.md](docs/workstreams/1-agentic-copilot.md)).
 
-
+```mermaid
+graph TD
+  U["Operator or new engineer"] --- G["GhostMode agent (planned)"]
+  G --> K["Expert knowledge (planned)"]
+  G --> P["Proactive diagnosis (planned)"]
+  G --> F["Fleet data (planned)"]
+  G --> M["Sound and video (planned)"]
+  G --> D["Diagnostics"]
+  S["Sensor data"] --> D
+  F --> D
+  M --> D
+  P --> D
+  D --> PR["Prognostics"]
+  PR --> SS["Safety supervisor: rules and approvals"]
+  SS --> MS["Maintenance and supply"]
+  MS --> N["Narrative"]
+  N --> T["Technician text and phone page"]
+```
 
 ## Specialist agents
 
