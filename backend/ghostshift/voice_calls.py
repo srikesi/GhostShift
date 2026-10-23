@@ -55,11 +55,13 @@ class Option:
     technician_id: str
     technician_name: str
     window_label: str
+    provisional: bool = False  # a placeholder date, not checked against windows, shifts or N+1
 
     def say(self) -> str:
         s = self.start.astimezone(LOCAL)
         hours = (self.end - self.start).total_seconds() / 3600
-        return (f"{s:%A}, {s:%B} {_ordinal(s.day)} at {_clock(s)}, for about {hours:g} hours, with {self.technician_name}")
+        who = "" if self.provisional else f", with {self.technician_name}"
+        return f"{s:%A}, {s:%B} {_ordinal(s.day)} at {_clock(s)}, for about {hours:g} hours{who}"
 
 
 @dataclass
@@ -204,8 +206,8 @@ class SchedulerCalls:
     def start(self, incident_id: str) -> CallRecord:
         with self.store.lock:
             inc = self.store.incidents.get(incident_id)
-            if inc is None or inc.work_order_id is None:
-                raise ScheduleError(404, "not_found", "No work order to schedule for this incident")
+            if inc is None:
+                raise ScheduleError(404, "not_found", "Incident not found")
             if not self.phone:
                 raise ScheduleError(409, "no_phone", "Set GHOSTSHIFT_SCHEDULER_CALL_PHONE to the number to call")
             busy = next((c for c in self.calls(incident_id) if c.status in ("queued", "in_progress")), None)
@@ -215,7 +217,12 @@ class SchedulerCalls:
             prop = self.calendar.proposal_for_incident(incident_id, exclude=booking.id if booking else None)
             options = self._options(prop, booking)
             if not options:
-                raise ScheduleError(409, "no_slot", "No slot fits the rules, so there is nothing to offer. Operations needs to decide.")
+                # Nothing fits the rules in time. The call still happens, with a provisional date further out
+                # that operations has to confirm, so someone always hears about the problem.
+                options = self._provisional(inc)
+                self.store.log(incident_id, "ghostshift", "GhostShift", "call_provisional",
+                               "No slot fits the rules in time, so the call offers a provisional date for operations to confirm",
+                               self._clock(incident_id))
             call = CallRecord(id=f"CALL-{next(self._seq):04d}", incident_id=incident_id, to=self.phone,
                               simulated=bool(getattr(self.provider, "simulated", False)), options=options)
             self._calls[call.id] = call
@@ -233,6 +240,19 @@ class SchedulerCalls:
                     self._say(call, "agent", self.opening(call))
             return call
 
+    def _provisional(self, inc) -> list[Option]:
+        """Placeholder dates a week or more out, at 2 PM Austin time on weekdays. Not rule-checked."""
+        now = (self._clock(inc.id) or utcnow()).astimezone(LOCAL)
+        hours = inc.maintenance.work_order.estimated_duration_hours if inc.maintenance else 4.0
+        out: list[Option] = []
+        for days in (7, 10, 14):
+            d = (now + timedelta(days=days)).replace(hour=14, minute=0, second=0, microsecond=0)
+            while d.weekday() >= 5:
+                d += timedelta(days=1)
+            start = d.astimezone(timezone.utc)
+            out.append(Option(start, start + timedelta(hours=hours), "", "the on-call technician", "Provisional date", provisional=True))
+        return out
+
     @staticmethod
     def _options(prop, booking) -> list[Option]:
         if prop is None:
@@ -246,8 +266,7 @@ class SchedulerCalls:
         if a is None or a.level != AutonomyLevel.autopilot or not self.phone or self.calls(incident_id):
             return None
         inc = self.store.incidents.get(incident_id)
-        booking = next(iter(self.calendar.bookings(incident_id=incident_id)), None)
-        if inc is None or booking is None or inc.safety.risk_tier.value not in ("high", "critical"):
+        if inc is None or inc.safety.risk_tier.value not in ("high", "critical"):
             return None
         try:
             return self.start(incident_id)
@@ -259,6 +278,10 @@ class SchedulerCalls:
         inc = self.store.incidents[call.incident_id]
         what = inc.maintenance.work_order.title.split(" — ")[0] if inc.maintenance else "a repair"
         o = call.options[0]
+        if o.provisional:
+            return (f"Hello, this is GhostShift scheduling for Austin D C 2. {inc.machine_id} needs this job: {what.lower()}. "
+                    f"None of our planned maintenance windows fit in time, so I can only offer a provisional date: {o.say()}. "
+                    "Operations will confirm it. Does that work for you?")
         return (f"Hello, this is GhostShift scheduling for Austin D C 2. {inc.machine_id} needs this job: {what.lower()}. "
                 f"The earliest safe time is {o.say()}. Does that work for you?")
 
@@ -288,7 +311,9 @@ class SchedulerCalls:
                     (self._say(call, "agent", f"I can do {call.options[found].say()}. Does that work?"), False)
             if intent == "no":
                 if call.index + 1 >= len(call.options):
-                    return self._finish(call, "declined", "Those were all the times that fit our rules. Operations will follow up with you. Goodbye.")
+                    text = ("Those were all the dates I have. Operations will follow up with you. Goodbye." if call.options[0].provisional else
+                            "Those were all the times that fit our rules. Operations will follow up with you. Goodbye.")
+                    return self._finish(call, "declined", text)
                 call.index += 1
                 return self._say(call, "agent", f"How about {call.options[call.index].say()}?"), False
             if intent == "repeat":
@@ -311,6 +336,11 @@ class SchedulerCalls:
         return None
 
     def _accept(self, call: CallRecord, o: Option) -> tuple[str, bool]:
+        if o.provisional:  # a placeholder date: note it, but never book or confirm anything unchecked
+            call.accepted = o
+            self._log(call, "call_accepted", f"{mask(call.to)} agreed the provisional date {o.say()}. Operations needs to confirm it: it is "
+                      "outside the planned windows and was not checked against the schedule rules.")
+            return self._finish(call, "accepted", f"Thank you. I have noted {o.say()} as a provisional date. Operations will confirm it with you. Goodbye.")
         booking = next(iter(self.calendar.bookings(incident_id=call.incident_id)), None)
         try:
             if booking is None:

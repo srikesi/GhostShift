@@ -157,3 +157,34 @@ def test_unanswered_call_is_reported_as_failed():
     params = {"CallStatus": "no-answer"}
     r = client.post(f"/api/voice/calls/{call['id']}/status", data=params, headers={"X-Twilio-Signature": twilio_signature("tok", url, params)})
     assert r.status_code == 204 and client.get("/api/calendar/calls").json()[0]["status"] == "failed"
+
+
+def tight_deadline(container, iid):
+    inc = container.store.incidents[iid]
+    rul = inc.prognostics.rul.model_copy(update={"lower_hours": 1.0})
+    container.store.incidents[iid] = inc.model_copy(update={"prognostics": inc.prognostics.model_copy(update={"rul": rul})})
+    container.calendar.sync_incident(iid)
+
+
+def test_when_nothing_fits_the_call_still_happens_with_a_provisional_date():
+    c, client = make()
+    client.put("/api/autonomy", json={"level": "autopilot"})
+    iid = incident(client, c)
+    for call in client.get("/api/calendar/calls", params={"incident_id": iid}).json():  # drop Autopilot's own first call
+        say(client, call["id"], "stop")
+    tight_deadline(c, iid)
+    call = start(client, iid)
+    text = call["transcript"][0]["text"]
+    assert "provisional date" in text and "Operations will confirm" in text
+    done = say(client, call["id"], "yes")
+    assert done["outcome"] == "accepted" and not done["confirmed"]  # never confirmed, even on Autopilot
+    v = client.get(f"/api/incidents/{iid}").json()
+    assert any(e["kind"] == "call_provisional" for e in v["activity"])
+    assert any(e["kind"] == "call_accepted" and "provisional" in e["text"] for e in v["activity"])
+
+
+def test_emergency_stop_on_a_machine_with_no_fitting_slot_still_calls():
+    c = build_container(make_settings(scheduler_call_phone=PHONE))
+    client = TestClient(create_app(c))
+    r = client.post(f"/api/machines/CH-02/emergency-stop").json()
+    assert r["call"] and r["call"]["status"] == "in_progress"
