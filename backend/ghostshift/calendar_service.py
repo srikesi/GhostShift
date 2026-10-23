@@ -322,14 +322,19 @@ class CalendarService:
     def _set(self, b: Booking, status: BookingStatus) -> None:
         b.status, b.updated_at = status, utcnow()
 
-    def confirm(self, booking_id: str, *, actor: str = "person", actor_name: str = "Supervisor") -> Booking:
+    def confirm(self, booking_id: str, *, actor: str = "person", actor_name: str = "Supervisor",
+                by_policy: bool = False) -> Booking:
+        """Confirm a slot. Needs the work order approved, unless Autopilot's scheduling call agreed the date
+        (`by_policy`). That confirms the calendar slot only; the work order's lockout/tagout approval is untouched."""
         with self.store.lock:
             b = self.booking(booking_id)
             if b.status == BookingStatus.cancelled:
                 raise ScheduleError(409, "booking_cancelled", "This booking was cancelled")
             if b.status == BookingStatus.confirmed:
                 return b
-            if not self._dispatch_approved(b):
+            if by_policy:
+                actor, actor_name = "policy", "Autopilot"
+            elif not self._dispatch_approved(b):
                 raise ScheduleError(409, "approval_required",
                                     "The work order must be approved before the slot can be confirmed")
             self._set(b, BookingStatus.confirmed)

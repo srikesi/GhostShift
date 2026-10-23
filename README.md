@@ -79,6 +79,15 @@ UI wording: sensor condition is *Normal / Watch / Warning / Critical*. Problem p
 
 Autopilot places the parts order and PO but never confirms the slot: that waits for a person's work-order approval.
 
+## Scheduler calls (opt-in)
+
+GhostShift can phone someone to agree the repair date. In the *Schedule* panel, **Call to schedule** (or automatically, once per problem, when Autopilot is on and a slot is held at High priority or above) starts a call. The agent reads the slot the scheduler already checked, understands a spoken yes, no, a weekday or a time of day, offers the other checked slots, and books the one the person agrees to through the normal scheduling rules.
+
+- Autopilot **on**: an agreed slot is confirmed straight away. Autopilot **off**: it stays a held slot until the work order is approved. A call never releases physical work: the lockout/tagout approval stays with a person.
+- The conversation is deterministic code, not a model.
+- Demo mode records the call and lets you type the caller's replies in the panel. Real calls need `GHOSTSHIFT_SCHEDULER_CALL_PHONE` (who to ring), `GHOSTSHIFT_CALL_FROM_NUMBER` (a Twilio phone number that can place calls: the WhatsApp sandbox number cannot), `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN`, and a `GHOSTSHIFT_PUBLIC_BASE_URL` that Twilio can reach (the Cloudflare tunnel works). Twilio's webhooks are checked with its request signature. Trial accounts can only call verified numbers.
+- API: `POST /api/calendar/call`, `GET /api/calendar/calls`, and the Twilio webhooks under `/api/voice/calls/{id}/`.
+
 ## Get the technician text on your phone
 
 When a problem reaches High priority, GhostShift texts the technician a link to a phone page. The page shows the machine drawing with the part to replace highlighted. Tap any part to see its condition, readings, time to limit and service date.

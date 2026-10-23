@@ -335,6 +335,7 @@ const CAPABILITY_LABEL: Record<string, string> = {
   work_orders: "Work orders",
   sms: "Text messages",
   voice: "Voice",
+  calls: "Scheduling calls",
 };
 
 function Connections({ health }: { health: HealthResponse }) {

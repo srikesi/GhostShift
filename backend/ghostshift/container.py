@@ -37,6 +37,7 @@ from .orchestrator import TEMPLATE_PROVIDER, Orchestrator
 from .reference import load_reference_data
 from .schemas.workflow import ActionStatus, AutonomyLevel, AutonomySettings
 from .state import Store
+from .voice_calls import SchedulerCalls, SimulatedCalls, TwilioCalls
 
 log = logging.getLogger("ghostshift")
 
@@ -57,6 +58,7 @@ class Container:
     approvals: ApprovalService
     inventory: InventoryService
     calendar: CalendarService
+    calls: SchedulerCalls
 
     def provider_health(self, probe: bool = False) -> list[ProviderHealth]:
         out = list(self.telemetry.health())
@@ -69,13 +71,14 @@ class Container:
             out.append(ProviderHealth(capability="llm", provider=TEMPLATE_PROVIDER, configured=True, available=True,
                                       detail=f"Deterministic narrative template ({reason})"))
         out += [self.parts.health(), self.procurement.health(), self.work_orders.health(), self.sms.health(),
-                self.voice.health()]
+                self.voice.health(), self.calls.provider.health()]
         return out
 
     def reset(self) -> None:
         self.store.reset()
         self.inventory.reset()
         self.calendar.reset()
+        self.calls.reset()
         self.orchestrator._screen_cached.cache_clear()
 
 
@@ -100,6 +103,18 @@ def choose_sms(s: Settings):
     primary = twilio(s.demo_technician_phone)
     extras = s.extra_alert_phones
     return MultiSms([primary, *[twilio(p) for p in extras]]) if extras else primary
+
+
+def choose_calls(s: Settings):
+    """Real phone calls only when opted in (a call number and a phone to ring are set); otherwise recorded, not dialled."""
+    if s.mode == ExecutionMode.demo or not s.scheduler_call_phone:
+        return SimulatedCalls()
+    real = TwilioCalls(account_sid=s.twilio_account_sid,
+                       auth_token=s.twilio_auth_token.get_secret_value() if s.twilio_auth_token else None,
+                       from_number=s.call_from_number)
+    if s.mode == ExecutionMode.auto and not real.configured:
+        return SimulatedCalls()
+    return real
 
 
 def choose_voice(s: Settings):
@@ -148,6 +163,9 @@ def build_container(settings: Settings | None = None, *, ai4i_path: Path | None 
     inventory = InventoryService(s.data_dir, store, incident_clock=orch.machine_time, site_clock=orch.site_time)
     calendar = CalendarService(s.data_dir, store, ref, incident_clock=orch.machine_time, part_ready=inventory.part_ready_at)
     orch.inventory, orch.calendar = inventory, calendar
+    calls = SchedulerCalls(store=store, calendar=calendar, provider=choose_calls(s), phone=s.scheduler_call_phone,
+                           public_base_url=s.public_base_url, incident_clock=orch.machine_time)
+    orch.calls = calls
     inventory.listeners.append(lambda incident_id: calendar.sync_incident(incident_id))
     if hasattr(parts, "bind_inventory"):
         parts.bind_inventory(inventory)
@@ -165,4 +183,4 @@ def build_container(settings: Settings | None = None, *, ai4i_path: Path | None 
     approvals.on_decided, approvals.on_executed = on_decided, on_executed
     return Container(settings=s, reference=ref, telemetry=telemetry, llm=llm, parts=parts, procurement=procurement,
                      work_orders=work_orders, sms=sms, voice=voice, store=store, orchestrator=orch,
-                     approvals=approvals, inventory=inventory, calendar=calendar)
+                     approvals=approvals, inventory=inventory, calendar=calendar, calls=calls)

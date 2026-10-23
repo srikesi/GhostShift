@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { ApiError } from "../../api/client";
-import { ops, type Booking, type ScheduleProposal } from "../../api/ops";
+import { ops, type Booking, type CallView, type ScheduleProposal } from "../../api/ops";
 import type { IncidentView } from "../../api/types";
 import { Icon, Panel, SimTag } from "../../components/ui";
 import { fmtDateTime, fmtTime } from "../../lib/format";
@@ -12,13 +12,16 @@ export function SchedulePanel({ view, refreshKey, onChanged }: { view: IncidentV
   const incidentId = view.incident.id;
   const [booking, setBooking] = useState<Booking | null>(null);
   const [proposal, setProposal] = useState<ScheduleProposal | null>(null);
+  const [call, setCall] = useState<CallView | null>(null);
+  const [reply, setReply] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!wo) return;
-    const [b, p] = await Promise.all([ops.bookings(incidentId), ops.propose(wo.id)]);
+    const [b, p, cs] = await Promise.all([ops.bookings(incidentId), ops.propose(wo.id), ops.calls(incidentId)]);
     setBooking(b[0] ?? null);
     setProposal(p);
+    setCall(cs[cs.length - 1] ?? null);
   }, [wo, incidentId]);
 
   useEffect(() => {
@@ -139,6 +142,55 @@ export function SchedulePanel({ view, refreshKey, onChanged }: { view: IncidentV
             Hold the best slot
           </button>
         )}
+        <section aria-label="Scheduling call" className="call-box">
+          <div className="row">
+            <Icon name="phone" />
+            <span className="small strong">Scheduling call</span>
+            {call?.simulated && <SimTag title="Recorded, nobody is phoned" />}
+            <span className="spacer" />
+            {(!call || call.status === "completed" || call.status === "failed") && (
+              <button className="btn sm" onClick={() => act(() => ops.startCall(incidentId))}>
+                {call ? "Call again" : "Call to schedule"}
+              </button>
+            )}
+          </div>
+          {!call && <p className="xs muted">GhostShift phones the scheduler contact, offers the checked slots and books the one they agree to.</p>}
+          {call && (
+            <>
+              <p className="xs muted">
+                {call.to_masked} · {call.status === "queued" ? "ringing" : call.status.replace("_", " ")}
+                {call.outcome ? ` · ${call.outcome.replace("_", " ")}` : ""}
+                {call.confirmed ? " · slot confirmed by Autopilot" : call.outcome === "accepted" ? " · held until the work order is approved" : ""}
+              </p>
+              {call.error && <p className="xs warn-text">{call.error}</p>}
+              <ol className="clean transcript">
+                {call.transcript.map((t, i) => (
+                  <li key={i} className={t.who}>
+                    <span className="xs muted">{t.who === "agent" ? "GhostShift" : "Caller"}</span>
+                    <span className="small">{t.text}</span>
+                  </li>
+                ))}
+              </ol>
+              {call.simulated && call.status === "in_progress" && (
+                <form
+                  className="row reply"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const text = reply;
+                    setReply("");
+                    act(() => ops.say(call.id, text));
+                  }}
+                >
+                  <input value={reply} onChange={(e) => setReply(e.target.value)} placeholder="Type the caller's reply, e.g. Saturday" aria-label="Caller's reply" />
+                  <button className="btn sm" type="submit">
+                    Say
+                  </button>
+                </form>
+              )}
+            </>
+          )}
+        </section>
+
         {error && (
           <div className="notice small" role="alert">
             <Icon name="alert" />

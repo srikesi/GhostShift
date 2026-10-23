@@ -143,7 +143,24 @@ export interface PhonePlan {
   order: PurchaseOrder | null;
 }
 
+export interface CallView {
+  id: string;
+  incident_id: string;
+  to_masked: string;
+  simulated: boolean;
+  status: string;
+  outcome: string | null;
+  confirmed: boolean;
+  accepted_text: string | null;
+  options: string[];
+  transcript: { who: string; text: string }[];
+  error: string | null;
+}
+
 export const ops = {
+  calls: (incidentId: string) => request<CallView[]>(`/api/calendar/calls?incident_id=${encodeURIComponent(incidentId)}`),
+  startCall: (incidentId: string) => post<CallView>("/api/calendar/call", { incident_id: incidentId }),
+  say: (callId: string, text: string) => post<CallView>(`/api/voice/calls/${callId}/say`, { text }),
   calendar: (start?: string) => request<CalendarView>(`/api/calendar/events${start ? `?start=${encodeURIComponent(start)}` : ""}`),
   bookings: (incidentId?: string) =>
     request<Booking[]>(`/api/calendar/bookings${incidentId ? `?incident_id=${encodeURIComponent(incidentId)}` : ""}`),

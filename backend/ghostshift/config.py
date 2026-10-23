@@ -96,6 +96,10 @@ class Settings(BaseSettings):
     sms_max_attempts: int = Field(default=3, ge=1, le=5)
     # Real SMS is only sent to this number (opt-in, e.g. your own phone).
     demo_technician_phone: str | None = None
+    # Scheduler calls: GhostShift phones this number to agree a repair date (opt-in). The call comes from a
+    # Twilio phone number that can place calls (the WhatsApp sandbox number cannot).
+    scheduler_call_phone: str | None = None
+    call_from_number: str | None = None
     # More numbers that get every alert too, comma-separated (e.g. a teammate or supervisor).
     alert_phones: str | None = None
 

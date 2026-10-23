@@ -167,3 +167,37 @@
 .alt-list > li.ok {
   border-color: var(--ok);
 }
+.call-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  padding: var(--s-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+.transcript {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+.transcript li {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 8px;
+  border-left: 2px solid var(--line-strong);
+}
+.transcript li.caller {
+  border-left-color: var(--graphite);
+}
+.reply input {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  font: inherit;
+  font-size: var(--fs-sm);
+  background: var(--surface);
+}

@@ -105,7 +105,8 @@ class Orchestrator:
         self.llm = llm
         self.sms = sms
         self.approvals = None  # ApprovalService; set by the container (it needs this orchestrator's clock)
-        self.calendar = None  # CalendarService and InventoryService are also set by the container
+        self.calendar = None  # CalendarService, InventoryService and SchedulerCalls are also set by the container
+        self.calls = None
         self.inventory = None
         self._pool = ThreadPoolExecutor(max_workers=4, thread_name_prefix="ghostshift-stage")
         self._screen_cached = lru_cache(maxsize=4096)(self._screen_uncached)
@@ -244,6 +245,8 @@ class Orchestrator:
             attempts=1 if notes is not None else 0, warnings=notes or [],
             fallback_reason=None if notes is not None else "Autopilot is off; people approve orders"))
 
+        if self.calls is not None:
+            self.calls.maybe_auto_call(incident.id)  # Autopilot only; one call per incident
         self._notify(run, machine, incident, n_input, as_of)
         with self.store.lock:
             pending = any(self.store.actions[a].status == ActionStatus.awaiting_approval for a in incident.action_ids)
