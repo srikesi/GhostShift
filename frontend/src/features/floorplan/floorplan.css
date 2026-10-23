@@ -38,25 +38,30 @@
 .tile {
   position: absolute;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 2px;
   border-radius: var(--r-md);
-  text-align: center;
   overflow: hidden;
   min-width: 0;
+  background: var(--surface-sunk);
+}
+.tile-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.tile.rack .tile-photo {
+  object-position: 50% 30%;
 }
 .tile.idle {
-  background: var(--surface-sunk);
   border: 1px dashed var(--line-strong);
-  color: var(--ink-4);
+}
+.tile.idle .tile-photo {
+  filter: grayscale(1);
+  opacity: 0.38;
 }
 .tile.live {
-  background: var(--surface);
-  border: 2px solid var(--line-strong);
+  border: 3px solid var(--line-strong);
   color: var(--ink);
   text-decoration: none;
   cursor: pointer;
@@ -69,12 +74,31 @@
   outline: none;
   box-shadow: var(--focus);
 }
+/* Label strip over the bottom of the photo, so the words stay readable. */
+.tile-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 2px;
+  background: rgba(251, 250, 247, 0.92);
+  color: var(--ink);
+  text-align: center;
+}
+.tile.idle .tile-bar {
+  background: rgba(235, 232, 225, 0.85);
+  color: var(--ink-3);
+}
 .tile-id {
   font-size: 11px;
   font-weight: 500;
 }
 .tile.chiller .tile-id {
-  font-size: 15px;
+  font-size: 14px;
 }
 .tile-status {
   display: inline-flex;
@@ -92,24 +116,28 @@
   border-radius: 50%;
   background: var(--ok);
 }
-.tile-name {
-  font-size: 11px;
-  color: var(--ink-3);
-  padding: 0 6px;
-}
 .tile.sev-watch,
 .tile.tier-elevated {
   border-color: var(--amber-line);
-  background: var(--watch-bg);
 }
 .tile.sev-warning,
 .tile.tier-high {
   border-color: var(--amber);
-  background: var(--amber-bg);
 }
 .tile.sev-critical,
 .tile.tier-critical {
   border-color: var(--red);
+}
+.tile.sev-watch .tile-bar,
+.tile.tier-elevated .tile-bar {
+  background: var(--watch-bg);
+}
+.tile.sev-warning .tile-bar,
+.tile.tier-high .tile-bar {
+  background: var(--amber-bg);
+}
+.tile.sev-critical .tile-bar,
+.tile.tier-critical .tile-bar {
   background: var(--red-bg);
 }
 .tile.sev-watch i,
@@ -129,22 +157,18 @@
   .tile.rack .tile-id {
     display: none; /* too narrow to read; the machine list below names them */
   }
+  .tile.rack .tile-status {
+    font-size: 0;
+    gap: 0;
+  }
   .tile.rack .tile-status i {
     width: 10px;
     height: 10px;
   }
-  .tile-status {
-    font-size: 0;
-    gap: 0;
-  }
   .tile.chiller .tile-id {
-    font-size: 11px;
+    font-size: 10px;
   }
   .tile.chiller .tile-status {
-    font-size: 11px;
-    gap: 3px;
-  }
-  .tile-name {
-    display: none;
+    font-size: 10px;
   }
 }

@@ -55,7 +55,10 @@ export function FloorPlan({ plan, machines }: { plan: FloorPlanData; machines: M
         if (!m) {
           return (
             <div key={u.id} className={`tile ${u.kind} idle`} style={style} title={`${u.label}: not monitored in this demo`}>
-              <span className="mono tile-id">{u.label}</span>
+              <Photo name={u.photo} />
+              <span className="tile-bar">
+                <span className="mono tile-id">{u.label}</span>
+              </span>
             </div>
           );
         }
@@ -68,16 +71,22 @@ export function FloorPlan({ plan, machines }: { plan: FloorPlanData; machines: M
             style={style}
             aria-label={`${m.id}, ${m.display_name.replace(`${m.id} `, "")}: ${st.word}${st.problem ? " priority" : ""}. Open machine page`}
           >
-            <span className="mono tile-id">{m.id}</span>
-            <span className="tile-status">
-              <i aria-hidden /> {st.word}
+            <Photo name={u.photo} />
+            <span className="tile-bar">
+              <span className="mono tile-id">{m.id}</span>
+              <span className="tile-status">
+                <i aria-hidden /> {st.word}
+              </span>
             </span>
-            {u.kind === "chiller" && <span className="tile-name">{m.display_name.replace(`${m.id} `, "")}</span>}
           </Link>
         );
       })}
     </div>
   );
+}
+
+function Photo({ name }: { name: string | null }) {
+  return name ? <img className="tile-photo" src={`/images/${name}.jpg`} alt="" loading="lazy" /> : null;
 }
 
 /** A dashed bracket under (or beside) two units that back each other up. */

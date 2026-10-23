@@ -8,6 +8,7 @@ export interface PlanUnit {
   y: number;
   w: number;
   h: number;
+  photo: string | null;
   machine_id: string | null;
 }
 

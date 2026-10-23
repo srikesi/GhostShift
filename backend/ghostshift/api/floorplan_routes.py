@@ -35,6 +35,7 @@ class PlanUnit(Contract):
     y: float
     w: float
     h: float
+    photo: str | None = None  # file name (no extension) in frontend/public/images
     machine_id: str | None = None  # set when GhostShift monitors it; others are placeholders
 
 

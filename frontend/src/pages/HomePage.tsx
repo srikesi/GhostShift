@@ -87,17 +87,6 @@ export function HomePage() {
           </ul>
         </header>
 
-        <div className="home-photos">
-          <figure>
-            <img src="/images/data-hall.jpg" alt="A data hall: rows of black server racks with cabling, and a UPS cabinet in the foreground" />
-            <figcaption className="xs muted">A data hall, like Data hall 2</figcaption>
-          </figure>
-          <figure>
-            <img src="/images/technician-at-rack.jpg" alt="A technician crouching at an open server rack with a laptop on the raised floor" />
-            <figcaption className="xs muted">A technician at a rack: the person GhostShift texts and schedules</figcaption>
-          </figure>
-        </div>
-
         {next && (
           <p className="small next-job">
             <Icon name="clock" /> Next job: {fmtDateTime(next.start)} · {next.technician_name} on {next.machine_id} <SimTag />

@@ -57,7 +57,8 @@
       "y": 95,
       "w": 58,
       "h": 100,
-      "machine_id": null
+      "machine_id": null,
+      "photo": "server-rack-rear"
     },
     {
       "id": "B2",
@@ -67,7 +68,8 @@
       "y": 95,
       "w": 58,
       "h": 100,
-      "machine_id": null
+      "machine_id": null,
+      "photo": "server-rack-rear"
     },
     {
       "id": "B3",
@@ -77,7 +79,8 @@
       "y": 95,
       "w": 58,
       "h": 100,
-      "machine_id": null
+      "machine_id": null,
+      "photo": "server-rack-rear"
     },
     {
       "id": "B4",
@@ -87,7 +90,8 @@
       "y": 95,
       "w": 58,
       "h": 100,
-      "machine_id": null
+      "machine_id": null,
+      "photo": "server-rack-rear"
     },
     {
       "id": "B5",
@@ -97,7 +101,8 @@
       "y": 95,
       "w": 58,
       "h": 100,
-      "machine_id": null
+      "machine_id": null,
+      "photo": "server-rack-rear"
     },
     {
       "id": "B6",
@@ -107,7 +112,8 @@
       "y": 95,
       "w": 58,
       "h": 100,
-      "machine_id": null
+      "machine_id": null,
+      "photo": "server-rack-rear"
     },
     {
       "id": "B7",
@@ -117,7 +123,8 @@
       "y": 95,
       "w": 58,
       "h": 100,
-      "machine_id": null
+      "machine_id": null,
+      "photo": "server-rack-rear"
     },
     {
       "id": "B8",
@@ -127,7 +134,8 @@
       "y": 95,
       "w": 58,
       "h": 100,
-      "machine_id": null
+      "machine_id": null,
+      "photo": "server-rack-rear"
     },
     {
       "id": "C1",
@@ -137,7 +145,8 @@
       "y": 310,
       "w": 58,
       "h": 100,
-      "machine_id": null
+      "machine_id": null,
+      "photo": "server-rack-rear"
     },
     {
       "id": "C2",
@@ -147,7 +156,8 @@
       "y": 310,
       "w": 58,
       "h": 100,
-      "machine_id": null
+      "machine_id": null,
+      "photo": "server-rack-rear"
     },
     {
       "id": "MF-07",
@@ -157,7 +167,8 @@
       "y": 310,
       "w": 58,
       "h": 100,
-      "machine_id": "MF-07"
+      "machine_id": "MF-07",
+      "photo": "mainframe-front"
     },
     {
       "id": "MF-08",
@@ -167,7 +178,8 @@
       "y": 310,
       "w": 58,
       "h": 100,
-      "machine_id": "MF-08"
+      "machine_id": "MF-08",
+      "photo": "mainframe-front"
     },
     {
       "id": "C5",
@@ -177,7 +189,8 @@
       "y": 310,
       "w": 58,
       "h": 100,
-      "machine_id": null
+      "machine_id": null,
+      "photo": "server-rack-rear"
     },
     {
       "id": "C6",
@@ -187,7 +200,8 @@
       "y": 310,
       "w": 58,
       "h": 100,
-      "machine_id": null
+      "machine_id": null,
+      "photo": "server-rack-rear"
     },
     {
       "id": "C7",
@@ -197,7 +211,8 @@
       "y": 310,
       "w": 58,
       "h": 100,
-      "machine_id": null
+      "machine_id": null,
+      "photo": "server-rack-rear"
     },
     {
       "id": "C8",
@@ -207,7 +222,8 @@
       "y": 310,
       "w": 58,
       "h": 100,
-      "machine_id": null
+      "machine_id": null,
+      "photo": "server-rack-rear"
     },
     {
       "id": "CH-02",
@@ -217,7 +233,8 @@
       "y": 120,
       "w": 170,
       "h": 90,
-      "machine_id": "CH-02"
+      "machine_id": "CH-02",
+      "photo": "chiller-air-cooled"
     },
     {
       "id": "CH-03",
@@ -227,7 +244,8 @@
       "y": 300,
       "w": 170,
       "h": 90,
-      "machine_id": null
+      "machine_id": null,
+      "photo": "chiller-air-cooled"
     }
   ],
   "links": [
