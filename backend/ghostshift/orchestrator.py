@@ -105,6 +105,8 @@ class Orchestrator:
         self.llm = llm
         self.sms = sms
         self.approvals = None  # ApprovalService; set by the container (it needs this orchestrator's clock)
+        self.calendar = None  # CalendarService and InventoryService are also set by the container
+        self.inventory = None
         self._pool = ThreadPoolExecutor(max_workers=4, thread_name_prefix="ghostshift-stage")
         self._screen_cached = lru_cache(maxsize=4096)(self._screen_uncached)
 
@@ -160,6 +162,8 @@ class Orchestrator:
     def monitor(self, machine_id: str) -> tuple[Screening, WorkflowRun | None]:
         """Called after each replay step: run the full workflow on new or escalating findings."""
         s = self.screen(machine_id)
+        if self.inventory is not None:
+            self.inventory.sync()  # parts orders move along as the replay clock advances
         if s.diagnostics.severity == Severity.normal:
             return s, None
         inc = self.store.open_incident_for(machine_id)
@@ -229,6 +233,8 @@ class Orchestrator:
             run, machine, diag, prog, safety, maint, narrative, n_status, n_provider))
         run.incident_id = incident.id
         self._log_progress(incident, before, machine, n_input, as_of)
+        if self.calendar is not None:
+            self.calendar.sync_incident(incident.id)  # tentative hold; confirmed only after approval
 
         started, t0 = utcnow(), time.perf_counter()
         notes = self._autopilot(incident, as_of)
@@ -412,6 +418,16 @@ class Orchestrator:
             st.actions[act.id] = act
 
     # -------------------------------------------------------------- activity
+    def site_time(self):
+        """Latest replay time across machines (the site's 'now' for orders not tied to one incident)."""
+        times = []
+        for mid in self.ref.machines:
+            c = self.cursor(mid)
+            pts = self.telemetry.window(mid, c, c).points
+            if pts:
+                times.append(pts[-1].timestamp)
+        return max(times) if times else None
+
     def machine_time(self, incident_id: str):
         """Replay clock for an incident's machine (the timestamp at the current cursor)."""
         inc = self.store.incidents.get(incident_id)

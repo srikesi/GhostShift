@@ -19,114 +19,129 @@ export interface Drawing {
 
 const range = (n: number) => Array.from({ length: n }, (_, i) => i);
 
-/** Computer room air handler, front cutaway: return air in at the top, supply air down into the raised floor. */
-const crah: Drawing = {
-  viewBox: "0 0 420 320",
+/** Mainframe / server rack, side cutaway: cold air in at the front, hot air through the rear-door coolant heat exchanger. */
+const rack: Drawing = {
+  viewBox: "0 0 480 320",
   structure: (
     <>
-      <path d="M220 6v20" className="pipe air" markerEnd="url(#arrow)" />
-      <text x="230" y="18" className="drawing-label">
-        RETURN AIR
+      <path d="M96 150h56" className="pipe air" markerEnd="url(#arrow)" />
+      <text x="40" y="142" className="drawing-label">
+        COLD AISLE AIR
       </text>
-      <rect x="150" y="30" width="140" height="236" rx="3" className="body" />
-      <path d="M162 84l58 58 58-58" className="coil" />
-      <path d="M170 84l50 50 50-50" className="coil" />
-      <text x="244" y="140" className="drawing-label">
-        CW COIL
-      </text>
-      <path d="M290 112h46M290 138h46" className="pipe water" />
-      <text x="342" y="116" className="drawing-label">
-        CHW IN
-      </text>
-      <text x="342" y="142" className="drawing-label">
-        CHW OUT
-      </text>
-      <line x1="205" y1="166" x2="205" y2="214" className="steel-line" />
-      <line x1="40" y1="266" x2="380" y2="266" className="ground" />
-      {range(9).map((i) => (
-        <line key={i} x1={40 + i * 42.5} x2={40 + i * 42.5} y1="266" y2="272" className="detail" />
+      <rect x="168" y="38" width="128" height="244" rx="3" className="body" />
+      <rect x="160" y="38" width="8" height="244" rx="2" className="enclosure" />
+      {range(10).map((i) => (
+        <line key={i} x1="162" x2="166" y1={52 + i * 24} y2={52 + i * 24} className="detail" />
       ))}
-      <path d="M205 268v26" className="pipe air" markerEnd="url(#arrow)" />
-      <text x="214" y="290" className="drawing-label">
-        SUPPLY AIR TO RAISED FLOOR
+      <rect x="180" y="44" width="108" height="40" rx="3" className="enclosure" />
+      <text x="184" y="95" className="drawing-label">
+        REAR FAN TRAY
+      </text>
+      <rect x="184" y="100" width="100" height="26" rx="3" className="body" />
+      <text x="190" y="117" className="drawing-label">
+        PROCESSOR DRAWER
+      </text>
+      {range(7).map((i) => (
+        <g key={i}>
+          <rect x="184" y={134 + i * 20} width="100" height="14" rx="2" className="body" />
+          <circle cx="191" cy={141 + i * 20} r="1.8" className="ball" />
+          <line x1="200" x2="276" y1={141 + i * 20} y2={141 + i * 20} className="detail" />
+        </g>
+      ))}
+      <rect x="296" y="38" width="10" height="244" rx="2" className="enclosure" />
+      {range(11).map((i) => (
+        <line key={i} x1="296" x2="306" y1={46 + i * 22} y2={58 + i * 22} className="detail" />
+      ))}
+      <text x="298" y="304" className="drawing-label">
+        REAR-DOOR HEAT EXCHANGER
+      </text>
+      <path d="M306 112h20M306 247h18M339 136v44M339 198v38" className="pipe water" />
+      <line x1="120" y1="282" x2="440" y2="282" className="ground" />
+      {range(9).map((i) => (
+        <line key={i} x1={120 + i * 40} x2={120 + i * 40} y1="282" y2="288" className="detail" />
+      ))}
+      <text x="176" y="30" className="drawing-label">
+        AIR FLOWS FRONT TO REAR
       </text>
     </>
   ),
   parts: {
-    "crah-air-filter": {
-      anchor: [220, 54],
-      callout: [2, 44],
+    "rack-air-filter": {
+      anchor: [174, 220],
+      callout: [2, 208],
       shape: (
         <>
-          <rect x="160" y="42" width="120" height="22" rx="2" />
-          <path d={`M162 53${range(12).map((i) => `l5 ${i % 2 ? 9 : -9}`).join("")}`} className="fin" />
+          <rect x="169" y="170" width="9" height="100" rx="1" />
+          {range(11).map((i) => (
+            <line key={i} x1="171" x2="177" y1={176 + i * 8.5} y2={176 + i * 8.5} className="fin" />
+          ))}
         </>
       ),
     },
-    "crah-chw-valve": {
-      anchor: [312, 112],
-      callout: [2, 98],
+    "rack-fan-impeller": {
+      anchor: [200, 64],
+      callout: [2, 38],
       shape: (
         <>
-          <path d="M302 104l20 16v-16l-20 16z" />
-          <rect x="305" y="90" width="14" height="10" rx="1" />
+          <rect x="188" y="50" width="24" height="28" rx="2" />
+          {range(5).map((i) => (
+            <line key={i} x1="190" x2="210" y1={54 + i * 5} y2={57 + i * 5} className="fin" />
+          ))}
         </>
       ),
     },
-    "crah-humidifier": {
-      anchor: [263, 186],
-      callout: [2, 150],
+    "rack-fan-motor": {
+      anchor: [236, 64],
+      callout: [2, 38],
       shape: (
         <>
-          <rect x="245" y="166" width="36" height="42" rx="3" />
-          <path d="M256 176c4 4-4 8 0 12M268 176c4 4-4 8 0 12" className="fin" />
-        </>
-      ),
-    },
-    "crah-condensate-pump": {
-      anchor: [175, 244],
-      callout: [2, 228],
-      shape: (
-        <>
-          <rect x="160" y="236" width="30" height="20" rx="2" />
-          <circle cx="175" cy="246" r="5" className="ball" />
-        </>
-      ),
-    },
-    "crah-fan-motor": {
-      anchor: [205, 190],
-      callout: [2, 176],
-      shape: (
-        <>
-          <rect x="188" y="178" width="34" height="24" rx="3" />
+          <rect x="222" y="52" width="28" height="24" rx="4" />
           {range(3).map((i) => (
-            <line key={i} x1="192" x2="218" y1={184 + i * 6} y2={184 + i * 6} className="fin" />
+            <line key={i} x1="226" x2="246" y1={58 + i * 6} y2={58 + i * 6} className="fin" />
           ))}
         </>
       ),
     },
-    "crah-fan-bearing": {
-      anchor: [205, 206],
-      callout: [2, 192],
+    "rack-fan-bearing": {
+      anchor: [270, 64],
+      callout: [2, 38],
       shape: (
         <>
-          <rect x="192" y="170" width="26" height="7" rx="2" />
-          <rect x="192" y="203" width="26" height="7" rx="2" />
+          <rect x="256" y="48" width="24" height="6" rx="2" />
+          <rect x="256" y="74" width="24" height="6" rx="2" />
           {range(4).map((i) => (
-            <circle key={i} cx={196 + i * 6} cy="206.5" r="1.8" className="ball" />
+            <circle key={i} cx={260 + i * 5.5} cy="77" r="1.5" className="ball" />
           ))}
         </>
       ),
     },
-    "crah-fan-impeller": {
-      anchor: [205, 228],
-      callout: [2, 212],
+    "rack-coolant-valve": {
+      anchor: [339, 188],
+      callout: [332, 214],
       shape: (
         <>
-          <path d="M180 214h50l10 26h-70z" />
-          {range(6).map((i) => (
-            <line key={i} x1={184 + i * 8.5} x2={178 + i * 11} y1="216" y2="238" className="fin" />
-          ))}
+          <path d="M327 180l24 16v-16l-24 16z" />
+          <rect x="333" y="166" width="12" height="10" rx="1" />
+        </>
+      ),
+    },
+    "rack-coolant-pump": {
+      anchor: [339, 247],
+      callout: [332, 270],
+      shape: (
+        <>
+          <rect x="324" y="236" width="30" height="22" rx="3" />
+          <circle cx="339" cy="247" r="5" className="ball" />
+        </>
+      ),
+    },
+    "rack-coolant-reservoir": {
+      anchor: [339, 114],
+      callout: [332, 66],
+      shape: (
+        <>
+          <rect x="326" y="92" width="26" height="44" rx="4" />
+          <path d="M328 110h22" className="fin" />
         </>
       ),
     },
@@ -235,4 +250,4 @@ const chiller: Drawing = {
   },
 };
 
-export const DRAWINGS: Record<string, Drawing> = { crah, chiller };
+export const DRAWINGS: Record<string, Drawing> = { rack, chiller };

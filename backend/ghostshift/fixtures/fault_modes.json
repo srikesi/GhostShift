@@ -2,9 +2,9 @@
   "_comment": "Rule-based fault patterns used by the diagnostics agent. Conditions compare recent behaviour to the equipment's own baseline (z = (recent mean - baseline mean) / baseline std). Fixture knowledge, not a validated diagnostic model.",
   "fault_modes": [
     {
-      "id": "FM-CRAH-FAN-BRG",
-      "name": "Fan motor bearing wear",
-      "machine_type": "crah",
+      "id": "FM-RACK-FAN-BRG",
+      "name": "Cooling fan bearing wear",
+      "machine_type": "rack",
       "component_id": "fan_bearing",
       "required": [
         {
@@ -33,7 +33,7 @@
         }
       ],
       "work_plan": {
-        "title": "Replace supply fan motor bearings",
+        "title": "Replace cooling fan tray bearings",
         "estimated_duration_hours": 3.0,
         "required_skills": [
           "Critical facilities technician",
@@ -41,37 +41,37 @@
         ],
         "tasks": [
           {
-            "description": "Confirm the redundant unit (CRAH-08) is running and cold-aisle temperatures are stable before taking CRAH-07 offline.",
+            "description": "Confirm the failover rack (MF-08) is carrying the workload and inlet temperatures are stable before taking MF-07 offline.",
             "requires_qualified_person": false
           },
           {
-            "description": "Confirm the vibration reading with a portable analyser at the fan motor.",
+            "description": "Confirm the vibration reading with a portable analyser at the fan tray.",
             "requires_qualified_person": false
           },
           {
-            "description": "Isolate the unit and verify zero energy per the site LOTO procedure (electrical and fan rotation).",
+            "description": "Isolate the rack's power feeds and verify zero energy per the site LOTO procedure.",
             "requires_qualified_person": true
           },
           {
-            "description": "Remove the fan module, replace both motor bearings, and check the impeller for damage.",
+            "description": "Slide out the rear fan tray, replace both motor bearings, and check the fan blades for damage.",
             "requires_qualified_person": true
           },
           {
-            "description": "Restart the unit; confirm vibration, bearing temperature and airflow return to normal and cold-aisle temperatures hold.",
+            "description": "Power the rack back up; confirm vibration, bearing temperature and airflow return to normal and inlet temperatures hold.",
             "requires_qualified_person": false
           }
         ],
         "safety_references": [
           "Site LOTO procedure (reference only)",
           "Data hall change-control / method of procedure (MOP)",
-          "OEM fan module service guide"
+          "OEM fan tray service guide"
         ]
       }
     },
     {
-      "id": "FM-CRAH-CHW-LOW",
-      "name": "Low chilled-water pressure",
-      "machine_type": "crah",
+      "id": "FM-RACK-CHW-LOW",
+      "name": "Low rear-door coolant pressure",
+      "machine_type": "rack",
       "component_id": "chw_valve",
       "required": [
         {
@@ -83,18 +83,18 @@
       "supporting": [],
       "contra": [],
       "work_plan": {
-        "title": "Inspect chilled-water valve and strainer",
+        "title": "Inspect rear-door coolant valve and strainer",
         "estimated_duration_hours": 2.0,
         "required_skills": [
           "Critical facilities technician"
         ],
         "tasks": [
           {
-            "description": "Check loop pressure at the plant and the CRAH strainer differential.",
+            "description": "Check loop pressure at the coolant distribution unit and the rack strainer differential.",
             "requires_qualified_person": false
           },
           {
-            "description": "Isolate the coil per site procedure before opening the valve body.",
+            "description": "Isolate the rear-door loop per site procedure before opening the valve body.",
             "requires_qualified_person": true
           }
         ],
@@ -104,9 +104,9 @@
       }
     },
     {
-      "id": "FM-CRAH-FILTER",
-      "name": "Clogged air filters",
-      "machine_type": "crah",
+      "id": "FM-RACK-FILTER",
+      "name": "Clogged intake filter",
+      "machine_type": "rack",
       "component_id": "air_filter",
       "required": [
         {
@@ -118,7 +118,7 @@
       "supporting": [],
       "contra": [],
       "work_plan": {
-        "title": "Replace air filter bank",
+        "title": "Replace front dust filter",
         "estimated_duration_hours": 1.0,
         "required_skills": [
           "Critical facilities technician"

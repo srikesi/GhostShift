@@ -64,7 +64,7 @@ def test_approved_action_completes_as_simulated(client):
     r = client.post(f"/api/actions/{req}/execute")
     assert r.status_code == 200
     body = r.json()
-    assert body["status"] == "completed_simulated" and body["external_reference"].startswith("SIM-PR-")
+    assert body["status"] == "completed_simulated" and body["external_reference"].startswith("SIM-PO-")
     assert "No order was placed" in body["result_note"]
     assert client.post(f"/api/actions/{req}/execute").status_code == 409  # not twice
     assert client.get("/api/requisitions").json()[0]["status"] == "submitted_simulated"

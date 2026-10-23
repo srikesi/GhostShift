@@ -185,6 +185,15 @@
   flex-wrap: wrap;
 }
 
+.mh-title {
+  flex: 1 1 260px;
+  min-width: 0;
+}
+
+.machine-header {
+  align-items: center;
+}
+
 .machine-header h1 {
   font-size: var(--fs-2xl);
   margin-bottom: 2px;

@@ -1,0 +1,58 @@
+{
+  "_comment": "Mock technician roster, existing bookings and redundancy (N+1) rules for Austin DC-2. Everything here is simulated; no real calendar is connected. Shift hours are UTC; an end hour above 24 runs into the next day. Weekdays: 0 = Monday.",
+  "technicians": [
+    {
+      "id": "T-ALV",
+      "name": "R. Alvarez",
+      "role": "Critical facilities technician",
+      "skills": ["Critical facilities technician", "Electrical (qualified)"],
+      "shifts": [{"days": [0, 1, 2, 3, 4], "start_hour": 12, "end_hour": 24}]
+    },
+    {
+      "id": "T-NGU",
+      "name": "M. Nguyen",
+      "role": "Night-shift critical facilities technician",
+      "skills": ["Critical facilities technician", "Electrical (qualified)"],
+      "shifts": [{"days": [6, 0, 1, 2, 3], "start_hour": 21, "end_hour": 33}]
+    },
+    {
+      "id": "T-BRK",
+      "name": "J. Brooks",
+      "role": "Weekend critical facilities technician",
+      "skills": ["Critical facilities technician", "Electrical (qualified)"],
+      "shifts": [{"days": [5, 6], "start_hour": 12, "end_hour": 24}]
+    },
+    {
+      "id": "T-PAT",
+      "name": "S. Patel",
+      "role": "Critical facilities technician (no electrical qualification)",
+      "skills": ["Critical facilities technician"],
+      "shifts": [{"days": [0, 1, 2, 3, 4], "start_hour": 6, "end_hour": 18}]
+    },
+    {
+      "id": "T-OKA",
+      "name": "D. Okafor",
+      "role": "Chiller plant technician",
+      "skills": ["Critical facilities technician", "Refrigeration (qualified)", "Electrical (qualified)", "Vibration analysis"],
+      "shifts": [{"days": [1, 2, 3, 4, 5, 6], "start_hour": 3, "end_hour": 15}]
+    }
+  ],
+  "bookings": [
+    {"id": "FX-001", "title": "Quarterly UPS inspection", "machine_id": null, "technician_id": "T-ALV",
+     "start": "2026-10-24T14:00:00Z", "end": "2026-10-24T18:00:00Z"},
+    {"id": "FX-002", "title": "MF-08 firmware update and power-supply swap", "machine_id": "MF-08", "technician_id": "T-NGU",
+     "start": "2026-10-27T23:00:00Z", "end": "2026-10-28T03:00:00Z"},
+    {"id": "FX-003", "title": "CH-03 refrigerant check", "machine_id": "CH-03", "technician_id": "T-OKA",
+     "start": "2026-10-25T08:00:00Z", "end": "2026-10-25T11:00:00Z"},
+    {"id": "FX-004", "title": "Data hall 2 fire-suppression test", "machine_id": null, "technician_id": "T-PAT",
+     "start": "2026-10-26T14:00:00Z", "end": "2026-10-26T17:00:00Z"},
+    {"id": "FX-005", "title": "Row C cable tray audit", "machine_id": null, "technician_id": "T-BRK",
+     "start": "2026-10-25T13:00:00Z", "end": "2026-10-25T16:00:00Z"}
+  ],
+  "redundancy": [
+    {"unit": "MF-07", "partner": "MF-08", "rule": "MF-07 can only go offline while MF-08 is running"},
+    {"unit": "MF-08", "partner": "MF-07", "rule": "MF-08 can only go offline while MF-07 is running"},
+    {"unit": "CH-02", "partner": "CH-03", "rule": "CH-02 can only go offline while CH-03 is online"},
+    {"unit": "CH-03", "partner": "CH-02", "rule": "CH-03 can only go offline while CH-02 is online"}
+  ]
+}

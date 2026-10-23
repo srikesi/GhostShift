@@ -1,0 +1,47 @@
+{
+  "_comment": "Mock storeroom stock, reorder points, suppliers and open purchase orders. All simulated; not live inventory or vendor quotes. Initial on-hand counts match fixtures/parts_catalog.json.",
+  "stock": [
+    {"sku": "GS-BRG-FAN-KIT", "storeroom": "Critical spares cage (DC-2)", "on_hand": 2, "min": 2, "reorder_qty": 4},
+    {"sku": "GS-FLT-M8-SET", "storeroom": "Critical spares cage (DC-2)", "on_hand": 6, "min": 3, "reorder_qty": 6},
+    {"sku": "GS-ECF-450-MOD", "storeroom": "Critical spares cage (DC-2)", "on_hand": 0, "min": 0, "reorder_qty": 1},
+    {"sku": "GS-VLV-CHW-DN50", "storeroom": "Critical spares cage (DC-2)", "on_hand": 0, "min": 0, "reorder_qty": 1},
+    {"sku": "GS-OCL-ACS400-CORE", "storeroom": "Chiller plant stores", "on_hand": 0, "min": 0, "reorder_qty": 1},
+    {"sku": "GS-CLN-COIL-KIT", "storeroom": "Chiller plant stores", "on_hand": 4, "min": 2, "reorder_qty": 4},
+    {"sku": "GS-CFAN-ACS400", "storeroom": "Chiller plant stores", "on_hand": 1, "min": 1, "reorder_qty": 2},
+    {"sku": "GS-OSP-ACS400", "storeroom": "Chiller plant stores", "on_hand": 2, "min": 1, "reorder_qty": 2}
+  ],
+  "suppliers": [
+    {
+      "id": "SUP-LSI", "name": "Lone Star Industrial Supply", "on_time_rate": 0.96,
+      "offers": [
+        {"sku": "GS-BRG-FAN-KIT", "unit_price_usd": 240.0, "lead_days": 1},
+        {"sku": "GS-FLT-M8-SET", "unit_price_usd": 118.0, "lead_days": 1},
+        {"sku": "GS-CLN-COIL-KIT", "unit_price_usd": 96.0, "lead_days": 1},
+        {"sku": "GS-OSP-ACS400", "unit_price_usd": 410.0, "lead_days": 2}
+      ]
+    },
+    {
+      "id": "SUP-NOP", "name": "National OEM Parts Direct", "on_time_rate": 0.88,
+      "offers": [
+        {"sku": "GS-BRG-FAN-KIT", "unit_price_usd": 226.0, "lead_days": 4},
+        {"sku": "GS-ECF-450-MOD", "unit_price_usd": 3900.0, "lead_days": 3},
+        {"sku": "GS-VLV-CHW-DN50", "unit_price_usd": 1215.0, "lead_days": 4},
+        {"sku": "GS-OCL-ACS400-CORE", "unit_price_usd": 2650.0, "lead_days": 3},
+        {"sku": "GS-CFAN-ACS400", "unit_price_usd": 880.0, "lead_days": 5}
+      ]
+    },
+    {
+      "id": "SUP-CCE", "name": "Capital City Electrical", "on_time_rate": 0.91,
+      "offers": [
+        {"sku": "GS-BRG-FAN-KIT", "unit_price_usd": 252.0, "lead_days": 2},
+        {"sku": "GS-ECF-450-MOD", "unit_price_usd": 4150.0, "lead_days": 2},
+        {"sku": "GS-VLV-CHW-DN50", "unit_price_usd": 1290.0, "lead_days": 2},
+        {"sku": "GS-CFAN-ACS400", "unit_price_usd": 940.0, "lead_days": 2}
+      ]
+    }
+  ],
+  "open_orders": [
+    {"id": "PO-SEED-01", "sku": "GS-FLT-M8-SET", "quantity": 6, "supplier_id": "SUP-LSI", "unit_price_usd": 118.0,
+     "ordered_at": "2026-10-21T15:00:00Z", "eta": "2026-10-24T15:00:00Z"}
+  ]
+}

@@ -41,7 +41,7 @@ def test_anomalous_run_full_pipeline(container):
     assert len(inc.action_ids) == 2 and inc.requisition_id and inc.work_order_id
     note = container.store.notifications[inc.notification_ids[0]]
     assert note.status == NotificationStatus.simulated_sent
-    assert "CRAH-07" in note.body and "HIGH" in note.body and "/m/" in note.body
+    assert "MF-07" in note.body and "HIGH" in note.body and "/m/" in note.body
     assert "+1512555" not in note.to_masked  # masked
 
 
@@ -89,7 +89,7 @@ def test_llm_success_is_labelled_real():
     run = run_at(c, CRAH, 216)
     rec = stage(run, "narrative")
     assert rec.status == StageStatus.success and rec.provider.real and rec.attempts == 1
-    assert c.store.incidents[run.incident_id].narrative.headline == "CRAH-07 fan bearing wear detected"
+    assert c.store.incidents[run.incident_id].narrative.headline == "MF-07 fan bearing wear detected"
 
 
 def test_llm_failure_auto_mode_falls_back_and_says_so():

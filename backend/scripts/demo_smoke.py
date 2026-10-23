@@ -3,7 +3,7 @@
     make api          # in one terminal
     make demo-smoke   # in another
 
-Resets state, replays CRAH-07 from normal operation to the end, and checks that
+Resets state, replays MF-07 from normal operation to the end, and checks that
 each step of the story happens: detection, SMS, inspection link, approval gate.
 Exits non-zero on the first failed expectation.
 """
@@ -33,12 +33,12 @@ def main() -> None:
     expect(health["app"] == "GhostShift", f"API healthy, mode={health['mode']}")
     c.post("/api/demo/reset")
 
-    m = c.get("/api/machines/CRAH-07").json()
-    expect(m["summary"]["status"] == "normal", "CRAH-07 starts normal")
+    m = c.get("/api/machines/MF-07").json()
+    expect(m["summary"]["status"] == "normal", "MF-07 starts normal")
 
     tiers, incident_id = [], None
     while True:
-        r = c.post("/api/machines/CRAH-07/replay", json={"action": "advance", "steps": 2}).json()
+        r = c.post("/api/machines/MF-07/replay", json={"action": "advance", "steps": 2}).json()
         if r["triggered_incident_id"]:
             incident_id = r["triggered_incident_id"]
             view = c.get(f"/api/incidents/{incident_id}").json()
@@ -64,6 +64,26 @@ def main() -> None:
 
     act = next(a for a in view["actions"] if a["kind"] == "dispatch_work_order")
     expect(c.post(f"/api/actions/{act['id']}/execute").status_code == 409, "Unapproved work order cannot execute")
+
+    # Calendar and inventory, at High priority (one approver needed for each action).
+    c.post("/api/demo/reset")
+    r = c.post("/api/machines/MF-07/replay", json={"action": "seek", "cursor": 216}).json()
+    incident_id = r["triggered_incident_id"]
+    view = c.get(f"/api/incidents/{incident_id}").json()
+    act = next(a for a in view["actions"] if a["kind"] == "dispatch_work_order")
+    hold = c.get("/api/calendar/bookings", params={"incident_id": incident_id}).json()
+    expect(len(hold) == 1 and hold[0]["status"] == "tentative", "Slot held tentatively with the work order")
+    expect(c.post(f"/api/calendar/bookings/{hold[0]['id']}/confirm").status_code == 409, "Slot cannot be confirmed before approval")
+    req_act = next(a for a in view["actions"] if a["kind"] == "submit_requisition")
+    body = {"role": "maintenance_supervisor", "approver_name": "Smoke test", "decision": "approve"}
+    expect(c.post(f"/api/actions/{req_act['id']}/decision", json=body).status_code == 200, "Parts order approved")
+    done = c.post(f"/api/actions/{req_act['id']}/execute").json()
+    po = c.get(f"/api/inventory/orders/{done['external_reference']}").json()
+    expect(po["kind"] == "reservation" and po["status"] == "reserved", "Purchase order reserves the part in stock")
+    attest = {**body, "isolation_attestation": True}
+    expect(c.post(f"/api/actions/{act['id']}/decision", json=attest).status_code == 200, "Work order approved with lockout/tagout")
+    booked = c.get("/api/calendar/bookings", params={"incident_id": incident_id}).json()[0]
+    expect(booked["status"] == "confirmed", "Slot confirmed once the work order is approved")
 
     # Autonomy: with Autopilot on, the compressor's in-stock cleaning kit is ordered with no person involved.
     c.post("/api/demo/reset")

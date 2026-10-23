@@ -26,8 +26,8 @@ def daily(i: int, amplitude: float, phase: float = 0.0) -> float:
     return amplitude * math.sin(2 * math.pi * (hours / 24.0) + phase)
 
 
-def crah07(rng: random.Random) -> list[dict]:
-    """Computer room air handler: supply-fan motor bearings wearing out from sample 140."""
+def rack07(rng: random.Random) -> list[dict]:
+    """Mainframe rack: rear cooling-fan-tray bearings wearing out from sample 140."""
     rows = []
     onset = 140
     for i in range(N):
@@ -73,8 +73,8 @@ def ch02(rng: random.Random) -> list[dict]:
     return rows
 
 
-def crah07_energy_humidifier(rows: list[dict], rng: random.Random) -> None:
-    """Fan power and humidifier channels. Separate RNG so the channels above are unchanged."""
+def rack07_energy_coolant(rows: list[dict], rng: random.Random) -> None:
+    """Fan power and coolant-loop channels (rear-door pressure and reservoir level). Separate RNG so the channels above are unchanged."""
     onset = 140
     for i, row in enumerate(rows):
         x = max(0, i - onset)
@@ -112,9 +112,9 @@ def write(machine_id: str, rows: list[dict]) -> None:
 
 
 if __name__ == "__main__":
-    crah = crah07(random.Random(7))
-    crah07_energy_humidifier(crah, random.Random(107))
-    write("CRAH-07", crah)
+    rack = rack07(random.Random(7))
+    rack07_energy_coolant(rack, random.Random(107))
+    write("MF-07", rack)
     ch = ch02(random.Random(2))
     ch02_energy_lube(ch, random.Random(102))
     write("CH-02", ch)

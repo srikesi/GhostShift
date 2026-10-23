@@ -30,6 +30,9 @@ class GateError(Exception):
 class ApprovalService:
     def __init__(self, store: Store, procurement: ProcurementProvider, work_orders: WorkOrderProvider,
                  machine_clock: Callable[[str], datetime | None] | None = None):
+        # Optional hooks (set by the container): called after a decision or execution, inside the lock.
+        self.on_decided: Callable[[ProposedAction], None] | None = None
+        self.on_executed: Callable[[ProposedAction], None] | None = None
         self.store = store
         self.procurement = procurement
         self.work_orders = work_orders
@@ -73,6 +76,8 @@ class ApprovalService:
             verb = "approved" if slot.decision == Decision.approved else "rejected"
             self._log(act, "policy" if automated else "person", req.approver_name, f"decision_{verb}",
                       f"{verb.capitalize()} {self._describe(act)}" + (f": {req.note}" if req.note else ""))
+            if self.on_decided:
+                self.on_decided(act)
             return act
 
     def execute(self, action_id: str, *, actor: str = "person", actor_name: str = "Supervisor") -> ProposedAction:
@@ -102,6 +107,8 @@ class ApprovalService:
             sent = "Placed" if act.kind == ActionKind.submit_requisition else "Released"
             self._log(act, actor, actor_name, "executed",
                       f"{sent} {self._describe(act)} ({result.external_reference}{', simulated' if result.simulated else ''})")
+            if self.on_executed:
+                self.on_executed(act)
             return act
 
     def _describe(self, act: ProposedAction) -> str:

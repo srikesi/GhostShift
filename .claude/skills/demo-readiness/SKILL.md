@@ -22,7 +22,7 @@ Make sure the 3-minute story works every time: normal → deviation → diagnosi
 2. Offline path: with `GHOSTSHIFT_MODE=demo`, `make dev`, then `make demo-smoke` → "Demo story verified".
 3. Live path (if used): `make check-bedrock` succeeds; set `GHOSTSHIFT_MODE=auto` so a network failure falls back visibly instead of breaking the demo. For Twilio, confirm `GHOSTSHIFT_DEMO_TECHNICIAN_PHONE` is the presenter's phone and send one test.
 4. `GHOSTSHIFT_PUBLIC_BASE_URL` points to an address the phone can reach (LAN IP with `npm run dev -- --host`, or a tunnel). Open one SMS link on the phone.
-5. Click **Reset demo** in the top bar. CRAH-07 shows Normal at sample 120.
+5. Click **Reset demo** in the top bar. MF-07 shows Normal at sample 120.
 6. Rehearse: Play → auto-pause at detection (elevated) → Play → SMS at high → approve requisition → show 422 when approving work order without isolation attestation → open mobile view.
 7. Rehearse the Autonomy demo in the README (Autopilot on → Play → "10 on its own · 0 by people" → only the lockout/tagout sign-off left). Turn Autopilot back off afterwards if the next demo needs the manual approval flow.
 8. Have the fallback ready: if anything external fails, switch to `GHOSTSHIFT_MODE=demo` and restart the API (state is in-memory; restart = clean slate).

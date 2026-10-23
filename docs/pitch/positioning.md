@@ -7,10 +7,10 @@ Keep pitch claims to what the build actually does. Update the **Today** column a
 | Capability | How GhostShift does it | Today | After workstreams |
 |---|---|---|---|
 | **Multi-agent** | Five specialist agents with typed inputs and outputs: diagnostics, prognostics, safety supervisor, maintenance & supply, narrative. An orchestrator runs them in order, with timeouts, failure handling and a step log. | Yes. The specialists are rule- and statistics-based; an LLM only rewords the summary. | WS1 adds a Bedrock supervisor agent that delegates to the specialists as tools and answers questions. That's the "agentic" part judges look for. |
-| **Ingests temperature** | Bearing temperature (CRAH-07); discharge and oil temperature (CH-02). | Yes (simulated data). | Plus real datasets (WS3). |
-| **Ingests vibration** | Supply fan vibration (CRAH-07); compressor vibration (CH-02). | Yes (simulated). | Plus real datasets (WS3). |
-| **Ingests energy** | Fan power (CRAH-07) and compressor power (CH-02) in kW, plus motor currents. | Yes (simulated). | WS3 derives power from torque × speed in the real datasets. |
-| **Ingests lube monitor** | Chiller compressor oil: oil temperature, oil level and oil-separator pressure drop (CH-02). CRAH-07 adds humidifier water pressure and level. | Yes (simulated). | WS3 adds hydraulic/lube oil signals from the downtime dataset. |
+| **Ingests temperature** | Bearing temperature (MF-07); discharge and oil temperature (CH-02). | Yes (simulated data). | Plus real datasets (WS3). |
+| **Ingests vibration** | Supply fan vibration (MF-07); compressor vibration (CH-02). | Yes (simulated). | Plus real datasets (WS3). |
+| **Ingests energy** | Fan power (MF-07) and compressor power (CH-02) in kW, plus motor currents. | Yes (simulated). | WS3 derives power from torque × speed in the real datasets. |
+| **Ingests lube monitor** | Chiller compressor oil: oil temperature, oil level and oil-separator pressure drop (CH-02). MF-07 adds humidifier water pressure and level. | Yes (simulated). | WS3 adds hydraulic/lube oil signals from the downtime dataset. |
 | **Predict failure** | Spots readings moving out of their normal range, matches known fault patterns, and checks alarm limits. Flags problems hours before the alarm limit is crossed. | Yes | WS3 measures how early it flags real downtime events, and how many false alarms it raises. |
 | **Estimate useful life** | Time to the danger limit from the recent trend, given as a range. Shown only when the trend is clear. Schedule-based service due for every part. | Yes. A simple trend estimate, not validated. | Same method. Quote it as an estimate. |
 | **Auto-order parts** | Picks the best-matching part (fit, stock, lead time) and drafts the requisition. With **Autopilot** on, it places the order itself when priority is High or Urgent, the cost is within the limit, and the part is in stock or arrives before the earliest limit. Otherwise a supervisor approves. | Yes with Autopilot (the order is **simulated**). Off by default. | WS3/WS2 could connect a real ERP or catalog. |
@@ -27,7 +27,7 @@ Keep pitch claims to what the build actually does. Update the **Today** column a
 | Place the parts order | **Autopilot** (within policy), otherwise a supervisor |
 | Release physical work (lockout/tagout) | **Always a supervisor**, by design |
 
-Demo it with the "Autonomy demo" in the README. The *What GhostShift did* timeline counts the steps GhostShift took on its own against those taken by people (10 vs 0 on the CRAH-07 run).
+Demo it with the "Autonomy demo" in the README. The *What GhostShift did* timeline counts the steps GhostShift took on its own against those taken by people (10 vs 0 on the MF-07 run).
 
 ## One-paragraph description (accurate today)
 

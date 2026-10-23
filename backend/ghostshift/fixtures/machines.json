@@ -2,16 +2,16 @@
   "_comment": "GhostShift demo equipment for a data center. All equipment, sensors, limits and history are fixture values for demonstration; they are not taken from a real facility.",
   "machines": [
     {
-      "id": "CRAH-07",
-      "display_name": "CRAH-07 Computer Room Air Handler",
-      "machine_type": "crah",
-      "model": "CRAH-CW150 (chilled water, 150 kW, EC fans)",
-      "drawing": "crah",
+      "id": "MF-07",
+      "display_name": "MF-07 Mainframe Rack",
+      "machine_type": "rack",
+      "model": "MF-Z16 (mainframe rack, 42U, 18 kW, rear-door cooling)",
+      "drawing": "rack",
       "context": {
         "site": "Austin DC-2",
-        "line": "Data hall 2 · Row C cooling",
+        "line": "Data hall 2 · Row C compute",
         "shift_pattern": "24/7 operations",
-        "duty": "Cools ~120 kW of IT load; N+1 with CRAH-08"
+        "duty": "Runs core batch and transaction workloads; failover pair with MF-08"
       },
       "provenance": {
         "source": "fixture",
@@ -20,11 +20,11 @@
       "components": [
         {
           "id": "fan_bearing",
-          "name": "Supply fan motor bearings",
+          "name": "Cooling fan tray bearings",
           "type": "fan_motor_bearing",
-          "visualization_id": "crah-fan-bearing",
+          "visualization_id": "rack-fan-bearing",
           "criticality": "high",
-          "description": "Front and rear bearings of the EC supply-fan motor.",
+          "description": "Front and rear bearings of the motor in the rack's rear cooling fan tray.",
           "maintenance": {
             "last_service_at": "2025-12-15T00:00:00Z",
             "service_interval_hours": 8000,
@@ -36,11 +36,11 @@
         },
         {
           "id": "fan_impeller",
-          "name": "Supply fan impeller",
+          "name": "Cooling fan blades",
           "type": "fan_impeller",
-          "visualization_id": "crah-fan-impeller",
+          "visualization_id": "rack-fan-impeller",
           "criticality": "high",
-          "description": "Backward-curved impeller on the supply fan.",
+          "description": "Axial fan blades in the rear cooling fan tray.",
           "maintenance": {
             "last_service_at": "2025-11-04T00:00:00Z",
             "service_interval_hours": 10000,
@@ -52,11 +52,11 @@
         },
         {
           "id": "fan_motor",
-          "name": "Supply fan EC motor",
+          "name": "Cooling fan motor",
           "type": "ec_fan_motor",
-          "visualization_id": "crah-fan-motor",
+          "visualization_id": "rack-fan-motor",
           "criticality": "high",
-          "description": "Electronically commutated motor driving the supply fan.",
+          "description": "Electronically commutated motor driving the fan tray.",
           "maintenance": {
             "last_service_at": "2026-03-12T00:00:00Z",
             "service_interval_hours": 12000,
@@ -68,11 +68,11 @@
         },
         {
           "id": "air_filter",
-          "name": "Air filter bank",
+          "name": "Front dust filter",
           "type": "air_filter",
-          "visualization_id": "crah-air-filter",
+          "visualization_id": "rack-air-filter",
           "criticality": "medium",
-          "description": "Return-air filter panels (MERV 8).",
+          "description": "Washable intake filter behind the front door (MERV 8).",
           "maintenance": {
             "last_service_at": "2026-05-10T00:00:00Z",
             "service_interval_hours": 6000,
@@ -84,11 +84,11 @@
         },
         {
           "id": "chw_valve",
-          "name": "Chilled-water control valve",
+          "name": "Rear-door coolant valve",
           "type": "chw_valve",
-          "visualization_id": "crah-chw-valve",
+          "visualization_id": "rack-coolant-valve",
           "criticality": "medium",
-          "description": "Two-way valve controlling chilled-water flow through the coil.",
+          "description": "Valve controlling coolant flow through the rear-door heat exchanger.",
           "maintenance": {
             "last_service_at": "2026-06-02T00:00:00Z",
             "service_interval_hours": 4000,
@@ -100,11 +100,11 @@
         },
         {
           "id": "condensate_pump",
-          "name": "Condensate pump",
+          "name": "Coolant pump",
           "type": "condensate_pump",
-          "visualization_id": "crah-condensate-pump",
+          "visualization_id": "rack-coolant-pump",
           "criticality": "medium",
-          "description": "Removes condensate from the coil drain pan.",
+          "description": "Circulates coolant through the rear-door heat exchanger.",
           "maintenance": {
             "last_service_at": "2026-08-20T00:00:00Z",
             "service_interval_hours": 3000,
@@ -116,11 +116,11 @@
         },
         {
           "id": "humidifier",
-          "name": "Humidifier",
+          "name": "Coolant reservoir",
           "type": "humidifier",
-          "visualization_id": "crah-humidifier",
+          "visualization_id": "rack-coolant-reservoir",
           "criticality": "low",
-          "description": "Electrode steam humidifier keeping the hall within humidity limits.",
+          "description": "Coolant reservoir and top-up tank for the rear-door loop.",
           "maintenance": {
             "last_service_at": "2026-08-30T00:00:00Z",
             "service_interval_hours": 2000,
@@ -134,7 +134,7 @@
       "sensors": [
         {
           "id": "fan_vibration",
-          "name": "Fan vibration (RMS velocity)",
+          "name": "Fan tray vibration (RMS velocity)",
           "unit": "mm/s",
           "component_id": "fan_bearing",
           "role": "health",
@@ -150,12 +150,12 @@
           },
           "provenance": {
             "source": "simulated",
-            "detail": "fixtures/telemetry/CRAH-07.csv (generated by scripts/generate_fixtures.py)"
+            "detail": "fixtures/telemetry/MF-07.csv (generated by scripts/generate_fixtures.py)"
           }
         },
         {
           "id": "fan_bearing_temp",
-          "name": "Fan bearing temperature",
+          "name": "Fan tray bearing temperature",
           "unit": "°C",
           "component_id": "fan_bearing",
           "role": "health",
@@ -171,12 +171,12 @@
           },
           "provenance": {
             "source": "simulated",
-            "detail": "fixtures/telemetry/CRAH-07.csv (generated by scripts/generate_fixtures.py)"
+            "detail": "fixtures/telemetry/MF-07.csv (generated by scripts/generate_fixtures.py)"
           }
         },
         {
           "id": "fan_motor_current",
-          "name": "Fan motor current",
+          "name": "Fan tray motor current",
           "unit": "A",
           "component_id": "fan_motor",
           "role": "health",
@@ -192,12 +192,12 @@
           },
           "provenance": {
             "source": "simulated",
-            "detail": "fixtures/telemetry/CRAH-07.csv (generated by scripts/generate_fixtures.py)"
+            "detail": "fixtures/telemetry/MF-07.csv (generated by scripts/generate_fixtures.py)"
           }
         },
         {
           "id": "fan_speed",
-          "name": "Fan speed",
+          "name": "Fan tray speed",
           "unit": "rpm",
           "component_id": "fan_motor",
           "role": "context",
@@ -205,12 +205,12 @@
           "limits": null,
           "provenance": {
             "source": "simulated",
-            "detail": "fixtures/telemetry/CRAH-07.csv (generated by scripts/generate_fixtures.py)"
+            "detail": "fixtures/telemetry/MF-07.csv (generated by scripts/generate_fixtures.py)"
           }
         },
         {
           "id": "chw_supply_pressure",
-          "name": "Chilled-water supply pressure",
+          "name": "Rear-door coolant pressure",
           "unit": "bar",
           "component_id": "chw_valve",
           "role": "health",
@@ -226,12 +226,12 @@
           },
           "provenance": {
             "source": "simulated",
-            "detail": "fixtures/telemetry/CRAH-07.csv (generated by scripts/generate_fixtures.py)"
+            "detail": "fixtures/telemetry/MF-07.csv (generated by scripts/generate_fixtures.py)"
           }
         },
         {
           "id": "filter_dp",
-          "name": "Air filter pressure drop",
+          "name": "Intake filter pressure drop",
           "unit": "Pa",
           "component_id": "air_filter",
           "role": "health",
@@ -247,12 +247,12 @@
           },
           "provenance": {
             "source": "simulated",
-            "detail": "fixtures/telemetry/CRAH-07.csv (generated by scripts/generate_fixtures.py)"
+            "detail": "fixtures/telemetry/MF-07.csv (generated by scripts/generate_fixtures.py)"
           }
         },
         {
           "id": "fan_power",
-          "name": "Fan power",
+          "name": "Fan tray power",
           "unit": "kW",
           "component_id": "fan_motor",
           "role": "health",
@@ -268,12 +268,12 @@
           },
           "provenance": {
             "source": "simulated",
-            "detail": "fixtures/telemetry/CRAH-07.csv (generated by scripts/generate_fixtures.py)"
+            "detail": "fixtures/telemetry/MF-07.csv (generated by scripts/generate_fixtures.py)"
           }
         },
         {
           "id": "humidifier_water_pressure",
-          "name": "Humidifier water pressure",
+          "name": "Coolant reservoir water pressure",
           "unit": "bar",
           "component_id": "humidifier",
           "role": "health",
@@ -289,12 +289,12 @@
           },
           "provenance": {
             "source": "simulated",
-            "detail": "fixtures/telemetry/CRAH-07.csv (generated by scripts/generate_fixtures.py)"
+            "detail": "fixtures/telemetry/MF-07.csv (generated by scripts/generate_fixtures.py)"
           }
         },
         {
           "id": "humidifier_level",
-          "name": "Humidifier reservoir level",
+          "name": "Coolant reservoir reservoir level",
           "unit": "%",
           "component_id": "humidifier",
           "role": "health",
@@ -310,7 +310,7 @@
           },
           "provenance": {
             "source": "simulated",
-            "detail": "fixtures/telemetry/CRAH-07.csv (generated by scripts/generate_fixtures.py)"
+            "detail": "fixtures/telemetry/MF-07.csv (generated by scripts/generate_fixtures.py)"
           }
         }
       ]

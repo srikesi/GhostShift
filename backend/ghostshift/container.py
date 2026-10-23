@@ -22,6 +22,8 @@ from pathlib import Path
 
 from .agents import DiagnosticsAgent, MaintenanceSupplyAgent, PrognosticsAgent, SafetySupervisor
 from .approvals import ApprovalService
+from .calendar_service import CalendarService
+from .inventory_service import InventoryService
 from .config import ExecutionMode, LlmProviderChoice, Settings, SmsProviderChoice, VoiceProviderChoice, get_settings
 from .integrations.ai4i import AI4IDatasetAdapter
 from .integrations.multimodal_stream import MultimodalStreamAdapter
@@ -33,7 +35,7 @@ from .integrations.telemetry_fixture import CompositeTelemetryProvider, FixtureT
 from .integrations.voice import ElevenLabsVoice, TextOnlyVoice
 from .orchestrator import TEMPLATE_PROVIDER, Orchestrator
 from .reference import load_reference_data
-from .schemas.workflow import AutonomyLevel, AutonomySettings
+from .schemas.workflow import ActionStatus, AutonomyLevel, AutonomySettings
 from .state import Store
 
 log = logging.getLogger("ghostshift")
@@ -53,6 +55,8 @@ class Container:
     store: Store
     orchestrator: Orchestrator
     approvals: ApprovalService
+    inventory: InventoryService
+    calendar: CalendarService
 
     def provider_health(self, probe: bool = False) -> list[ProviderHealth]:
         out = list(self.telemetry.health())
@@ -70,6 +74,8 @@ class Container:
 
     def reset(self) -> None:
         self.store.reset()
+        self.inventory.reset()
+        self.calendar.reset()
         self.orchestrator._screen_cached.cache_clear()
 
 
@@ -135,6 +141,24 @@ def build_container(settings: Settings | None = None, *, ai4i_path: Path | None 
     store.autonomy = AutonomySettings(level=AutonomyLevel(s.autonomy_level), auto_order_limit_usd=s.auto_order_limit_usd)
     approvals = ApprovalService(store, procurement, work_orders, machine_clock=orch.machine_time)
     orch.approvals = approvals
+    inventory = InventoryService(s.data_dir, store, incident_clock=orch.machine_time, site_clock=orch.site_time)
+    calendar = CalendarService(s.data_dir, store, ref, incident_clock=orch.machine_time, part_ready=inventory.part_ready_at)
+    orch.inventory, orch.calendar = inventory, calendar
+    inventory.listeners.append(lambda incident_id: calendar.sync_incident(incident_id))
+    if hasattr(parts, "bind_inventory"):
+        parts.bind_inventory(inventory)
+    if hasattr(procurement, "bind"):
+        procurement.bind(inventory)
+
+    def on_decided(act):
+        if act.kind.value == "dispatch_work_order" and act.status == ActionStatus.approved:
+            calendar.confirm_for_incident(act.incident_id)
+
+    def on_executed(act):
+        if act.kind.value == "dispatch_work_order":
+            inventory.issue_for_incident(act.incident_id)
+
+    approvals.on_decided, approvals.on_executed = on_decided, on_executed
     return Container(settings=s, reference=ref, telemetry=telemetry, llm=llm, parts=parts, procurement=procurement,
                      work_orders=work_orders, sms=sms, voice=voice, store=store, orchestrator=orch,
-                     approvals=approvals)
+                     approvals=approvals, inventory=inventory, calendar=calendar)

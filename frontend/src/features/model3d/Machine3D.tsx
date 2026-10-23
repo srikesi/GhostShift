@@ -88,8 +88,22 @@ export default function Machine3D({
 
     const addSolid = (p: Prim, color: string, edgeColor: string) => {
       const geo = geometry(p);
-      const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color, roughness: 0.75, metalness: 0.05 }));
-      const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo, 25), new THREE.LineBasicMaterial({ color: edgeColor }));
+      const see = p.opacity !== undefined && p.opacity < 1;
+      const mesh = new THREE.Mesh(
+        geo,
+        new THREE.MeshStandardMaterial({
+          color: p.color ?? color,
+          roughness: 0.75,
+          metalness: 0.05,
+          transparent: see,
+          opacity: p.opacity ?? 1,
+          depthWrite: !see,
+        }),
+      );
+      const edges = new THREE.LineSegments(
+        new THREE.EdgesGeometry(geo, 25),
+        new THREE.LineBasicMaterial({ color: edgeColor, transparent: see, opacity: see ? 0.35 : 1 }),
+      );
       place(mesh, p);
       place(edges, p);
       scene.add(mesh, edges);

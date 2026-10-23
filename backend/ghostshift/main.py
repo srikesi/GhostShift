@@ -14,7 +14,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from . import APP_NAME, __version__
-from .api import autonomy_routes, copilot_routes
+from .api import autonomy_routes, copilot_routes, ops_routes
 from .api.routes import router
 from .api.static import mount_frontend
 from .approvals import GateError
@@ -36,6 +36,9 @@ def create_app(container: Container | None = None) -> FastAPI:
     app.include_router(router)
     app.include_router(copilot_routes.router)
     app.include_router(autonomy_routes.router)
+    app.include_router(ops_routes.calendar_router)
+    app.include_router(ops_routes.inventory_router)
+    app.include_router(ops_routes.inspect_router)
 
     @app.exception_handler(GateError)
     async def _gate(_: Request, exc: GateError):

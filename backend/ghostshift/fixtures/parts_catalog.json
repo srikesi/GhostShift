@@ -3,16 +3,16 @@
   "parts": [
     {
       "sku": "GS-BRG-FAN-KIT",
-      "description": "Fan motor bearing kit (2 × 6309-2RS bearings, grease, seals)",
+      "description": "Fan tray bearing kit (2 × 6309-2RS bearings, grease, seals)",
       "manufacturer_part_number": "BK-6309-2RS-PAIR",
       "component_types": [
         "fan_motor_bearing"
       ],
       "machine_models": [
-        "CRAH-CW150"
+        "MF-Z16"
       ],
       "fault_modes": {
-        "FM-CRAH-FAN-BRG": 1.0
+        "FM-RACK-FAN-BRG": 1.0
       },
       "unit_cost_usd": 240.0,
       "quantity_per_job": 1,
@@ -24,7 +24,7 @@
     },
     {
       "sku": "GS-ECF-450-MOD",
-      "description": "EC fan module, 450 mm, complete",
+      "description": "Rear fan tray, 6-fan module, complete",
       "manufacturer_part_number": "ECF450-3K",
       "component_types": [
         "fan_motor_bearing",
@@ -32,10 +32,10 @@
         "ec_fan_motor"
       ],
       "machine_models": [
-        "CRAH-CW150"
+        "MF-Z16"
       ],
       "fault_modes": {
-        "FM-CRAH-FAN-BRG": 0.9
+        "FM-RACK-FAN-BRG": 0.9
       },
       "unit_cost_usd": 3900.0,
       "quantity_per_job": 1,
@@ -47,16 +47,16 @@
     },
     {
       "sku": "GS-VLV-CHW-DN50",
-      "description": "Chilled-water control valve and actuator, DN50",
+      "description": "Rear-door coolant valve and actuator, DN50",
       "manufacturer_part_number": "CV-DN50-ACT",
       "component_types": [
         "chw_valve"
       ],
       "machine_models": [
-        "CRAH-CW150"
+        "MF-Z16"
       ],
       "fault_modes": {
-        "FM-CRAH-CHW-LOW": 0.8
+        "FM-RACK-CHW-LOW": 0.8
       },
       "unit_cost_usd": 1215.0,
       "quantity_per_job": 1,
@@ -68,16 +68,16 @@
     },
     {
       "sku": "GS-FLT-M8-SET",
-      "description": "Air filter set, MERV 8 (12 panels)",
+      "description": "Front dust filter set, MERV 8 (4 panels)",
       "manufacturer_part_number": "FLT-M8-610x610",
       "component_types": [
         "air_filter"
       ],
       "machine_models": [
-        "CRAH-CW150"
+        "MF-Z16"
       ],
       "fault_modes": {
-        "FM-CRAH-FILTER": 1.0
+        "FM-RACK-FILTER": 1.0
       },
       "unit_cost_usd": 310.0,
       "quantity_per_job": 1,
@@ -117,7 +117,7 @@
       ],
       "machine_models": [
         "ACS-400",
-        "CRAH-CW150"
+        "MF-Z16"
       ],
       "fault_modes": {
         "FM-CH-OILCOOLER-FOUL": 0.8

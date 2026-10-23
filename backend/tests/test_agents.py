@@ -45,7 +45,7 @@ def test_normal_window_has_no_anomalies(container, machine_id):
 def test_fan_bearing_scenario(container):
     _, _, d, p, s = analyse(container, CRAH, 216)
     assert d.severity == Severity.warning
-    assert d.hypotheses[0].fault_mode_id == "FM-CRAH-FAN-BRG"
+    assert d.hypotheses[0].fault_mode_id == "FM-RACK-FAN-BRG"
     assert d.hypotheses[0].component_id == "fan_bearing"
     vib = next(a for a in d.sensors if a.sensor_id == "fan_vibration")
     assert vib.anomalous and vib.z_score > 3 and vib.limit_state.value == "alert"
@@ -131,7 +131,7 @@ def test_maintenance_flags_window_after_rul(container):
 
 
 def test_narrative_parser_validates_and_rejects_unsafe_claims():
-    ok = narr.parse('Here you go: {"headline": "Bearing wear on CRAH-07", "summary": "Vibration up and crossing alert.",'
+    ok = narr.parse('Here you go: {"headline": "Bearing wear on MF-07", "summary": "Vibration up and crossing alert.",'
                     ' "technician_brief": "Inspect the fan bearing.", "sms_key_finding": "vibration up"}')
     assert ok.headline.startswith("Bearing")
     with pytest.raises(narr.InvalidNarrative):
@@ -139,9 +139,9 @@ def test_narrative_parser_validates_and_rejects_unsafe_claims():
     with pytest.raises(narr.InvalidNarrative):
         narr.parse('{"headline": "x"}')
     with pytest.raises(narr.InvalidNarrative):
-        narr.parse('{"headline": "Bearing wear on CRAH-07", "summary": "The machine has been isolated and is fine.",'
+        narr.parse('{"headline": "Bearing wear on MF-07", "summary": "The machine has been isolated and is fine.",'
                    ' "technician_brief": "It is safe to service now.", "sms_key_finding": "all good"}')
     with pytest.raises(narr.InvalidNarrative):  # extra fields such as a tier override are rejected
-        narr.parse('{"headline": "Bearing wear on CRAH-07", "summary": "Vibration up and crossing alert.",'
+        narr.parse('{"headline": "Bearing wear on MF-07", "summary": "Vibration up and crossing alert.",'
                    ' "technician_brief": "Inspect the fan bearing.", "sms_key_finding": "vibration up",'
                    ' "risk_tier": "routine"}')

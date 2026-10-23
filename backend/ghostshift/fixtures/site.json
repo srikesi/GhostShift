@@ -2,8 +2,8 @@
   "_comment": "Site reference data for the demo: replay scenarios, planned downtime windows and on-call technicians. Phone numbers are fictional 555-01xx numbers.",
   "scenarios": [
     {
-      "machine_id": "CRAH-07",
-      "telemetry_file": "telemetry/CRAH-07.csv",
+      "machine_id": "MF-07",
+      "telemetry_file": "telemetry/MF-07.csv",
       "baseline_start_index": 0,
       "baseline_end_index": 95,
       "initial_cursor": 120,
@@ -44,20 +44,20 @@
   ],
   "downtime_windows": [
     {
-      "machine_id": "CRAH-07",
-      "label": "Planned maintenance window (CRAH-08 covering)",
+      "machine_id": "MF-07",
+      "label": "Planned window (failover rack MF-08 covering)",
       "start": "2026-10-21T22:00:00Z",
       "end": "2026-10-22T06:00:00Z"
     },
     {
-      "machine_id": "CRAH-07",
+      "machine_id": "MF-07",
       "label": "Weekend maintenance window",
       "start": "2026-10-24T14:00:00Z",
       "end": "2026-10-24T23:00:00Z"
     },
     {
-      "machine_id": "CRAH-07",
-      "label": "Planned maintenance window (CRAH-08 covering)",
+      "machine_id": "MF-07",
+      "label": "Planned window (failover rack MF-08 covering)",
       "start": "2026-10-27T22:00:00Z",
       "end": "2026-10-28T06:00:00Z"
     },
@@ -76,7 +76,7 @@
   ],
   "technicians": [
     {
-      "machine_id": "CRAH-07",
+      "machine_id": "MF-07",
       "label": "R. Alvarez · Critical facilities technician, Data hall 2",
       "phone": "+15125550142"
     },

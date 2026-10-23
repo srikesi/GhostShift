@@ -11,13 +11,17 @@ import type {
   TelemetryResponse,
 } from "../api/types";
 import { Icon, Panel, PriorityPill, SeverityPill, Wordmark } from "../components/ui";
-import { AssemblyDiagram } from "../features/assembly/AssemblyDiagram";
 import { ComponentHealthTable } from "../features/components/ComponentHealthTable";
 import { CopilotPanel } from "../features/copilot/CopilotPanel";
 import { ActivityPanel } from "../features/incident/Activity";
 import { ApprovalsPanel } from "../features/incident/Approvals";
 import { DetailsPanel } from "../features/incident/Details";
 import { FixPanel } from "../features/incident/Fix";
+import { InventoryPanel } from "../features/inventory/InventoryPanel";
+import { MachineThumb } from "../features/machine/MachinePhoto";
+import { PartsViews } from "../features/machine/PartsViews";
+import { SchedulePanel } from "../features/schedule/SchedulePanel";
+import { WeekCalendar } from "../features/schedule/WeekCalendar";
 import { IncidentCard } from "../features/incident/IncidentCard";
 import { TechnicianPanel } from "../features/incident/Technician";
 import { WhyPanel } from "../features/incident/Why";
@@ -133,6 +137,10 @@ export function Dashboard() {
   const machine = detail?.machine;
   const healthMap = Object.fromEntries((detail?.component_health ?? []).map((h) => [h.component_id, h]));
   const affected = incident?.incident.affected_component_id ?? null;
+  const pts = telemetry?.window.points;
+  const nowIso = pts && pts.length ? pts[pts.length - 1].timestamp : null;
+  // Changes whenever the replay moves or the incident's steps change, so calendar and inventory refetch.
+  const opsKey = `${telemetry?.cursor}|${incident?.incident.updated_at}|${incident?.activity.length}|${incident?.actions.map((a) => a.status).join()}`;
   const select = (id: string) => setSelectedComponent((cur) => (cur === id ? null : id));
 
   return (
@@ -173,13 +181,14 @@ export function Dashboard() {
                   />
                   <Panel title="Parts" id="parts" bodyClass="panel-body parts-body">
                     <div className="assembly-wrap">
-                      <AssemblyDiagram
+                      <PartsViews
                         drawing={machine.drawing}
                         components={machine.components}
                         health={healthMap}
                         affectedId={affected}
                         selectedId={selectedComponent}
                         onSelect={select}
+                        actionVerb={incident?.incident.maintenance?.work_order.title.split(" ")[0]}
                       />
                     </div>
                     <div className="table-scroll">
@@ -192,6 +201,8 @@ export function Dashboard() {
                       />
                     </div>
                   </Panel>
+                  <WeekCalendar machineId={machine.id} now={nowIso} refreshKey={opsKey} />
+                  <InventoryPanel refreshKey={opsKey} highlightSku={incident?.incident.maintenance?.proposed_part?.sku} />
                 </div>
                 <div className="col-right">
                   {incident ? (
@@ -200,6 +211,7 @@ export function Dashboard() {
                       <ActivityPanel view={incident} />
                       <WhyPanel incident={incident.incident} machine={machine} />
                       <FixPanel view={incident} />
+                      <SchedulePanel view={incident} refreshKey={opsKey} onChanged={() => machineId && refresh(machineId)} />
                       <ApprovalsPanel view={incident} onDecide={onDecide} onExecute={onExecute} />
                       <TechnicianPanel incidentId={incident.incident.id} notifications={incident.notifications} />
                       <DetailsPanel view={incident} />
@@ -341,7 +353,8 @@ function MachineHeader({ detail }: { detail: MachineDetail }) {
   const m = detail.machine;
   return (
     <section className="machine-header">
-      <div>
+      <MachineThumb drawing={m.drawing} />
+      <div className="mh-title">
         <h1>
           <span className="mono">{m.id}</span> {m.display_name.replace(`${m.id} `, "")}
         </h1>

@@ -1,0 +1,169 @@
+.cal-scroll {
+  overflow-x: auto;
+}
+.cal {
+  min-width: 760px;
+  display: flex;
+  flex-direction: column;
+}
+.cal-row {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  border-top: 1px solid var(--line);
+}
+.cal-row.cal-head {
+  border-top: 0;
+}
+.cal-label {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 4px 8px 4px 0;
+  min-width: 0;
+}
+.cal-label span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cal-track {
+  position: relative;
+  min-height: 34px;
+  background-image: linear-gradient(to right, var(--line) 1px, transparent 1px);
+  background-size: calc(100% / var(--days)) 100%;
+}
+.cal-head .cal-track {
+  display: grid;
+  grid-template-columns: repeat(var(--days), 1fr);
+  min-height: 0;
+  background: none;
+}
+.cal-day {
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+  padding: 0 4px 4px;
+}
+.cal-shift {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  background: var(--surface-sunk);
+  border-radius: 2px;
+}
+.cal-event {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  border-radius: 3px;
+  overflow: hidden;
+  font-size: var(--fs-xs);
+  line-height: 1.1;
+  border: 1px solid var(--graphite-3);
+  background: var(--surface);
+  color: var(--ink);
+}
+.cal-event-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cal-event.maintenance_window {
+  background: var(--surface-2);
+  border: 1px dashed var(--line-strong);
+  color: var(--ink-2);
+}
+.cal-event.existing_job {
+  background: var(--surface);
+  border-color: var(--ink-4);
+  color: var(--ink-2);
+}
+.cal-event.ghostshift_hold {
+  background: var(--amber-bg);
+  border: 1.5px dashed var(--amber-strong);
+  color: var(--ink);
+  font-weight: 600;
+}
+.cal-event.ghostshift_booking {
+  background: var(--graphite);
+  border-color: var(--graphite);
+  color: var(--on-graphite);
+  font-weight: 600;
+}
+.cal-now {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--ink);
+  opacity: 0.7;
+  pointer-events: none;
+}
+.cal-nav {
+  display: inline-flex;
+  gap: var(--s-1);
+}
+.cal-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1) var(--s-4);
+  margin-top: var(--s-3);
+}
+.cal-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sw {
+  display: inline-block;
+  width: 14px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid var(--graphite-3);
+}
+.sw.window {
+  background: var(--surface-2);
+  border: 1px dashed var(--line-strong);
+}
+.sw.job {
+  background: var(--surface);
+  border-color: var(--ink-4);
+}
+.sw.hold {
+  background: var(--amber-bg);
+  border: 1.5px dashed var(--amber-strong);
+}
+.sw.booked {
+  background: var(--graphite);
+}
+.sw.shift {
+  background: var(--surface-sunk);
+  border-color: var(--surface-sunk);
+}
+
+.slot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+}
+.bullets {
+  margin: var(--s-1) 0 0;
+  padding-left: 18px;
+}
+.alt-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  margin-top: var(--s-2);
+}
+.alt-list > li {
+  padding: var(--s-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+}
+.alt-list > li.ok {
+  border-color: var(--ok);
+}

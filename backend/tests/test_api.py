@@ -53,7 +53,7 @@ def test_machines_start_normal(client):
 
 def test_machine_detail_and_unknown_machine(client):
     d = client.get(f"/api/machines/{CRAH}").json()
-    assert d["machine"]["drawing"] == "crah"
+    assert d["machine"]["drawing"] == "rack"
     assert len(d["component_health"]) == len(d["machine"]["components"])
     r = client.get("/api/machines/NOPE")
     assert r.status_code == 404 and r.json()["error"]["code"] == "not_found"
@@ -105,7 +105,7 @@ def test_inspection_link_is_scoped_and_expires(client, container):
     assert len(token) >= 20 and CRAH not in note["inspection_url"].split("/m/")[1]
     view = client.get(f"/api/inspect/{token}").json()
     assert view["incident"]["affected_component_id"] == "fan_bearing"
-    assert view["drawing"] == "crah"
+    assert view["drawing"] == "rack"
     comps = {c["component"]["id"]: c for c in view["components"]}
     assert comps["fan_bearing"]["health"]["status"] == "warning"
     assert comps["chw_valve"]["health"]["status"] == "normal"

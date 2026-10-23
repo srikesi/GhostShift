@@ -41,14 +41,15 @@ pip also works: `cd backend && python3.12 -m venv .venv && .venv/bin/pip install
 
 ## Demo script (about 3 minutes)
 
-1. **Normal.** CRAH-07 opens with every sensor inside its shaded normal range. The small marker above the timeline shows where the simulated fault starts; GhostShift never sees that marker.
-2. **Play.** Readings advance 30 min per tick. Around sample 170, the supply fan's vibration on CRAH-07 leaves its normal range. GhostShift opens a problem at **Medium** priority and pauses. *Why it was flagged* shows the readings against normal and the matching fault pattern. No alarm limit has been crossed yet.
+1. **Normal.** MF-07 opens with every sensor inside its shaded normal range. The small marker above the timeline shows where the simulated fault starts; GhostShift never sees that marker.
+2. **Play.** Readings advance 30 min per tick. Around sample 170, the rear cooling fan tray's vibration on MF-07 leaves its normal range. GhostShift opens a problem at **Medium** priority and pauses. *Why it was flagged* shows the readings against normal and the matching fault pattern. No alarm limit has been crossed yet.
 3. **Play again.** At sample 174 the earliest time-to-limit estimate drops under 72 h. Priority goes to **High** and the technician gets a text, still before any alarm limit is crossed. The problem card shows the time to the danger limit as a range, the next downtime, and the part.
-4. **Recommended fix.** The bearing kit `GS-BRG-FAN-KIT` ($240) is in the critical spares cage, the planned maintenance window (with CRAH-08 covering the load) comes before the earliest limit estimate, and the steps start with confirming the redundant unit is carrying the load.
-5. **Approvals.** Approve the part order, then *Send order*. You get `SIM-PR-00001`, a simulated record. Next, try approving the work order without ticking the lockout/tagout box: the backend refuses. Tick it and the approval goes through.
-6. **Technician view.** Click *Technician view* (or open the texted link on a phone). The affected part is highlighted on the drawing, with the readings, time to limit, job steps and the other parts.
-7. **Escalation (optional).** Play to the end. At sample 226 priority becomes **Urgent**, a second text says "ESCALATED", and the work order now also needs the operations manager.
-8. **Second machine.** CH-02 → *Skip to fault*: oil-cooler fouling. The in-stock cleaning kit beats a replacement core with a 3-day lead time, and GhostShift warns that the next planned downtime may be too late.
+4. **Recommended fix.** The bearing kit `GS-BRG-FAN-KIT` ($240) is in the critical spares cage, the planned maintenance window (with MF-08 covering the load) comes before the earliest limit estimate, and the steps start with confirming the redundant unit is carrying the load.
+5. **Schedule.** The *Schedule* panel already holds a slot (tentative) with a free, qualified technician, and the *Calendar* shows why: inside a planned window, after the part arrives, before the earliest limit, with MF-08 still running. *Other windows GhostShift checked* lists the rejected options and why.
+6. **Approvals.** Approve the part order, then *Send order*. You get a simulated purchase order such as `SIM-PO-00001`: the bearing kit is reserved from the spares cage (the *Inventory* panel shows it held). Approving the work order, with the lockout/tagout box ticked, confirms the held slot. Next, try approving the work order without ticking the lockout/tagout box: the backend refuses. Tick it and the approval goes through.
+7. **Technician view.** Click *Technician view* (or open the texted link on a phone). It opens with a photo of the equipment, the booked time and technician, and the part status. The affected part is highlighted on the 3D model or drawing, with the readings, time to limit, job steps and the other parts. On the dashboard, *Parts* switches between *Drawing*, *3D* and *Photo*.
+8. **Escalation (optional).** Play to the end. At sample 226 priority becomes **Urgent**, a second text says "ESCALATED", and the work order now also needs the operations manager.
+9. **Second machine.** CH-02 → *Skip to fault*: oil-cooler fouling. The in-stock cleaning kit beats a replacement core with a 3-day lead time, and GhostShift warns that the next planned downtime may be too late.
 
 ## Autonomy demo (about 1 minute)
 
@@ -66,6 +67,16 @@ Autopilot rules (deterministic code in `orchestrator.py`): High or Urgent priori
 
 UI wording: sensor condition is *Normal / Watch / Warning / Critical*. Problem priority is *Low / Medium / High / Urgent* (the safety tiers routine / elevated / high / critical). Outputs that only exist in the simulation (texts, orders, stock) carry a small *Simulated* tag, and the top bar says "Demo · simulated data".
 
+## Calendar and inventory demo (about 2 minutes, all simulated)
+
+1. Click **Reset**, press **Skip to fault** on MF-07. The *Calendar* shows the roster (on-shift bands), planned windows, existing jobs and a dashed **held slot**. MF-08 has its own lane because of the N+1 rule: MF-07 can only go offline while MF-08 runs (CH-02 needs CH-03 online).
+2. In *Schedule*, open *Other windows GhostShift checked*: the Saturday window is too late for the earliest limit, and the Tuesday night window clashes with maintenance on MF-08. *Move here* reschedules to any window that passes every rule; *Release slot* cancels.
+3. Approve the parts order and send it: *Inventory* shows `SIM-PO-…` as *Reserved*, the stock drops to *Held 1*, and a reorder is suggested once stock is below its minimum.
+4. *Orders* also lists a restock order placed earlier (`PO-SEED-01`, six filter sets). Press *Skip ahead 1 day* to watch it go ordered → confirmed → shipped → received and the stock rise; the telemetry replay ends before most parts would arrive, so this button moves the supply clock. A part that is out of stock follows the same path from the cheapest supplier that arrives before the earliest limit (see the tests).
+5. Approve the work order (lockout/tagout ticked): the slot becomes **Confirmed**, and when the work order is released the part is issued from stock.
+
+Autopilot places the parts order and PO but never confirms the slot: that waits for a person's work-order approval.
+
 ## Get the technician text on your phone
 
 When a problem reaches High priority, GhostShift texts the technician a link to a phone page. The page shows the machine drawing with the part to replace highlighted. Tap any part to see its condition, readings, time to limit and service date.
@@ -74,7 +85,7 @@ When a problem reaches High priority, GhostShift texts the technician a link to 
 make text-me
 ```
 
-Run this with the API up. It triggers the CRAH-07 fault and prints the text and its link. In demo mode the text is recorded, not sent. To get a real text, set these in `.env` and restart the API:
+Run this with the API up. It triggers the MF-07 fault and prints the text and its link. In demo mode the text is recorded, not sent. To get a real text, set these in `.env` and restart the API:
 
 - `GHOSTSHIFT_MODE=auto` and `GHOSTSHIFT_SMS_PROVIDER=twilio`
 - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`
@@ -107,6 +118,8 @@ A modular monolith with an explicit orchestrator. Agents are plain typed classes
 | `ghostshift/agents/narrative.py` | Deterministic incident text. Optionally reworded by Bedrock, with validated output; unsafe claims are rejected |
 | `ghostshift/orchestrator.py` | Stage order, per-stage timeouts, exception → status mapping, incident/record persistence, notifications, replay monitor |
 | `ghostshift/approvals.py` | Approval gate: role checks, isolation attestation, execute-only-when-approved |
+| `ghostshift/calendar_service.py` | Mock roster, shifts, bookings and the scheduler: window, part arrival, earliest limit, skills, free technician, N+1. Tentative hold, confirm after approval, reschedule, cancel, `.ics` |
+| `ghostshift/inventory_service.py` | Mock stock per storeroom, suppliers, purchase orders on the replay clock, reservation, issue, reorder suggestions |
 | `ghostshift/integrations/` | Provider Protocols (`base.py`), stubs and real adapters |
 | `ghostshift/container.py` | The only place that picks real or stub implementations from configuration |
 | `ghostshift/state.py` | In-memory store, plus hashed, expiring inspection-link tokens |
@@ -141,6 +154,14 @@ Diagnosis, risk, safety and approvals are deterministic in every mode. The LLM o
 | GET | `/api/work-orders`, `/api/requisitions`, `/api/notifications` | Records |
 | GET | `/api/inspect/{token}` | Token-scoped mobile payload. Unknown and expired tokens both return 404 |
 | GET / PUT | `/api/autonomy` | Read or change Autopilot (`{"level": "advise" \| "autopilot", "auto_order_limit_usd"}`). Turning it on applies to open problems immediately |
+| GET | `/api/calendar/events?start=&end=` | Roster, shifts, planned windows, existing jobs, holds and bookings for a week |
+| POST | `/api/calendar/propose` · `/api/calendar/holds` | `{work_order_id}`. Best slot with rationale and rejected alternatives; create or refresh the tentative hold |
+| GET | `/api/calendar/bookings?incident_id=` | Bookings for an incident |
+| POST | `/api/calendar/bookings/{id}/confirm` · `reschedule` · `cancel` | Confirm (409 until the work order is approved), move (409 with reasons if a rule breaks), release |
+| GET | `/api/calendar/bookings/{id}/ics` | Calendar file |
+| GET | `/api/inventory` · `/stock` · `/orders` · `/orders/{id}` · `/reorder-suggestions` | Stock, purchase orders with timelines, reorder suggestions |
+| POST | `/api/inventory/advance` | `{hours}`. Fast-forward the supply clock so orders can arrive |
+| GET | `/api/inspect/{token}/plan` | Booked time, technician and part status for the phone page |
 | POST | `/api/demo/reset` | Clear state (keeps the Autopilot setting) |
 
 Errors always use the form `{"error": {"code", "message", "details"}}`.
@@ -152,7 +173,7 @@ Errors always use the form `{"error": {"code", "message", "details"}}`.
 | LLM | `LlmProvider` | template | `bedrock.py` (Converse, boto3) | `choose_llm` |
 | Telemetry | `TelemetryProvider` | `telemetry_fixture.py` | `ai4i.py` (dataset), add e.g. Timestream, IoT SiteWise or S3 | `build_container` |
 | Parts catalog | `PartsCatalogProvider` | `supply.FixturePartsCatalog` | add ERP or catalog API | `build_container` |
-| Procurement | `ProcurementProvider` | `supply.SimulatedProcurement` | add ERP | `build_container` |
+| Procurement | `ProcurementProvider` | `supply.SimulatedProcurement` (creates mock purchase orders in `inventory_service`) | add ERP | `build_container` |
 | Work orders | `WorkOrderProvider` | `supply.SimulatedWorkOrders` | add CMMS | `build_container` |
 | SMS | `SmsProvider` | `sms.SimulatedSms` | `sms.TwilioSms` | `choose_sms` |
 | Voice | `VoiceProvider` | `voice.TextOnlyVoice` | `voice.ElevenLabsVoice` | `choose_voice` |
@@ -191,23 +212,26 @@ All variables are listed with safe placeholders in [.env.example](.env.example).
 make check
 ```
 
-This runs the backend pytest suite (68 tests), the frontend type check, and the production build.
+This runs the backend pytest suite (about 120 tests), the frontend type check, and the production build.
 
 ```bash
 make demo-smoke
 ```
 
-Run this with the API up. It replays CRAH-07 end to end and asserts each step of the story.
+Run this with the API up. It replays MF-07 end to end and asserts each step of the story.
 
-Tests cover each agent without an LLM; the orchestrator with fake LLMs (success, retryable, non-retryable, invalid, unsafe, timeout, auto vs aws); the approval gate (no execute before approval, wrong role, attestation, rejection, partial approval, double decision); API contracts; inspection-token scoping and expiry; and every adapter with the network mocked (Twilio, ElevenLabs, Bedrock, AI4I).
+Tests cover scheduling (window, part arrival, earliest limit, skills, busy technicians, N+1 on racks and chillers, the no-fit warning, holds, approval gating, reschedule and cancel) and inventory (reservation, supplier choice, purchase-order progression, issue, reorder, reset); each agent without an LLM; the orchestrator with fake LLMs (success, retryable, non-retryable, invalid, unsafe, timeout, auto vs aws); the approval gate (no execute before approval, wrong role, attestation, rejection, partial approval, double decision); API contracts; inspection-token scoping and expiry; and every adapter with the network mocked (Twilio, ElevenLabs, Bedrock, AI4I).
 
 ## What is real and what is simulated
 
 | Item | Status |
 |---|---|
-| Telemetry for CRAH-07 / CH-02 | **Simulated** (deterministic, `scripts/generate_fixtures.py`) |
+| Telemetry for MF-07 / CH-02 | **Simulated** (deterministic, `scripts/generate_fixtures.py`) |
 | Machines, limits, maintenance history, parts, prices, calendar | **Fixture** reference data |
-| Stock and lead times | **Simulated**, not live inventory |
+| Stock, suppliers, purchase orders and lead times | **Simulated**, not live inventory. Orders progress on the replay clock |
+| Technician roster, shifts, calendar bookings | **Simulated**. No real calendar is connected |
+| Machine photos (`frontend/public/images`) | **Real photos of similar equipment** (IBM Z-class mainframe, server rack, air-cooled chiller), not the demo units. Credits in `CREDITS.md` |
+| 3D and 2D rack models | Built for the demo from primitives (three.js, SVG); not CAD |
 | Diagnostics, risk, RUL, safety tier | **Deterministic analysis** on the data above (derived from simulated data) |
 | Energy and lube readings (fan and compressor power, humidifier water pressure and level, oil-separator pressure drop, oil level) | **Simulated** |
 | Autopilot ordering | Real policy decision; the order itself is **simulated** |

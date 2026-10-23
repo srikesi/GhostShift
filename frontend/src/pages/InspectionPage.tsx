@@ -7,7 +7,9 @@ import { AssemblyDiagram } from "../features/assembly/AssemblyDiagram";
 import { Briefing } from "../features/incident/Technician";
 import { PartCard } from "../features/inspection/PartCard";
 import { RepairGuide } from "../features/inspection/RepairGuide";
+import { MachineThumb } from "../features/machine/MachinePhoto";
 import { MODELS } from "../features/model3d/models";
+import { PlanCard } from "../features/schedule/PlanCard";
 import { fmtDateTime } from "../lib/format";
 import "./inspection.css";
 
@@ -79,6 +81,10 @@ export function InspectionPage() {
           <h1>{inc.maintenance ? inc.maintenance.work_order.title.split(" — ")[0] : `Inspect ${affected?.component.name.toLowerCase() ?? "equipment"}`}</h1>
           {inc.diagnostics.hypotheses[0] && <p className="small">Likely {inc.diagnostics.hypotheses[0].name.toLowerCase()}</p>}
         </section>
+
+        <MachineThumb drawing={view.drawing} wide />
+
+        <PlanCard token={token} />
 
         <SafetyNotice>Lock out and verify before any physical work. This page does not make the machine safe.</SafetyNotice>
 

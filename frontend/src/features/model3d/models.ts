@@ -4,10 +4,16 @@
 
 export type Vec3 = [number, number, number];
 
+/** `color` and `opacity` apply to structure shapes only; parts are colored by their condition. */
+interface Look {
+  color?: string;
+  opacity?: number;
+}
+
 export type Prim =
-  | { kind: "box"; size: Vec3; pos: Vec3; rot?: Vec3 }
-  | { kind: "cyl"; r: number; rTop?: number; h: number; pos: Vec3; rot?: Vec3 }
-  | { kind: "ring"; r: number; tube: number; pos: Vec3; rot?: Vec3 };
+  | ({ kind: "box"; size: Vec3; pos: Vec3; rot?: Vec3 } & Look)
+  | ({ kind: "cyl"; r: number; rTop?: number; h: number; pos: Vec3; rot?: Vec3 } & Look)
+  | ({ kind: "ring"; r: number; tube: number; pos: Vec3; rot?: Vec3 } & Look);
 
 export interface Model3D {
   structure: Prim[];
@@ -20,35 +26,48 @@ export interface Model3D {
 
 const H = Math.PI / 2;
 
-/** Downflow CRAH: filters on top, A-frame chilled-water coil, EC supply fan at the bottom. */
-const crah: Model3D = {
-  camera: [2.9, 2.3, 3.6],
-  target: [0.1, 1.05, 0],
+const DARK = "#30343b";
+const FACE = "#4a5058";
+const range = (n: number) => Array.from({ length: n }, (_, i) => i);
+
+/**
+ * Mainframe / 42U server rack with a rear-door coolant heat exchanger (like an IBM Z-class cabinet).
+ * Front is +z; the default view looks at the rear, where the fans and coolant parts are. The doors and side panels are see-through.
+ */
+const rack: Model3D = {
+  camera: [2.6, 2.3, -3.0],
+  target: [0, 1.0, -0.2],
   structure: [
-    { kind: "box", size: [3.2, 0.06, 2.2], pos: [0, -0.03, 0] }, // raised floor
-    { kind: "box", size: [1.4, 0.08, 0.9], pos: [0, 0.04, 0] }, // plinth
-    { kind: "box", size: [1.4, 2.3, 0.04], pos: [0, 1.15, -0.45] }, // back panel
-    { kind: "box", size: [0.66, 0.05, 0.8], pos: [-0.27, 1.45, 0], rot: [0, 0, 0.6] }, // coil, left slab
-    { kind: "box", size: [0.66, 0.05, 0.8], pos: [0.27, 1.45, 0], rot: [0, 0, -0.6] }, // coil, right slab
-    { kind: "cyl", r: 0.04, h: 0.6, pos: [0.98, 1.2, 0.22], rot: [0, 0, H] }, // chilled water in
-    { kind: "cyl", r: 0.04, h: 0.6, pos: [0.98, 1.05, -0.12], rot: [0, 0, H] }, // chilled water out
-    { kind: "cyl", r: 0.03, h: 0.5, pos: [0, 0.5, 0] }, // fan shaft
+    { kind: "box", size: [0.58, 0.24, 0.2], pos: [0, 1.55, -0.46], color: "#3c4148", opacity: 0.22 }, // rear fan tray housing
+    { kind: "box", size: [2.8, 0.05, 2.4], pos: [0, -0.025, 0], color: "#d3cec3" }, // raised floor
+    { kind: "box", size: [0.7, 0.06, 1.2], pos: [0, 0.03, 0.02], color: DARK }, // base plinth
+    ...[-0.29, 0.29].flatMap((x) =>
+      [-0.5, 0.5].map((z): Prim => ({ kind: "box", size: [0.04, 2.0, 0.04], pos: [x, 1.03, z], color: DARK })),
+    ), // four uprights
+    { kind: "box", size: [0.64, 0.04, 1.06], pos: [0, 2.05, 0], color: DARK }, // roof
+    { kind: "box", size: [0.02, 2.0, 1.04], pos: [-0.31, 1.03, 0], color: DARK, opacity: 0.14 }, // side panels
+    { kind: "box", size: [0.02, 2.0, 1.04], pos: [0.31, 1.03, 0], color: DARK, opacity: 0.14 },
+    { kind: "box", size: [0.62, 1.98, 0.02], pos: [0, 1.03, 0.54], color: DARK, opacity: 0.16 }, // front door
+    ...range(10).map((i): Prim => ({ kind: "box", size: [0.5, 0.075, 0.8], pos: [0, 0.62 + i * 0.1, 0.02], color: DARK })), // servers
+    ...range(10).map((i): Prim => ({ kind: "box", size: [0.5, 0.05, 0.012], pos: [0, 0.62 + i * 0.1, 0.43], color: FACE })), // server faces
+    { kind: "box", size: [0.52, 0.34, 0.8], pos: [0, 1.82, 0.02], color: "#383d45" }, // processor drawer
+    { kind: "box", size: [0.62, 1.9, 0.08], pos: [0, 1.0, -0.58], color: "#9aa0a6", opacity: 0.4 }, // rear-door heat exchanger
+    ...range(12).map((i): Prim => ({ kind: "box", size: [0.56, 0.012, 0.09], pos: [0, 0.2 + i * 0.15, -0.58], color: "#6f757c" })), // coil fins
+    { kind: "cyl", r: 0.018, h: 1.7, pos: [0.2, 1.0, -0.66], color: "#6f757c" }, // coolant supply pipe
+    { kind: "cyl", r: 0.018, h: 1.7, pos: [0.27, 1.0, -0.66], color: "#6f757c" }, // coolant return pipe
   ],
-  frames: [{ kind: "box", size: [1.4, 2.3, 0.9], pos: [0, 1.15, 0] }],
+  frames: [{ kind: "box", size: [0.7, 2.08, 1.3], pos: [0, 1.04, -0.04] }],
   parts: {
-    "crah-air-filter": [{ kind: "box", size: [1.3, 0.12, 0.8], pos: [0, 2.12, 0] }],
-    "crah-chw-valve": [
-      { kind: "cyl", r: 0.08, h: 0.2, pos: [1.0, 1.2, 0.22] },
-      { kind: "box", size: [0.14, 0.12, 0.14], pos: [1.0, 1.37, 0.22] },
+    "rack-air-filter": [{ kind: "box", size: [0.54, 0.3, 0.03], pos: [0, 0.3, 0.5] }],
+    "rack-fan-impeller": [-0.17, 0, 0.17].map((x): Prim => ({ kind: "cyl", r: 0.085, h: 0.03, pos: [x, 1.55, -0.5], rot: [H, 0, 0] })),
+    "rack-fan-motor": [-0.17, 0, 0.17].map((x): Prim => ({ kind: "cyl", r: 0.032, h: 0.08, pos: [x, 1.55, -0.45], rot: [H, 0, 0] })),
+    "rack-fan-bearing": [-0.17, 0, 0.17].map((x): Prim => ({ kind: "ring", r: 0.045, tube: 0.011, pos: [x, 1.55, -0.4] })),
+    "rack-coolant-valve": [
+      { kind: "cyl", r: 0.05, h: 0.13, pos: [0.2, 0.55, -0.66] },
+      { kind: "box", size: [0.1, 0.08, 0.1], pos: [0.2, 0.67, -0.66] },
     ],
-    "crah-fan-motor": [{ kind: "cyl", r: 0.16, h: 0.24, pos: [0, 0.64, 0] }],
-    "crah-fan-bearing": [
-      { kind: "ring", r: 0.17, tube: 0.035, pos: [0, 0.79, 0], rot: [H, 0, 0] },
-      { kind: "ring", r: 0.17, tube: 0.035, pos: [0, 0.49, 0], rot: [H, 0, 0] },
-    ],
-    "crah-fan-impeller": [{ kind: "cyl", r: 0.45, rTop: 0.3, h: 0.2, pos: [0, 0.3, 0] }],
-    "crah-humidifier": [{ kind: "box", size: [0.28, 0.36, 0.28], pos: [0.48, 0.92, -0.2] }],
-    "crah-condensate-pump": [{ kind: "box", size: [0.22, 0.16, 0.22], pos: [-0.48, 0.16, 0.2] }],
+    "rack-coolant-pump": [{ kind: "box", size: [0.2, 0.18, 0.2], pos: [-0.26, 0.2, -0.68] }],
+    "rack-coolant-reservoir": [{ kind: "cyl", r: 0.07, h: 0.3, pos: [-0.26, 1.3, -0.68] }],
   },
 };
 
@@ -73,4 +92,4 @@ const chiller: Model3D = {
   },
 };
 
-export const MODELS: Record<string, Model3D> = { crah, chiller };
+export const MODELS: Record<string, Model3D> = { rack, chiller };
