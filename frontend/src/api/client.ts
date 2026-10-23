@@ -7,6 +7,7 @@ import type {
   InspectionView,
   MachineDetail,
   MachineSummary,
+  Notification,
   ProposedAction,
   ReplayResponse,
   TelemetryResponse,
@@ -63,6 +64,7 @@ export const api = {
   inspect: (token: string) => request<InspectionView>(`/api/inspect/${encodeURIComponent(token)}`),
   inspectBriefing: (token: string) => request<BriefingResponse>(`/api/inspect/${encodeURIComponent(token)}/briefing`),
   resetDemo: () => post<void>("/api/demo/reset"),
+  checkNotification: (id: string) => post<Notification>(`/api/notifications/${id}/check`),
   autonomy: () => request<AutonomySettings>("/api/autonomy"),
   setAutonomy: (level: AutonomySettings["level"]) =>
     request<AutonomySettings>("/api/autonomy", { method: "PUT", body: JSON.stringify({ level }) }),

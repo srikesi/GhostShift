@@ -122,11 +122,22 @@ class SmsResult:
     skipped: bool = False
 
 
+@dataclass
+class DeliveryStatus:
+    """Final state reported by the provider after a send was accepted."""
+
+    state: str  # "pending" | "delivered" | "failed"
+    provider_status: str
+    error_code: int | None = None
+    error: str | None = None
+
+
 class SmsProvider(Protocol):
     info: ProviderInfo
 
     def send(self, *, to: str, body: str) -> SmsResult: ...
     def health(self) -> ProviderHealth: ...
+    # Optional: providers that can report carrier delivery implement `delivery_status(external_id)`.
 
 
 @dataclass

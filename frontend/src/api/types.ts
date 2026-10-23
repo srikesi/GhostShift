@@ -425,7 +425,7 @@ export interface Notification {
   to_masked: string;
   body: string;
   inspection_url: string;
-  status: "simulated_sent" | "sent" | "failed" | "skipped";
+  status: "simulated_sent" | "sent" | "delivered" | "failed" | "skipped";
   provider: ProviderInfo;
   attempts: number;
   error: string | null;

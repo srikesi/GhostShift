@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+import time
 
 import httpx
 
@@ -52,6 +53,12 @@ def main() -> int:
         print(f"{incident_id} opened, but its priority does not require a text.")
         return 1
     n = notes[-1]
+    if n["status"] == "sent":  # accepted by Twilio: ask whether the carrier delivered it
+        for _ in range(10):
+            time.sleep(3)
+            n = c.post(f"/api/notifications/{n['id']}/check").json()
+            if n["status"] != "sent":
+                break
     print(f"\nTo:     {n['recipient_label']} {n['to_masked']}")
     print(f"Status: {n['status']}" + (f" ({n['error']})" if n["error"] else ""))
     print(f"Text:   {n['body']}")
@@ -60,7 +67,9 @@ def main() -> int:
         print("\nThis text was recorded, not sent. See the top of this script for the settings that send it for real.")
     if "localhost" in n["inspection_url"] or "127.0.0.1" in n["inspection_url"]:
         print("Note: a phone cannot open a localhost link. Set GHOSTSHIFT_PUBLIC_BASE_URL to a reachable address.")
-    return 0 if n["status"] in ("sent", "simulated_sent") else 2
+    if n["status"] == "sent":
+        print("\nTwilio accepted the text but hasn't confirmed delivery yet; check the Technician panel in a minute.")
+    return 0 if n["status"] in ("sent", "delivered", "simulated_sent") else 2
 
 
 if __name__ == "__main__":

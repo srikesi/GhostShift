@@ -148,7 +148,8 @@ class WorkOrder(Contract):
 
 class NotificationStatus(str, Enum):
     simulated_sent = "simulated_sent"
-    sent = "sent"
+    sent = "sent"  # accepted by the provider; delivery not yet confirmed
+    delivered = "delivered"  # the carrier confirmed delivery
     failed = "failed"
     skipped = "skipped"
 

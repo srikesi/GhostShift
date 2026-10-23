@@ -8,7 +8,18 @@ from typing import Callable
 import httpx
 
 from ..schemas.common import ProviderKind
-from .base import ProviderHealth, SmsResult, info
+from .base import DeliveryStatus, ProviderHealth, SmsResult, info
+
+# Plain-language reasons for common Twilio delivery errors.
+TWILIO_ERRORS = {
+    30034: "Carrier blocked it: the sender number isn't registered for US business texting (A2P 10DLC)",
+    30032: "Carrier blocked it: the toll-free sender number isn't verified",
+    30003: "The phone is off or unreachable",
+    30005: "Unknown or inactive phone number",
+    30006: "The number can't receive texts (landline or unreachable carrier)",
+    30007: "The carrier filtered the message as spam",
+    21610: "The recipient has replied STOP to this number",
+}
 
 
 class SimulatedSms:
@@ -73,7 +84,7 @@ class TwilioSms:
         with httpx.Client(timeout=10.0, transport=self._transport, auth=(self._sid, self._token)) as client:
             for attempt in range(1, self._max_attempts + 1):
                 try:
-                    r = client.post(url, data={"To": self._override_to, "From": self._from, "Body": body})
+                    r = client.post(url, data={"To": self._recipient(), "From": self._from, "Body": body})
                 except httpx.HTTPError as exc:
                     last_error = f"Network error: {exc}"
                 else:
@@ -86,6 +97,33 @@ class TwilioSms:
                 if attempt < self._max_attempts:
                     self._sleep(min(4.0, 0.5 * 2 ** (attempt - 1)))
         return SmsResult(delivered=False, simulated=False, attempts=self._max_attempts, error=last_error)
+
+    def _recipient(self) -> str:
+        """WhatsApp senders (e.g. the Twilio sandbox, `whatsapp:+1415...`) need a `whatsapp:` recipient too."""
+        to = self._override_to or ""
+        if self._from and self._from.startswith("whatsapp:") and not to.startswith("whatsapp:"):
+            return f"whatsapp:{to}"
+        return to
+
+    def delivery_status(self, external_id: str) -> DeliveryStatus:
+        """Ask Twilio what happened to an accepted message (delivered, undelivered, failed...)."""
+        url = self.API.format(sid=self._sid).replace(".json", f"/{external_id}.json")
+        try:
+            with httpx.Client(timeout=10.0, transport=self._transport, auth=(self._sid, self._token)) as client:
+                r = client.get(url)
+        except httpx.HTTPError as exc:
+            return DeliveryStatus(state="pending", provider_status="unknown", error=f"Network error: {exc}")
+        if r.status_code != 200:
+            return DeliveryStatus(state="pending", provider_status="unknown", error=f"Twilio HTTP {r.status_code}: {_twilio_error(r)}")
+        j = r.json()
+        status, code = j.get("status"), j.get("error_code")
+        if status == "delivered":
+            return DeliveryStatus(state="delivered", provider_status=status)
+        if status in ("undelivered", "failed"):
+            reason = TWILIO_ERRORS.get(code, j.get("error_message") or "Delivery failed")
+            return DeliveryStatus(state="failed", provider_status=status, error_code=code,
+                                  error=f"{reason} (Twilio {code})" if code else reason)
+        return DeliveryStatus(state="pending", provider_status=status or "unknown")
 
     def health(self) -> ProviderHealth:
         if not self.configured:

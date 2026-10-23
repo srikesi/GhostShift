@@ -20,6 +20,7 @@ from ..schemas.workflow import (
     IncidentView,
     InspectionView,
     Notification,
+    NotificationStatus,
     ProposedAction,
     Requisition,
     WorkflowRun,
@@ -279,6 +280,28 @@ def decide(action_id: str, body: DecisionRequest, c: Container = Depends(get_con
 @router.post("/actions/{action_id}/execute", response_model=ProposedAction)
 def execute(action_id: str, c: Container = Depends(get_container)):
     return c.approvals.execute(action_id)
+
+
+@router.post("/notifications/{notification_id}/check", response_model=Notification)
+def check_notification(notification_id: str, c: Container = Depends(get_container)):
+    """Ask the provider whether an accepted text was actually delivered, and record the answer."""
+    n = c.store.notifications.get(notification_id)
+    if n is None:
+        raise HTTPException(404, f"Notification '{notification_id}' not found")
+    check = getattr(c.orchestrator.sms, "delivery_status", None)
+    if n.status != NotificationStatus.sent or not n.external_id or check is None:
+        return n
+    d = check(n.external_id)
+    with c.store.lock:
+        if d.state == "delivered":
+            n.status, n.error = NotificationStatus.delivered, None
+        elif d.state == "failed":
+            n.status, n.error = NotificationStatus.failed, d.error
+            c.store.notified_tier.pop(n.incident_id, None)  # let a later run try again
+            c.store.log(n.incident_id, "ghostshift", "GhostShift", "notify_failed",
+                        f"Text to {n.recipient_label.split(' · ')[0]} was not delivered: {d.error}",
+                        c.orchestrator.machine_time(n.incident_id))
+    return n
 
 
 @router.get("/notifications", response_model=list[Notification])
