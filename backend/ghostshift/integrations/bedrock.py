@@ -88,6 +88,41 @@ class BedrockConverseLLM:
             output_tokens=usage.get("outputTokens"),
         )
 
+    def converse(self, *, system: str, messages: list[dict], tools: list[dict],
+                 max_tokens: int = 1200) -> dict:
+        """One Converse turn with tool use (`toolConfig`). Used by the copilot's tool loop.
+
+        `messages` and `tools` are in Converse format. Returns the raw response's
+        `message` (role + content blocks), `stop_reason` and `usage`. No temperature is
+        sent: some models on Bedrock (e.g. the GPT-5.x profiles) reject it.
+        """
+        client = self._get_client()
+        started = time.perf_counter()
+        kwargs: dict[str, Any] = dict(
+            modelId=self.model_id,
+            system=[{"text": system}],
+            messages=messages,
+            inferenceConfig={"maxTokens": max_tokens},
+        )
+        if tools:
+            kwargs["toolConfig"] = {"tools": tools}
+        try:
+            resp = client.converse(**kwargs)
+        except Exception as exc:  # botocore errors are imported lazily
+            raise _translate(exc) from exc
+        try:
+            message = resp["output"]["message"]
+            if not isinstance(message.get("content"), list):
+                raise TypeError("content is not a list")
+        except (KeyError, TypeError) as exc:
+            raise ProviderError(f"Unexpected Converse response shape: {exc}") from exc
+        return {
+            "message": message,
+            "stop_reason": resp.get("stopReason"),
+            "usage": resp.get("usage", {}),
+            "latency_ms": (time.perf_counter() - started) * 1000,
+        }
+
     def health(self, probe: bool = False) -> ProviderHealth:
         if not self.model_id:
             return ProviderHealth(capability="llm", provider=self.info, configured=False, available=False,
