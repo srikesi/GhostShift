@@ -410,6 +410,25 @@ async def stream_telemetry_default(
 
 
 
+def _demo_link(c: Container, machine_id: str, cursor_offset: int) -> str:
+    """Open (or update) a real incident for a demo trigger and return a working technician link.
+
+    The phone page needs a token tied to an incident, so a bare /m/<machine id> never opened. If no
+    incident can be made, fall back to the machine's dashboard page.
+    """
+    o = c.orchestrator
+    sc = c.reference.scenarios.get(machine_id)
+    if sc is not None:
+        o.set_cursor(machine_id, max(o.cursor(machine_id), sc.jump_cursor + cursor_offset))
+        o.monitor(machine_id)
+    inc = c.store.open_incident_for(machine_id)
+    base = c.settings.public_base_url
+    if inc is None:
+        return f"{base}/machines/{machine_id}"
+    token, _ = c.store.issue_grant(inc.id, c.settings.inspection_token_ttl_hours)
+    return f"{base}/m/{token}"
+
+
 @router.post("/machines/{machine_id}/inject-fault")
 async def inject_fault(
     machine_id: str,
@@ -424,16 +443,17 @@ async def inject_fault(
     elif hasattr(c.telemetry, "inject_fault"):
         c.telemetry.inject_fault(machine_id, body.fault_type)
 
+    link = _demo_link(c, machine_id, -44 if body.fault_type == "mild" else 0)
     # Differentiated Twilio Notification dispatch
     if body.fault_type == "mild":
         sms_text = (
             f"⚠️ WARNING {machine_id}: Incipient fan bearing flutter detected (2.95 mm/s, 82dB). "
-            f"Status: WATCH. Inspect: {c.settings.public_base_url}/m/{machine_id} | Human decision required."
+            f"Status: WATCH. Open: {link} | Human decision required."
         )
     else:
         sms_text = (
             f"🚨 CRITICAL {machine_id}: Catastrophic shaft collapse & thermal runaway (89.2°C). "
-            f"Autonomous E-STOP triggered: Power cut to 0A, Fan 0 RPM. Mandatory LOTO required before approach."
+            f"Autonomous E-STOP triggered: Power cut to 0A, Fan 0 RPM. Mandatory LOTO required before approach. Open: {link}"
         )
     
     if c.settings.demo_technician_phone:
@@ -460,9 +480,10 @@ async def emergency_stop(
     elif hasattr(c.telemetry, "emergency_stop"):
         c.telemetry.emergency_stop(machine_id)
 
+    link = _demo_link(c, machine_id, 0)
     sms_text = (
         f"🚨 EMERGENCY SHUTDOWN EXECUTED on {machine_id}: Equipment tripped offline. "
-        f"Power cut: 0A, RPM: 0. Certified Lockout/Tagout (LOTO) sign-off mandatory before restart."
+        f"Power cut: 0A, RPM: 0. Certified Lockout/Tagout (LOTO) sign-off mandatory before restart. Open: {link}"
     )
     if c.settings.demo_technician_phone:
         c.sms.send(to=c.settings.demo_technician_phone, body=sms_text)
