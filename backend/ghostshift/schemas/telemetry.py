@@ -70,3 +70,24 @@ class ReplayResponse(Contract):
     screening_note: str
     triggered_run_id: str | None = None
     triggered_incident_id: str | None = None
+
+
+
+class Anchor3D(Contract):
+    """Spatial 3D coordinate anchor for Three.js failure pinpointing."""
+
+    x: float = Field(description="X coordinate in machine frame (mm)")
+    y: float = Field(description="Y coordinate in machine frame (mm)")
+    z: float = Field(description="Z coordinate in machine frame (mm)")
+    component: str = Field(description="Component name target")
+
+
+class MultimodalTick(Contract):
+    """Single tick of high-frequency multimodal telemetry stream."""
+
+    index: int
+    timestamp: datetime
+    values: dict[str, float | None]
+    anchor_3d: Anchor3D
+    phase: str
+    severity: Severity

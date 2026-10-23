@@ -103,6 +103,24 @@ class CompositeTelemetryProvider:
     def window(self, machine_id: str, start: int, end: int) -> TelemetryWindow:
         return self._for(machine_id).window(machine_id, start, end)
 
+    def stream_tick(self, machine_id: str, cursor: int):
+        provider = self._for(machine_id)
+        if hasattr(provider, "stream_tick"):
+            return provider.stream_tick(machine_id, cursor)
+        from datetime import datetime, timezone
+        from ..schemas.common import Severity
+        from ..schemas.telemetry import Anchor3D, MultimodalTick
+        pts = provider.window(machine_id, cursor, cursor).points
+        pt = pts[0] if pts else None
+        return MultimodalTick(
+            index=cursor,
+            timestamp=pt.timestamp if pt else datetime.now(timezone.utc),
+            values=pt.values if pt else {},
+            anchor_3d=Anchor3D(x=0.0, y=100.0, z=250.0, component="Spindle Centerline"),
+            phase="nominal",
+            severity=Severity.normal,
+        )
+
     def provider_info(self, machine_id: str):
         return self._for(machine_id).info
 
