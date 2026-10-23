@@ -1,0 +1,59 @@
+/* Faultzy design tokens. Graphite + warm off-white; amber and red only carry status. */
+:root {
+  --bg: #f2f0eb;
+  --surface: #fbfaf7;
+  --surface-2: #f5f3ee;
+  --surface-sunk: #ebe8e1;
+  --line: #dcd7cd;
+  --line-strong: #c3bcaf;
+  --ink: #1d2024;
+  --ink-2: #474c53;
+  --ink-3: #757a81;
+  --ink-4: #a2a39f;
+
+  --graphite: #22262a;
+  --graphite-2: #2d3237;
+  --graphite-3: #3a4046;
+  --on-graphite: #ecebe6;
+  --on-graphite-2: #a9adb1;
+
+  --ok: #3d6b4f;
+  --ok-bg: #e5ede6;
+  --watch: #9a6a00;
+  --watch-bg: #f7efd9;
+  --amber: #c27400;
+  --amber-strong: #a65f00;
+  --amber-bg: #fbecd2;
+  --amber-line: #e8b765;
+  --red: #b3261e;
+  --red-bg: #f9e3e0;
+  --red-line: #e3a19b;
+  --info: #3b5b7a;
+  --info-bg: #e3eaf1;
+
+  --font-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --fs-xs: 11px;
+  --fs-sm: 12.5px;
+  --fs-md: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 20px;
+  --fs-2xl: 26px;
+
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 10px;
+
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+
+  --shadow-1: 0 1px 0 rgba(29, 32, 36, 0.04), 0 1px 3px rgba(29, 32, 36, 0.06);
+  --focus: 0 0 0 2px var(--surface), 0 0 0 4px #c27400;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}

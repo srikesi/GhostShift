@@ -1,0 +1,63 @@
+from __future__ import annotations
+
+import pytest
+from fastapi.testclient import TestClient
+
+from faultzy.config import Settings
+from faultzy.container import build_container
+from faultzy.integrations.base import LlmResponse, ProviderHealth
+from faultzy.main import create_app
+from faultzy.schemas.common import ProviderInfo, ProviderKind
+
+VMC, CMP = "VMC-07", "CMP-02"
+
+
+def make_settings(**kw) -> Settings:
+    kw.setdefault("mode", "demo")
+    return Settings(_env_file=None, **kw)
+
+
+@pytest.fixture
+def container():
+    return build_container(make_settings())
+
+
+@pytest.fixture
+def client(container):
+    return TestClient(create_app(container))
+
+
+class FakeLLM:
+    """Scripted LLM. Each reply is a string (returned) or an exception (raised)."""
+
+    info = ProviderInfo(name="fake-llm", kind=ProviderKind.external, real=True, model_id="fake-model")
+
+    def __init__(self, *replies):
+        self.replies = list(replies)
+        self.calls = 0
+
+    def complete(self, system, prompt, *, max_tokens=700):
+        r = self.replies[min(self.calls, len(self.replies) - 1)]
+        self.calls += 1
+        if isinstance(r, BaseException):
+            raise r
+        if callable(r):
+            return r()
+        return LlmResponse(text=r, model_id="fake-model", latency_ms=1.0)
+
+    def health(self, probe=False):
+        return ProviderHealth(capability="llm", provider=self.info, configured=True, available=True, detail="fake")
+
+
+VALID_NARRATIVE = (
+    '{"headline": "VMC-07 spindle bearing wear detected", '
+    '"summary": "Spindle vibration has risen well above baseline and crossed the alert limit.", '
+    '"technician_brief": "Check spindle front bearing; isolate per site LOTO before work.", '
+    '"sms_key_finding": "Spindle vibration above alert limit"}'
+)
+
+
+def seek(client, machine_id, cursor):
+    r = client.post(f"/api/machines/{machine_id}/replay", json={"action": "seek", "cursor": cursor})
+    assert r.status_code == 200, r.text
+    return r.json()

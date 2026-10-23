@@ -1,0 +1,134 @@
+{
+  "_comment": "Rule-based fault-mode signatures used by the deterministic diagnostics agent. Conditions compare recent behaviour to the machine's own baseline (z = (recent mean - baseline mean) / baseline std). Fixture knowledge, not a validated diagnostic model.",
+  "fault_modes": [
+    {
+      "id": "FM-VMC-SPB-WEAR",
+      "name": "Spindle front bearing degradation",
+      "machine_type": "vertical_machining_center",
+      "component_id": "spindle_front_bearing",
+      "required": [{"sensor": "spindle_vib_rms", "direction": "up", "min_z": 3.0}],
+      "supporting": [
+        {"sensor": "spindle_bearing_temp", "direction": "up", "min_z": 2.0},
+        {"sensor": "spindle_motor_current", "direction": "up", "min_z": 1.0}
+      ],
+      "contra": [{"sensor": "spindle_speed", "direction": "up", "min_z": 2.0}],
+      "work_plan": {
+        "title": "Replace spindle front bearing set",
+        "estimated_duration_hours": 6.0,
+        "required_skills": ["Spindle service (qualified)", "Precision alignment"],
+        "tasks": [
+          {"description": "Confirm vibration finding with portable analyser at spindle nose (record spectrum).", "requires_qualified_person": false},
+          {"description": "Isolate and verify zero energy state per site LOTO procedure before any physical work.", "requires_qualified_person": true},
+          {"description": "Remove spindle cartridge per OEM service manual; inspect front bearing set and preload spacer.", "requires_qualified_person": true},
+          {"description": "Install matched bearing set, set preload, and record runout (TIR).", "requires_qualified_person": true},
+          {"description": "Run spindle warm-up cycle; confirm vibration and bearing temperature return to baseline.", "requires_qualified_person": false}
+        ],
+        "safety_references": ["Site LOTO procedure (reference only)", "OEM spindle service manual", "Site PPE requirements for machine tool maintenance"]
+      }
+    },
+    {
+      "id": "FM-VMC-COOLANT-LOSS",
+      "name": "Coolant supply pressure loss",
+      "machine_type": "vertical_machining_center",
+      "component_id": "coolant_pump",
+      "required": [{"sensor": "coolant_pressure", "direction": "down", "min_z": 3.0}],
+      "supporting": [],
+      "contra": [],
+      "work_plan": {
+        "title": "Inspect coolant pump and filtration",
+        "estimated_duration_hours": 2.0,
+        "required_skills": ["Machine tool maintenance"],
+        "tasks": [
+          {"description": "Check coolant level, filter differential and pump inlet strainer.", "requires_qualified_person": false},
+          {"description": "Isolate per site LOTO procedure before opening the pump housing.", "requires_qualified_person": true}
+        ],
+        "safety_references": ["Site LOTO procedure (reference only)"]
+      }
+    },
+    {
+      "id": "FM-VMC-BALLSCREW",
+      "name": "X-axis ball screw wear",
+      "machine_type": "vertical_machining_center",
+      "component_id": "ball_screw_x",
+      "required": [{"sensor": "x_following_error", "direction": "up", "min_z": 3.0}],
+      "supporting": [],
+      "contra": [],
+      "work_plan": {
+        "title": "Inspect X-axis ball screw and support bearings",
+        "estimated_duration_hours": 4.0,
+        "required_skills": ["Machine tool maintenance", "Precision alignment"],
+        "tasks": [
+          {"description": "Run backlash and circularity test; compare to commissioning record.", "requires_qualified_person": false},
+          {"description": "Isolate per site LOTO procedure before removing way covers.", "requires_qualified_person": true}
+        ],
+        "safety_references": ["Site LOTO procedure (reference only)"]
+      }
+    },
+    {
+      "id": "FM-CMP-COOLER-FOUL",
+      "name": "Oil cooler fouling",
+      "machine_type": "rotary_screw_compressor",
+      "component_id": "oil_cooler",
+      "required": [
+        {"sensor": "discharge_temp", "direction": "up", "min_z": 3.0},
+        {"sensor": "oil_injection_temp", "direction": "up", "min_z": 3.0}
+      ],
+      "supporting": [
+        {"sensor": "cooling_fan_current", "direction": "stable", "max_abs_z": 2.0},
+        {"sensor": "motor_current", "direction": "stable", "max_abs_z": 2.0}
+      ],
+      "contra": [{"sensor": "ambient_temp", "direction": "up", "min_z": 2.0}],
+      "work_plan": {
+        "title": "Clean oil cooler core and verify heat rejection",
+        "estimated_duration_hours": 3.0,
+        "required_skills": ["Compressor service", "Rotating equipment"],
+        "tasks": [
+          {"description": "Inspect cooler air side for debris and fin blockage; photograph condition.", "requires_qualified_person": false},
+          {"description": "Isolate, depressurise and verify zero energy state per site LOTO procedure (compressed air and electrical).", "requires_qualified_person": true},
+          {"description": "Clean cooler core air side with approved coil cleaner; straighten fins.", "requires_qualified_person": true},
+          {"description": "Restart, load, and confirm discharge and oil injection temperatures return toward baseline.", "requires_qualified_person": false}
+        ],
+        "safety_references": ["Site LOTO procedure (reference only)", "Pressure system isolation procedure (reference only)", "OEM compressor service manual"]
+      }
+    },
+    {
+      "id": "FM-CMP-FAN-FAIL",
+      "name": "Cooling fan degradation",
+      "machine_type": "rotary_screw_compressor",
+      "component_id": "cooling_fan_motor",
+      "required": [
+        {"sensor": "discharge_temp", "direction": "up", "min_z": 3.0},
+        {"sensor": "cooling_fan_current", "direction": "down", "min_z": 3.0}
+      ],
+      "supporting": [],
+      "contra": [],
+      "work_plan": {
+        "title": "Inspect cooling fan motor and drive",
+        "estimated_duration_hours": 2.5,
+        "required_skills": ["Electrical (qualified)"],
+        "tasks": [
+          {"description": "Isolate per site LOTO procedure; inspect fan blades and motor.", "requires_qualified_person": true}
+        ],
+        "safety_references": ["Site LOTO procedure (reference only)"]
+      }
+    },
+    {
+      "id": "FM-CMP-AIREND-BRG",
+      "name": "Airend bearing wear",
+      "machine_type": "rotary_screw_compressor",
+      "component_id": "airend",
+      "required": [{"sensor": "airend_vibration", "direction": "up", "min_z": 3.0}],
+      "supporting": [{"sensor": "discharge_temp", "direction": "up", "min_z": 2.0}],
+      "contra": [],
+      "work_plan": {
+        "title": "Airend vibration analysis and bearing inspection",
+        "estimated_duration_hours": 4.0,
+        "required_skills": ["Vibration analysis", "Compressor service"],
+        "tasks": [
+          {"description": "Collect vibration spectra at airend bearings; compare to baseline.", "requires_qualified_person": false}
+        ],
+        "safety_references": ["Site LOTO procedure (reference only)"]
+      }
+    }
+  ]
+}

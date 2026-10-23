@@ -1,0 +1,156 @@
+.mobile {
+  min-height: 100vh;
+  background: var(--bg);
+}
+
+.m-loading {
+  display: grid;
+  place-items: center;
+  color: var(--ink-3);
+}
+
+.m-top {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  height: 48px;
+  padding: 0 var(--s-4);
+  background: var(--graphite);
+  color: var(--on-graphite);
+}
+
+.m-main {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: var(--s-4) var(--s-4) var(--s-8);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+.m-main h1 {
+  font-size: 24px;
+  line-height: 1.2;
+  margin: 2px 0 4px;
+}
+
+.m-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.m-card h2 {
+  font-size: var(--fs-sm);
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+.m-card .assembly {
+  max-height: none;
+}
+
+.m-focus {
+  padding: var(--s-2);
+  background: var(--surface-2);
+  border-radius: var(--r-md);
+}
+
+.m-reading {
+  padding-bottom: var(--s-2);
+  border-bottom: 1px solid var(--line);
+}
+
+.m-reading .big {
+  font-size: 26px;
+  font-weight: 500;
+}
+
+.m-limit {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-top: var(--s-1);
+}
+
+.m-steps {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--ink-2);
+}
+
+.m-steps li {
+  padding: 3px 0;
+}
+
+.m-others li button {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  width: 100%;
+  padding: 10px 0;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.m-others li:last-child button {
+  border-bottom: 0;
+}
+
+.m-foot {
+  text-align: center;
+}
+
+.center {
+  text-align: center;
+}
+
+.scroll-anchor {
+  scroll-margin-top: 60px;
+}
+
+.part-card.is-affected {
+  border-color: var(--amber-line);
+}
+
+.part-card .part-title {
+  font-size: var(--fs-lg);
+  color: var(--ink);
+}
+
+.part-card .replace {
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-md);
+  background: var(--amber-bg);
+}
+
+.part-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: var(--s-2);
+  margin: var(--s-1) 0 0;
+}
+
+.part-facts dt {
+  font-size: var(--fs-xs);
+  color: var(--ink-3);
+}
+
+.part-facts dd {
+  margin: 2px 0 0;
+  font-size: var(--fs-sm);
+}
+
+.m-others li button.active {
+  font-weight: 600;
+}

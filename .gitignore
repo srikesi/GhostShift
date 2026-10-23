@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+*.egg-info/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Datasets (download locally; do not commit)
+data/ai4i2020.csv
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

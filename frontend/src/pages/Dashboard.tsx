@@ -1,0 +1,334 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+import { api, ApiError } from "../api/client";
+import type {
+  DecisionRequest,
+  DiagnosticsResult,
+  HealthResponse,
+  IncidentView,
+  MachineDetail,
+  MachineSummary,
+  TelemetryResponse,
+} from "../api/types";
+import { Icon, Panel, PriorityPill, SeverityPill, Wordmark } from "../components/ui";
+import { AssemblyDiagram } from "../features/assembly/AssemblyDiagram";
+import { ComponentHealthTable } from "../features/components/ComponentHealthTable";
+import { CopilotPanel } from "../features/copilot/CopilotPanel";
+import { ApprovalsPanel } from "../features/incident/Approvals";
+import { DetailsPanel } from "../features/incident/Details";
+import { FixPanel } from "../features/incident/Fix";
+import { IncidentCard } from "../features/incident/IncidentCard";
+import { TechnicianPanel } from "../features/incident/Technician";
+import { WhyPanel } from "../features/incident/Why";
+import { TelemetryPanel } from "../features/telemetry/TelemetryPanel";
+import { fmtNum, vsNormal } from "../lib/format";
+import "./dashboard.css";
+
+const TICK_MS = 450;
+const TICK_STEPS = 2;
+
+export function Dashboard() {
+  const [health, setHealth] = useState<HealthResponse | null>(null);
+  const [machines, setMachines] = useState<MachineSummary[]>([]);
+  const [machineId, setMachineId] = useState<string | null>(null);
+  const [detail, setDetail] = useState<MachineDetail | null>(null);
+  const [telemetry, setTelemetry] = useState<TelemetryResponse | null>(null);
+  const [incident, setIncident] = useState<IncidentView | null>(null);
+  const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const playingRef = useRef(false);
+  playingRef.current = playing;
+
+  const refresh = useCallback(async (id: string) => {
+    const [ms, d, t] = await Promise.all([api.machines(), api.machine(id), api.telemetry(id)]);
+    setMachines(ms);
+    setDetail(d);
+    setTelemetry(t);
+    setIncident(d.summary.open_incident_id ? await api.incident(d.summary.open_incident_id) : null);
+    setError(null);
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const [h, ms] = await Promise.all([api.health(), api.machines()]);
+        setHealth(h);
+        setMachines(ms);
+        setMachineId((cur) => cur ?? ms[0]?.id ?? null);
+      } catch (e) {
+        setError(e instanceof ApiError ? e.message : String(e));
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!machineId) return;
+    setPlaying(false);
+    setSelectedComponent(null);
+    refresh(machineId).catch((e) => setError(String(e)));
+  }, [machineId, refresh]);
+
+  const replay = useCallback(
+    async (action: "reset" | "advance" | "seek" | "to_end", opts: { steps?: number; cursor?: number } = {}) => {
+      if (!machineId) return;
+      setBusy(true);
+      try {
+        const r = await api.replay(machineId, action, opts);
+        const wasOpen = incident?.incident.id === r.triggered_incident_id;
+        await refresh(machineId);
+        if (r.triggered_incident_id) {
+          setToast(wasOpen ? `${r.machine_id}: priority raised` : `${r.machine_id}: problem found`);
+          if (playingRef.current) setPlaying(false);
+        }
+        if (r.cursor >= r.length - 1) setPlaying(false);
+      } catch (e) {
+        setPlaying(false);
+        setError(e instanceof ApiError ? e.message : String(e));
+      } finally {
+        setBusy(false);
+      }
+    },
+    [machineId, refresh, incident],
+  );
+
+  useEffect(() => {
+    if (!playing) return;
+    const t = setTimeout(() => replay("advance", { steps: TICK_STEPS }), TICK_MS);
+    return () => clearTimeout(t);
+  }, [playing, telemetry, replay]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 4000);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  const onDecide = async (actionId: string, body: DecisionRequest) => {
+    await api.decide(actionId, body);
+    if (machineId) await refresh(machineId);
+  };
+  const onExecute = async (actionId: string) => {
+    await api.execute(actionId);
+    if (machineId) await refresh(machineId);
+  };
+  const resetAll = async () => {
+    setPlaying(false);
+    await api.resetDemo();
+    if (machineId) await refresh(machineId);
+  };
+
+  const machine = detail?.machine;
+  const healthMap = Object.fromEntries((detail?.component_health ?? []).map((h) => [h.component_id, h]));
+  const affected = incident?.incident.affected_component_id ?? null;
+  const select = (id: string) => setSelectedComponent((cur) => (cur === id ? null : id));
+
+  return (
+    <div className="app">
+      <TopBar health={health} onReset={resetAll} />
+      <div className="layout">
+        <aside className="sidebar" aria-label="Machines">
+          <MachineList machines={machines} selected={machineId} onSelect={setMachineId} />
+          {health && <Connections health={health} />}
+        </aside>
+        <main className="main" id="main">
+          {error && (
+            <div className="notice error" role="alert">
+              <Icon name="alert" />
+              <span>{error}</span>
+            </div>
+          )}
+          {machine && detail && telemetry ? (
+            <>
+              <MachineHeader detail={detail} />
+              <div className="columns">
+                <div className="col-left">
+                  <TelemetryPanel
+                    machine={machine}
+                    telemetry={telemetry}
+                    screening={detail.screening}
+                    replay={{
+                      playing,
+                      busy,
+                      onPlay: () => setPlaying(true),
+                      onPause: () => setPlaying(false),
+                      onStep: () => replay("advance", { steps: 4 }),
+                      onJump: () => replay("seek"),
+                      onEnd: () => replay("to_end"),
+                      onReset: () => replay("reset"),
+                      onSeek: (c) => replay("seek", { cursor: c }),
+                    }}
+                  />
+                  <Panel title="Parts" id="parts" bodyClass="panel-body parts-body">
+                    <div className="assembly-wrap">
+                      <AssemblyDiagram
+                        drawing={machine.drawing}
+                        components={machine.components}
+                        health={healthMap}
+                        affectedId={affected}
+                        selectedId={selectedComponent}
+                        onSelect={select}
+                      />
+                    </div>
+                    <div className="table-scroll">
+                      <ComponentHealthTable
+                        components={machine.components}
+                        health={healthMap}
+                        affectedId={affected}
+                        selectedId={selectedComponent}
+                        onSelect={select}
+                      />
+                    </div>
+                  </Panel>
+                </div>
+                <div className="col-right">
+                  {incident ? (
+                    <>
+                      <IncidentCard view={incident} />
+                      <WhyPanel incident={incident.incident} machine={machine} />
+                      <FixPanel view={incident} />
+                      <ApprovalsPanel view={incident} onDecide={onDecide} onExecute={onExecute} />
+                      <TechnicianPanel incidentId={incident.incident.id} notifications={incident.notifications} />
+                      <DetailsPanel view={incident} />
+                    </>
+                  ) : (
+                    <NoIncident detail={detail} />
+                  )}
+                  <CopilotPanel machineId={machine.id} incident={incident} />
+                </div>
+              </div>
+            </>
+          ) : (
+            !error && <p className="muted">Loading…</p>
+          )}
+        </main>
+      </div>
+      {toast && (
+        <div className="toast" role="status">
+          {toast}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TopBar({ health, onReset }: { health: HealthResponse | null; onReset: () => void }) {
+  const live = health?.providers.filter((p) => p.provider.real && p.configured).map((p) => p.provider.name) ?? [];
+  return (
+    <header className="topbar">
+      <Wordmark />
+      <span className="topbar-sep" />
+      <span className="topbar-ctx">Austin Plant 2</span>
+      <span className="spacer" />
+      {health && (
+        <span className="mode-chip" title={health.providers.map((p) => `${p.capability}: ${p.detail}`).join("\n")}>
+          {live.length ? `Live: ${live.join(", ")}` : "Demo · simulated data"}
+        </span>
+      )}
+      <button className="btn sm topbar-btn" onClick={onReset} title="Clear incidents and start over">
+        <Icon name="reset" /> Reset
+      </button>
+    </header>
+  );
+}
+
+function MachineList({ machines, selected, onSelect }: { machines: MachineSummary[]; selected: string | null; onSelect: (id: string) => void }) {
+  return (
+    <nav>
+      <p className="eyebrow side-title">Machines</p>
+      <ul className="clean machine-list">
+        {machines.map((m) => (
+          <li key={m.id}>
+            <button className={`machine-item ${m.id === selected ? "active" : ""}`} onClick={() => onSelect(m.id)} aria-current={m.id === selected}>
+              <span className={`status-bar ${m.open_incident_tier ? `tier-bar-${m.open_incident_tier}` : `sev-${m.status}`}`} aria-hidden />
+              <span className="mi-body">
+                <span className="row">
+                  <span className="mono strong nowrap">{m.id}</span>
+                  <span className="spacer" />
+                  {m.open_incident_tier ? <PriorityPill tier={m.open_incident_tier} short /> : <SeverityPill severity={m.status} />}
+                </span>
+                <span className="small mi-name">{m.display_name.replace(`${m.id} `, "")}</span>
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+const CAPABILITY_LABEL: Record<string, string> = {
+  telemetry: "Sensor data",
+  llm: "Summaries",
+  parts_catalog: "Parts",
+  procurement: "Ordering",
+  work_orders: "Work orders",
+  sms: "Text messages",
+  voice: "Voice",
+};
+
+function Connections({ health }: { health: HealthResponse }) {
+  return (
+    <section className="connections" aria-label="Connections">
+      <p className="eyebrow side-title">Connections</p>
+      <ul className="clean">
+        {health.providers.map((p) => (
+          <li key={`${p.capability}-${p.provider.name}`} title={p.detail}>
+            <span>{CAPABILITY_LABEL[p.capability] ?? p.capability}</span>
+            <span className="spacer" />
+            <span className={p.provider.real ? (p.configured ? "conn-live" : "conn-off") : "muted"}>
+              {p.provider.real ? (p.configured ? "Live" : "Not set up") : p.provider.kind === "deterministic" ? "Built-in" : "Simulated"}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/** One plain sentence about the machine's current state. */
+function statusLine(d: DiagnosticsResult): string {
+  const a = d.anomalies[0];
+  if (!a) return "All sensors normal";
+  const s = d.sensors.find((x) => x.sensor_id === a.sensor_id)!;
+  const name = s.sensor_name.split(" (")[0];
+  const limit = s.limit_state === "alert" || s.limit_state === "danger" ? `, over ${s.limit_state} limit` : "";
+  return `${name} ${fmtNum(s.current_value)} ${s.unit}, ${vsNormal(s)} vs normal${limit}`;
+}
+
+function MachineHeader({ detail }: { detail: MachineDetail }) {
+  const m = detail.machine;
+  return (
+    <section className="machine-header">
+      <div>
+        <h1>
+          <span className="mono">{m.id}</span> {m.display_name.replace(`${m.id} `, "")}
+        </h1>
+        <p className="small muted">
+          {m.model} · {m.context.line}
+        </p>
+      </div>
+      <div className="mh-status">
+        {detail.summary.open_incident_tier ? (
+          <PriorityPill tier={detail.summary.open_incident_tier} />
+        ) : (
+          <SeverityPill severity={detail.summary.status} />
+        )}
+        <span className="small">{statusLine(detail.screening)}</span>
+      </div>
+    </section>
+  );
+}
+
+function NoIncident({ detail }: { detail: MachineDetail }) {
+  return (
+    <Panel title="No open problems" id="no-incident">
+      <p className="small muted">
+        {detail.screening.severity === "normal"
+          ? "Press Play to replay the last 60 hours, or skip straight to the fault."
+          : "Something looks off. Step forward to run a full check."}
+      </p>
+    </Panel>
+  );
+}
