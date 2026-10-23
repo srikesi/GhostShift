@@ -94,7 +94,7 @@ class DiagnosticsAgent:
             method=METHOD,
             provenance=Provenance(
                 source=DataSource.derived,
-                detail=f"Faultzy {METHOD}: baseline z-score, persistence, alarm limits, rule signatures",
+                detail=f"GhostShift {METHOD}: baseline z-score, persistence, alarm limits, rule signatures",
                 upstream_source=inp.window.provenance.source,
             ),
         )

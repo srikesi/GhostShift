@@ -1,4 +1,4 @@
-"""Autopilot: Faultzy places eligible parts orders itself; physical work always waits for a person."""
+"""Autopilot: GhostShift places eligible parts orders itself; physical work always waits for a person."""
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ def test_off_by_default_people_approve_everything(client):
     assert action(v, "submit_requisition")["status"] == "awaiting_approval"
     kinds = [e["kind"] for e in v["activity"]]
     assert kinds[:4] == ["detected", "priority", "drafted", "scheduled"] and "notified" in kinds
-    assert all(e["actor"] == "faultzy" for e in v["activity"])
+    assert all(e["actor"] == "ghostshift" for e in v["activity"])
     assert all(e["machine_time"] for e in v["activity"])
 
 

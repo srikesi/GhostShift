@@ -15,7 +15,7 @@ import sys
 
 import httpx
 
-API = os.environ.get("FAULTZY_API_URL", "http://127.0.0.1:8000")
+API = os.environ.get("GHOSTSHIFT_API_URL", "http://127.0.0.1:8000")
 
 
 def expect(cond: bool, msg: str) -> None:
@@ -30,7 +30,7 @@ def main() -> None:
         health = c.get("/api/health").json()
     except httpx.HTTPError as exc:
         expect(False, f"API reachable at {API} ({exc})")
-    expect(health["app"] == "Faultzy", f"API healthy, mode={health['mode']}")
+    expect(health["app"] == "GhostShift", f"API healthy, mode={health['mode']}")
     c.post("/api/demo/reset")
 
     m = c.get("/api/machines/VMC-07").json()

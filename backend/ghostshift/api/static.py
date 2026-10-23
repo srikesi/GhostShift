@@ -1,6 +1,6 @@
 """Optionally serve the built frontend from the API process (single-container deploys).
 
-Set FAULTZY_STATIC_DIR to the Vite build output (frontend/dist). API routes keep
+Set GHOSTSHIFT_STATIC_DIR to the Vite build output (frontend/dist). API routes keep
 priority; any other path returns the file if it exists, else index.html so
 client-side routes such as /m/<token> work.
 """

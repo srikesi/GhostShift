@@ -32,7 +32,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       headers: init?.body ? { "Content-Type": "application/json" } : undefined,
     });
   } catch {
-    throw new ApiError(0, "network_error", "Faultzy API is unreachable. Is the backend running on :8000?");
+    throw new ApiError(0, "network_error", "GhostShift API is unreachable. Is the backend running on :8000?");
   }
   if (res.status === 204) return undefined as T;
   const body = await res.json().catch(() => null);

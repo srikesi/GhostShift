@@ -7,15 +7,15 @@ from pathlib import Path
 import httpx
 import pytest
 
-from faultzy.config import ExecutionMode
-from faultzy.container import build_container, choose_llm, choose_sms, choose_voice
-from faultzy.integrations.ai4i import AI4IDatasetAdapter
-from faultzy.integrations.base import ProviderError, ProviderNotConfigured
-from faultzy.integrations.bedrock import BedrockConverseLLM
-from faultzy.integrations.sms import SimulatedSms, TwilioSms
-from faultzy.integrations.supply import SimulatedProcurement, SimulatedWorkOrders
-from faultzy.integrations.voice import ElevenLabsVoice, TextOnlyVoice
-from faultzy.schemas.agents import DiagnosticsInput
+from ghostshift.config import ExecutionMode
+from ghostshift.container import build_container, choose_llm, choose_sms, choose_voice
+from ghostshift.integrations.ai4i import AI4IDatasetAdapter
+from ghostshift.integrations.base import ProviderError, ProviderNotConfigured
+from ghostshift.integrations.bedrock import BedrockConverseLLM
+from ghostshift.integrations.sms import SimulatedSms, TwilioSms
+from ghostshift.integrations.supply import SimulatedProcurement, SimulatedWorkOrders
+from ghostshift.integrations.voice import ElevenLabsVoice, TextOnlyVoice
+from ghostshift.schemas.agents import DiagnosticsInput
 
 from .conftest import make_settings
 

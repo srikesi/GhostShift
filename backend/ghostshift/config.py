@@ -20,7 +20,7 @@ REPO_DIR = BACKEND_DIR.parent
 
 
 class ExecutionMode(str, Enum):
-    """How Faultzy chooses between real integrations and deterministic stubs.
+    """How GhostShift chooses between real integrations and deterministic stubs.
 
     demo  -- never call external services; every provider is a deterministic stub.
     aws   -- use configured real integrations; failures are reported, never masked.
@@ -51,7 +51,7 @@ class LlmProviderChoice(str, Enum):
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_prefix="FAULTZY_",
+        env_prefix="GHOSTSHIFT_",
         env_file=(str(REPO_DIR / ".env"), str(BACKEND_DIR / ".env")),
         env_file_encoding="utf-8",
         extra="ignore",
@@ -74,7 +74,7 @@ class Settings(BaseSettings):
     llm_provider: LlmProviderChoice = LlmProviderChoice.bedrock
     aws_region: str = Field(
         default="us-east-1",
-        validation_alias=AliasChoices("FAULTZY_AWS_REGION", "AWS_REGION", "AWS_DEFAULT_REGION"),
+        validation_alias=AliasChoices("GHOSTSHIFT_AWS_REGION", "AWS_REGION", "AWS_DEFAULT_REGION"),
     )
     # Deliberately no default: verify model access / inference profile in the
     # workshop account first (see `make check-bedrock`).
@@ -82,7 +82,7 @@ class Settings(BaseSettings):
     llm_timeout_s: float = 20.0
     llm_max_attempts: int = Field(default=2, ge=1, le=5)
     # --- Workstream 1 (agentic copilot): add copilot/agent settings below ---
-    # advise: people approve every order. autopilot: Faultzy places parts orders itself within the limit.
+    # advise: people approve every order. autopilot: GhostShift places parts orders itself within the limit.
     autonomy_level: str = Field(default="advise", pattern="^(advise|autopilot)$")
     auto_order_limit_usd: float = Field(default=2500.0, ge=0)
 

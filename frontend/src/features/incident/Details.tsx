@@ -10,7 +10,7 @@ export function DetailsPanel({ view }: { view: IncidentView }) {
   const run = view.latest_run;
   return (
     <details className="panel details-panel">
-      <summary>How Faultzy decided</summary>
+      <summary>How GhostShift decided</summary>
       <div className="panel-body stack small">
         {hyp && (
           <section>

@@ -1,10 +1,10 @@
-# How Faultzy fits the brief
+# How GhostShift fits the brief
 
 **The brief:** a multi-agent system that ingests temperature, energy, vibration and lube monitor data to predict equipment failure, estimate useful life, auto-order parts and schedule maintenance.
 
 Keep pitch claims to what the build actually does. Update the **Today** column as workstreams land.
 
-| Capability | How Faultzy does it | Today | After workstreams |
+| Capability | How GhostShift does it | Today | After workstreams |
 |---|---|---|---|
 | **Multi-agent** | Five specialist agents with typed inputs and outputs: diagnostics, prognostics, safety supervisor, maintenance & supply, narrative. An orchestrator runs them in order, with timeouts, failure handling and a step log. | Yes. The specialists are rule- and statistics-based; an LLM only rewords the summary. | WS1 adds a Bedrock supervisor agent that delegates to the specialists as tools and answers questions. That's the "agentic" part judges look for. |
 | **Ingests temperature** | Bearing temperature (VMC-07); discharge and oil temperature (CMP-02). | Yes (simulated data). | Plus real datasets (WS3). |
@@ -20,18 +20,18 @@ Keep pitch claims to what the build actually does. Update the **Today** column a
 
 | Step | Who does it |
 |---|---|
-| Watch temperature, energy, vibration and lube sensors; spot and diagnose a fault | Faultzy |
-| Estimate time to the danger limit; set priority | Faultzy |
-| Pick the part, draft the order, propose the downtime slot, draft the work order | Faultzy |
-| Text the technician the link | Faultzy |
+| Watch temperature, energy, vibration and lube sensors; spot and diagnose a fault | GhostShift |
+| Estimate time to the danger limit; set priority | GhostShift |
+| Pick the part, draft the order, propose the downtime slot, draft the work order | GhostShift |
+| Text the technician the link | GhostShift |
 | Place the parts order | **Autopilot** (within policy), otherwise a supervisor |
 | Release physical work (lockout/tagout) | **Always a supervisor**, by design |
 
-Demo it with the "Autonomy demo" in the README. The *What Faultzy did* timeline counts the steps Faultzy took on its own against those taken by people (10 vs 0 on the VMC-07 run).
+Demo it with the "Autonomy demo" in the README. The *What GhostShift did* timeline counts the steps GhostShift took on its own against those taken by people (10 vs 0 on the VMC-07 run).
 
 ## One-paragraph description (accurate today)
 
-Faultzy is a team of specialist agents for maintenance. It watches temperature, energy, vibration and lube sensors and flags a problem hours before an alarm limit is reached. It explains which readings moved and which fault they point to, and estimates how long until the danger limit. It then picks the replacement part, finds the next planned downtime, drafts the work order and, on Autopilot, orders the part itself within a spending policy. A safety supervisor in code sets the priority, and physical work always waits for a supervisor's lockout/tagout sign-off. The technician gets a text with a link that shows the machine and the part to replace. In this demo, sensor data, stock, orders and texts are simulated.
+GhostShift is a team of specialist agents for maintenance. It watches temperature, energy, vibration and lube sensors and flags a problem hours before an alarm limit is reached. It explains which readings moved and which fault they point to, and estimates how long until the danger limit. It then picks the replacement part, finds the next planned downtime, drafts the work order and, on Autopilot, orders the part itself within a spending policy. A safety supervisor in code sets the priority, and physical work always waits for a supervisor's lockout/tagout sign-off. The technician gets a text with a link that shows the machine and the part to replace. In this demo, sensor data, stock, orders and texts are simulated.
 
 Once workstreams 1–3 land, change it to: "...a Bedrock-powered supervisor agent coordinates specialist agents over temperature, energy, vibration and lube data..."
 

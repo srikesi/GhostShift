@@ -83,7 +83,7 @@ class MaintenanceSupplyAgent:
         if inp.safety.required_approvals:
             steps.insert(0, "Maintenance supervisor reviews the requisition and work order (approval required).")
         if part and (part.availability.on_hand or 0) < qty:
-            steps.append(f"Confirm lead time for {part.sku} with the supplier; Faultzy shows simulated availability only.")
+            steps.append(f"Confirm lead time for {part.sku} with the supplier; GhostShift shows simulated availability only.")
 
         return MaintenanceProposal(
             component_id=comp_id,

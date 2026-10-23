@@ -4,11 +4,11 @@
     make text-me   # in another
 
 To receive a real SMS, set in `.env` (repo root) and restart the API:
-    FAULTZY_MODE=auto
-    FAULTZY_SMS_PROVIDER=twilio
+    GHOSTSHIFT_MODE=auto
+    GHOSTSHIFT_SMS_PROVIDER=twilio
     TWILIO_ACCOUNT_SID=... TWILIO_AUTH_TOKEN=... TWILIO_FROM_NUMBER=+1...
-    FAULTZY_DEMO_TECHNICIAN_PHONE=+1...        # your phone
-    FAULTZY_PUBLIC_BASE_URL=http://<address your phone can open>:5173
+    GHOSTSHIFT_DEMO_TECHNICIAN_PHONE=+1...        # your phone
+    GHOSTSHIFT_PUBLIC_BASE_URL=http://<address your phone can open>:5173
 Without these, the text is recorded (simulated) and the link is printed here instead.
 """
 
@@ -20,7 +20,7 @@ import sys
 
 import httpx
 
-API = os.environ.get("FAULTZY_API_URL", "http://127.0.0.1:8000")
+API = os.environ.get("GHOSTSHIFT_API_URL", "http://127.0.0.1:8000")
 FAULT_STEPS = {"VMC-07": [172, 216], "CMP-02": [150]}
 
 
@@ -59,7 +59,7 @@ def main() -> int:
     if n["status"] == "simulated_sent":
         print("\nThis text was recorded, not sent. See the top of this script for the settings that send it for real.")
     if "localhost" in n["inspection_url"] or "127.0.0.1" in n["inspection_url"]:
-        print("Note: a phone cannot open a localhost link. Set FAULTZY_PUBLIC_BASE_URL to a reachable address.")
+        print("Note: a phone cannot open a localhost link. Set GHOSTSHIFT_PUBLIC_BASE_URL to a reachable address.")
     return 0 if n["status"] in ("sent", "simulated_sent") else 2
 
 

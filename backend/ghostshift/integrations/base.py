@@ -1,7 +1,7 @@
 """Provider interfaces. Agents and the orchestrator depend only on these.
 
 Each capability has a deterministic stub and (where relevant) a real adapter.
-`faultzy.container` decides which implementation is wired in, based on
+`ghostshift.container` decides which implementation is wired in, based on
 `Settings.mode` and per-provider configuration. Constructors must never make
 network calls; do I/O lazily inside methods.
 """

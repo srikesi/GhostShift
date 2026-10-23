@@ -4,16 +4,16 @@ from datetime import timedelta
 
 from fastapi.testclient import TestClient
 
-from faultzy.container import build_container
-from faultzy.main import create_app
-from faultzy.schemas.common import utcnow
+from ghostshift.container import build_container
+from ghostshift.main import create_app
+from ghostshift.schemas.common import utcnow
 
 from .conftest import CMP, VMC, make_settings, seek
 
 
 def test_health_reports_mode_and_providers(client):
     body = client.get("/api/health").json()
-    assert body["app"] == "Faultzy" and body["mode"] == "demo" and body["status"] == "ok"
+    assert body["app"] == "GhostShift" and body["mode"] == "demo" and body["status"] == "ok"
     caps = {p["capability"] for p in body["providers"]}
     assert {"telemetry", "llm", "parts_catalog", "procurement", "work_orders", "sms", "voice"} <= caps
     assert all(not p["provider"]["real"] for p in body["providers"])
@@ -137,12 +137,12 @@ def test_cors_allows_local_frontend(client):
 
 
 def test_serves_built_frontend_when_configured(tmp_path):
-    (tmp_path / "index.html").write_text("<!doctype html><title>Faultzy</title>")
+    (tmp_path / "index.html").write_text("<!doctype html><title>GhostShift</title>")
     (tmp_path / "app.js").write_text("console.log(1)")
     c = TestClient(create_app(build_container(make_settings(static_dir=tmp_path))))
-    assert "Faultzy" in c.get("/").text
-    assert "Faultzy" in c.get("/m/some-token").text  # client-side route falls back to index.html
+    assert "GhostShift" in c.get("/").text
+    assert "GhostShift" in c.get("/m/some-token").text  # client-side route falls back to index.html
     assert c.get("/app.js").text == "console.log(1)"
-    assert c.get("/api/health").json()["app"] == "Faultzy"
+    assert c.get("/api/health").json()["app"] == "GhostShift"
     assert c.get("/api/nope").status_code == 404
-    assert "Faultzy" in c.get("/../../etc/passwd").text  # no path traversal; falls back to index
+    assert "GhostShift" in c.get("/../../etc/passwd").text  # no path traversal; falls back to index

@@ -1,6 +1,6 @@
 """FastAPI application factory.
 
-    uv run uvicorn faultzy.main:app --reload --port 8000
+    uv run uvicorn ghostshift.main:app --reload --port 8000
 """
 
 from __future__ import annotations
@@ -29,7 +29,7 @@ def create_app(container: Container | None = None) -> FastAPI:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     container = container or build_container()
     app = FastAPI(title=f"{APP_NAME} API", version=__version__,
-                  description="Faultzy predictive maintenance and maintenance-coordination API")
+                  description="GhostShift predictive maintenance and maintenance-coordination API")
     app.state.container = container
     app.add_middleware(CORSMiddleware, allow_origins=container.settings.cors_origins, allow_credentials=False,
                        allow_methods=["GET", "POST", "PUT"], allow_headers=["Content-Type"])

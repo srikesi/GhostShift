@@ -2,7 +2,7 @@
 
 **Prompt to give the agent:**
 
-> You are finishing the Faultzy hackathon project (AWS Agentic AI Hackathon, Track 2). Pull `main`, then read `README.md`, `docs/workstreams/README.md` (ownership and git rules: follow them exactly) and this file, `docs/workstreams/4-demo-qa-pitch.md`. Complete workstream 4 and push to `main` in small, verified commits. Only edit files your workstream owns. Pull often: you integrate what the other three streams ship.
+> You are finishing the GhostShift hackathon project (AWS Agentic AI Hackathon, Track 2). Pull `main`, then read `README.md`, `docs/workstreams/README.md` (ownership and git rules: follow them exactly) and this file, `docs/workstreams/4-demo-qa-pitch.md`. Complete workstream 4 and push to `main` in small, verified commits. Only edit files your workstream owns. Pull often: you integrate what the other three streams ship.
 
 ## Why
 Judges see the product for about three minutes. It has to work every time, look credible, and the story has to be clear. Right now there are no frontend tests and no CI.
@@ -21,7 +21,7 @@ Deliver a tested, polished frontend, CI on every push, and a pitch kit: demo scr
    Add `npm test` and include it in `make check` (ask workstream 2 through its inbox to add it, since it owns the `Makefile`).
 3. **UI QA pass.** Follow `.claude/skills/ui-quality/SKILL.md` on every screen:
    - Dashboard at 1440 and 1024 wide, and the phone view at 375 wide.
-   - Empty, loading, API-down and provider-failure states. To see the failure states, run the API with `FAULTZY_MODE=aws` and no credentials.
+   - Empty, loading, API-down and provider-failure states. To see the failure states, run the API with `GHOSTSHIFT_MODE=aws` and no credentials.
    - Keyboard use, so focus is visible and the SVG parts are reachable.
 
    Fix what you own. Send the rest to the owners' inboxes. Don't touch `features/copilot/**` or `features/assembly/**`.

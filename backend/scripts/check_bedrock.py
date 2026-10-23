@@ -1,6 +1,6 @@
 """Verify Amazon Bedrock access before selecting a runtime model.
 
-    make check-bedrock                       # uses FAULTZY_BEDROCK_MODEL_ID / AWS_REGION
+    make check-bedrock                       # uses GHOSTSHIFT_BEDROCK_MODEL_ID / AWS_REGION
     uv run python scripts/check_bedrock.py --list
     uv run python scripts/check_bedrock.py --model us.<provider>.<model-id>
 
@@ -15,9 +15,9 @@ from __future__ import annotations
 import argparse
 import sys
 
-from faultzy.config import get_settings
-from faultzy.integrations.base import ProviderError
-from faultzy.integrations.bedrock import BedrockConverseLLM
+from ghostshift.config import get_settings
+from ghostshift.integrations.base import ProviderError
+from ghostshift.integrations.bedrock import BedrockConverseLLM
 
 
 def main() -> int:
@@ -56,7 +56,7 @@ def main() -> int:
         except Exception as exc:  # noqa: BLE001
             print(f"! Could not list models (needs bedrock:ListFoundationModels): {exc}")
         if not args.model:
-            print("\nSet FAULTZY_BEDROCK_MODEL_ID (or pass --model) to test a Converse call.")
+            print("\nSet GHOSTSHIFT_BEDROCK_MODEL_ID (or pass --model) to test a Converse call.")
             return 0
 
     llm = BedrockConverseLLM(model_id=args.model, region=args.region, timeout_s=30)
@@ -66,7 +66,7 @@ def main() -> int:
         print(f"✗ Converse failed for {args.model}: {exc}")
         return 2
     print(f"✓ Converse OK with {args.model} in {r.latency_ms:.0f} ms: {r.text.strip()!r}")
-    print("  Set FAULTZY_MODE=auto (fallback on failure) or aws (failures reported) to use it.")
+    print("  Set GHOSTSHIFT_MODE=auto (fallback on failure) or aws (failures reported) to use it.")
     return 0
 
 

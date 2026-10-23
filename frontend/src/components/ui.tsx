@@ -122,15 +122,27 @@ export function Icon({ name, title }: { name: keyof typeof ICONS; title?: string
   return <C size={15} strokeWidth={1.75} aria-hidden={title ? undefined : true} aria-label={title} />;
 }
 
+/** GhostShift mark: a simple, slightly lopsided ghost (tilted head, one arm, uneven eyes, one cheek). */
+export function GhostMark({ size = 22, title }: { size?: number; title?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} role={title ? "img" : undefined} aria-hidden={title ? undefined : true}>
+      {title && <title>{title}</title>}
+      <path
+        d="M5 20.4V11.3C5 6.6 8 3.2 11.9 3.2c4 0 6.9 3.1 6.9 7.4v1.6c1.1-.2 2 .5 1.9 1.4-.1.8-.9 1.2-1.9 1.1v4.6c-.9 1.8-2.6 1.9-3.6.4-1 1.7-2.8 1.7-3.8.1-1 1.5-2.6 1.6-3.6.3-.8.9-2.3.9-2.8-.1Z"
+        fill="var(--on-graphite)"
+      />
+      <ellipse cx="9.7" cy="10.6" rx="1.15" ry="1.55" fill="var(--graphite)" />
+      <ellipse cx="14.1" cy="10.1" rx="0.95" ry="1.3" fill="var(--graphite)" />
+      <circle cx="15.6" cy="12.6" r="0.85" fill="var(--amber)" />
+    </svg>
+  );
+}
+
 export function Wordmark({ compact = false }: { compact?: boolean }) {
   return (
-    <span className="wordmark" aria-label="Faultzy">
-      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden>
-        <rect width="24" height="24" rx="5" fill="var(--on-graphite)" />
-        <path d="M7 6h10v3H10.5v2.2H16v3h-5.5V18H7z" fill="var(--graphite)" />
-        <rect x="14.5" y="15" width="3" height="3" fill="var(--amber)" />
-      </svg>
-      {!compact && <span>Faultzy</span>}
+    <span className="wordmark" aria-label="GhostShift">
+      <GhostMark />
+      {!compact && <span>GhostShift</span>}
     </span>
   );
 }

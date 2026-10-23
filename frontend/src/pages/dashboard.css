@@ -608,7 +608,7 @@ ol.activity {
   text-overflow: ellipsis;
 }
 
-.activity .actor.faultzy {
+.activity .actor.ghostshift {
   background: var(--graphite);
   color: var(--on-graphite);
 }
@@ -671,6 +671,26 @@ ol.activity {
 .autopilot .hint {
   color: var(--on-graphite-2);
   font-size: var(--fs-xs);
+}
+
+@media (max-width: 480px) {
+  .topbar {
+    gap: var(--s-2);
+    padding: 0 var(--s-3);
+  }
+  .topbar-btn .label {
+    display: none;
+  }
+}
+
+@media (max-width: 340px) {
+  .autopilot .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
 }
 
 @media (max-width: 900px) {

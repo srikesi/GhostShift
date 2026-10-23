@@ -1,4 +1,4 @@
-// TypeScript mirrors of the backend Pydantic contracts (backend/faultzy/schemas).
+// TypeScript mirrors of the backend Pydantic contracts (backend/ghostshift/schemas).
 // Keep in sync when a schema changes; the backend is the source of truth.
 
 export type Severity = "normal" | "watch" | "warning" | "critical";
@@ -471,7 +471,7 @@ export interface ActivityEvent {
   incident_id: string;
   at: string;
   machine_time: string | null;
-  actor: "faultzy" | "policy" | "person";
+  actor: "ghostshift" | "policy" | "person";
   actor_name: string;
   kind: string;
   text: string;

@@ -2,13 +2,13 @@
 
 **Prompt to give the agent:**
 
-> You are finishing the Faultzy hackathon project (AWS Agentic AI Hackathon, Track 2). Pull `main`, then read `README.md`, `docs/workstreams/README.md` (ownership and git rules: follow them exactly) and this file, `docs/workstreams/1-agentic-copilot.md`. Complete workstream 1 and push to `main` in small, verified commits. Only edit files your workstream owns.
+> You are finishing the GhostShift hackathon project (AWS Agentic AI Hackathon, Track 2). Pull `main`, then read `README.md`, `docs/workstreams/README.md` (ownership and git rules: follow them exactly) and this file, `docs/workstreams/1-agentic-copilot.md`. Complete workstream 1 and push to `main` in small, verified commits. Only edit files your workstream owns.
 
 ## Why
 Today every agent is deterministic, and Bedrock only rewords the incident summary (by default, the built-in template does). For an *agentic* AI track, the judges need to see a model that reasons and uses tools. The safety gates must stay in code.
 
 ## Goal
-Add a Bedrock-powered copilot. It answers questions about a machine or incident by calling Faultzy's existing deterministic functions as tools, and it can run an investigation when an incident opens.
+Add a Bedrock-powered copilot. It answers questions about a machine or incident by calling GhostShift's existing deterministic functions as tools, and it can run an investigation when an incident opens.
 
 ## Reference designs (read first)
 - **AWS sample: Sample Agentic Maintenance Assistant.** This is the closest match to what you are building: fault simulation, asset-specific models, maintenance documents and a conversational assistant. Reuse its agent and tool structure where it fits. Don't copy its data or infrastructure wholesale.
@@ -17,7 +17,7 @@ Add a Bedrock-powered copilot. It answers questions about a machine or incident 
 
 ## Build
 1. **Tool-use loop.** In `integrations/bedrock.py`, add tool use through the Converse API (`toolConfig`). The loop is bounded (for example, at most 6 tool calls), has per-call timeouts, and maps errors to `ProviderError`. Keep the existing `complete()` working.
-2. **Tools** (in a new module under `backend/faultzy/agents/`) are read-only wrappers over existing code:
+2. **Tools** (in a new module under `backend/ghostshift/agents/`) are read-only wrappers over existing code:
    - machine status and component health
    - sensor readings for a time range
    - run diagnostics at the current cursor
@@ -30,7 +30,7 @@ Add a Bedrock-powered copilot. It answers questions about a machine or incident 
    No tool may approve, reject or execute actions, change a priority tier, or send messages. Validate every tool input with Pydantic, and return errors to the model as tool results.
 3. **Maintenance documents.** Add a `search_maintenance_docs(query, machine_type)` tool so answers can cite real procedures.
    - In `aws` or `auto` mode with a configured knowledge base id, back it with a Bedrock Knowledge Base (Retrieve API).
-   - Offline, use a few short, clearly labelled sample procedures stored in a new `backend/faultzy/knowledge/` folder (yours), searched by keyword: spindle bearing replacement, oil cooler cleaning, way-lube checks.
+   - Offline, use a few short, clearly labelled sample procedures stored in a new `backend/ghostshift/knowledge/` folder (yours), searched by keyword: spindle bearing replacement, oil cooler cleaning, way-lube checks.
    - Answers must say which document they used.
 4. **Supervisor over specialists.** This is the multi-agent part of the pitch. Make the copilot a supervisor agent that delegates to the existing specialist agents (diagnostics, prognostics, safety, maintenance & supply) through tools, and explains how they combined. If the organizers require Strands or AgentCore, use its "agents as tools" pattern. Show the delegation in the UI's "Steps" list.
 5. **API.** Add `POST /api/copilot/ask` with `{machine_id, incident_id?, question}`. It returns `{answer, tool_calls[], status, provider}`, using the existing `StageStatus` values. Add endpoints only in `api/copilot_routes.py`, which is already registered.
@@ -54,7 +54,7 @@ Add a Bedrock-powered copilot. It answers questions about a machine or incident 
   - provider failure in auto and in aws mode
   - an attempt to call a non-existent or forbidden tool
   - the answer never changing tier or approvals
-- `make check` is green. With `FAULTZY_MODE=demo`, `make demo-smoke` passes.
-- Manual check: with `FAULTZY_MODE=auto` and a model id, ask the 3 suggested questions in the UI on VMC-07 at "Skip to fault". Answers cite real numbers from tools.
+- `make check` is green. With `GHOSTSHIFT_MODE=demo`, `make demo-smoke` passes.
+- Manual check: with `GHOSTSHIFT_MODE=auto` and a model id, ask the 3 suggested questions in the UI on VMC-07 at "Skip to fault". Answers cite real numbers from tools.
 - Tests cover the document search tool offline: it returns the right sample procedure, and the answer names its source.
 - `docs/copilot.md` documents the tools, modes, model id, knowledge base setup and limits.

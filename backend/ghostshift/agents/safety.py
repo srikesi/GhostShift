@@ -19,10 +19,10 @@ from ..schemas.agents import (
 )
 from ..schemas.common import Severity
 
-POLICY_VERSION = "faultzy-safety-policy/1.0"
+POLICY_VERSION = "ghostshift-safety-policy/1.0"
 
 SAFETY_NOTICES = [
-    "Faultzy approvals authorise records and plans only. They do not stop, isolate or make equipment safe.",
+    "GhostShift approvals authorise records and plans only. They do not stop, isolate or make equipment safe.",
     "Physical work requires isolation and verification of zero energy by qualified personnel under the site "
     "lockout/tagout procedure.",
     "Checklists and guidance shown here are reference information, not a substitute for site procedures or OEM instructions.",

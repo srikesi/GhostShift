@@ -2,7 +2,7 @@
 
 Only simulated implementations exist today. A real ERP/CMMS adapter (e.g. SAP
 PM, Maximo, Fiix, or an AWS-hosted API) implements the same Protocols from
-`integrations.base` and is selected in `faultzy.container`.
+`integrations.base` and is selected in `ghostshift.container`.
 """
 
 from __future__ import annotations

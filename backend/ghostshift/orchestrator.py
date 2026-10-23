@@ -61,7 +61,7 @@ from .schemas.workflow import (
 from .state import Store
 
 TEMPLATE_PROVIDER = info("narrative-template", ProviderKind.deterministic)
-DETERMINISTIC = info("faultzy-deterministic", ProviderKind.deterministic)
+DETERMINISTIC = info("ghostshift-deterministic", ProviderKind.deterministic)
 TIER_RANK = {RiskTier.routine: 0, RiskTier.elevated: 1, RiskTier.high: 2, RiskTier.critical: 3}
 PRIORITY = {RiskTier.routine: "Low", RiskTier.elevated: "Medium", RiskTier.high: "High", RiskTier.critical: "Urgent"}
 AUTO_ORDER_NAME = "Auto-order policy"
@@ -105,7 +105,7 @@ class Orchestrator:
         self.llm = llm
         self.sms = sms
         self.approvals = None  # ApprovalService; set by the container (it needs this orchestrator's clock)
-        self._pool = ThreadPoolExecutor(max_workers=4, thread_name_prefix="faultzy-stage")
+        self._pool = ThreadPoolExecutor(max_workers=4, thread_name_prefix="ghostshift-stage")
         self._screen_cached = lru_cache(maxsize=4096)(self._screen_uncached)
 
     # ------------------------------------------------------------------ replay
@@ -295,7 +295,7 @@ class Orchestrator:
         if self.llm is None:
             if mode == ExecutionMode.auto and self.settings.llm_provider == LlmProviderChoice.bedrock:
                 record(StageStatus.deterministic_fallback, TEMPLATE_PROVIDER,
-                       reason="Bedrock not configured (FAULTZY_BEDROCK_MODEL_ID unset)")
+                       reason="Bedrock not configured (GHOSTSHIFT_BEDROCK_MODEL_ID unset)")
                 return fallback, StageStatus.deterministic_fallback, TEMPLATE_PROVIDER
             record(StageStatus.success, TEMPLATE_PROVIDER)
             return fallback, StageStatus.success, TEMPLATE_PROVIDER
@@ -422,7 +422,7 @@ class Orchestrator:
         return pts[-1].timestamp if pts else None
 
     def _log_progress(self, inc: Incident, before: Incident | None, machine, n_input: NarrativeInput, as_of) -> None:
-        log = lambda kind, text: self.store.log(inc.id, "faultzy", "Faultzy", kind, text, as_of)  # noqa: E731
+        log = lambda kind, text: self.store.log(inc.id, "ghostshift", "GhostShift", kind, text, as_of)  # noqa: E731
         comp = next((c.name.lower() for c in machine.components if c.id == inc.affected_component_id), "machine")
         hyp = inc.diagnostics.hypotheses[0] if inc.diagnostics.hypotheses else None
         if before is None:
@@ -495,7 +495,7 @@ class Orchestrator:
 
     def _log_once(self, inc: Incident, kind: str, text: str, as_of) -> None:
         if not any(e.kind == kind and e.text == text for e in self.store.activity_for(inc.id)):
-            self.store.log(inc.id, "faultzy", "Faultzy", kind, text, as_of)
+            self.store.log(inc.id, "ghostshift", "GhostShift", kind, text, as_of)
 
     def autopilot_sweep(self) -> None:
         """Apply the autonomy setting to open incidents right away (e.g. after it is switched on)."""
@@ -523,7 +523,7 @@ class Orchestrator:
         lead = "ESCALATED to " if prev else ""
         req = self.store.requisitions.get(incident.requisition_id) if incident.requisition_id else None
         ordered = " Part ordered." if req and req.status in (RecordStatus.submitted, RecordStatus.submitted_simulated) else ""
-        body = (f"Faultzy {lead}{tier.value.upper()}: {machine.id} {comp.lower()} - "
+        body = (f"GhostShift {lead}{tier.value.upper()}: {machine.id} {comp.lower()} - "
                 f"{incident.narrative.sms_key_finding}. {n_input.rul_text.capitalize()}.{ordered} Open: {url}")
 
         result, rec = self._stage("notification", self.sms.info, lambda: self.sms.send(to=tech.phone, body=body))
@@ -559,7 +559,7 @@ class Orchestrator:
             text = f"Texted {who} a link to the technician view" + (" (simulated)" if status == NotificationStatus.simulated_sent else "")
         else:
             text = f"Text to {who} was not sent: {error}"
-        self.store.log(incident.id, "faultzy", "Faultzy", "notified", text, as_of)
+        self.store.log(incident.id, "ghostshift", "GhostShift", "notified", text, as_of)
 
 
 def _mask(phone: str) -> str:

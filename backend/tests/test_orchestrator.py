@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import time
 
-from faultzy.container import build_container
-from faultzy.integrations.base import ProviderError, ProviderNotConfigured
-from faultzy.schemas.agents import RiskTier
-from faultzy.schemas.common import StageStatus
-from faultzy.schemas.workflow import NotificationStatus, WorkflowStatus
+from ghostshift.container import build_container
+from ghostshift.integrations.base import ProviderError, ProviderNotConfigured
+from ghostshift.schemas.agents import RiskTier
+from ghostshift.schemas.common import StageStatus
+from ghostshift.schemas.workflow import NotificationStatus, WorkflowStatus
 
 from .conftest import CMP, VMC, VALID_NARRATIVE, FakeLLM, make_settings
 
@@ -105,7 +105,7 @@ def test_llm_failure_auto_mode_falls_back_and_says_so():
 
 
 def test_llm_failure_aws_mode_reports_provider_failure():
-    c = _llm_container("aws", FakeLLM(ProviderNotConfigured("FAULTZY_BEDROCK_MODEL_ID is not set")))
+    c = _llm_container("aws", FakeLLM(ProviderNotConfigured("GHOSTSHIFT_BEDROCK_MODEL_ID is not set")))
     run = run_at(c, VMC, 216)
     rec = stage(run, "narrative")
     assert rec.status == StageStatus.provider_failure

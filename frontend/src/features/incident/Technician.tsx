@@ -3,7 +3,7 @@ import { api } from "../../api/client";
 import type { BriefingResponse, Notification } from "../../api/types";
 import { Icon, Panel, ProviderNote, SimTag } from "../../components/ui";
 
-/** SMS links use FAULTZY_PUBLIC_BASE_URL; open the path on this origin. */
+/** SMS links use GHOSTSHIFT_PUBLIC_BASE_URL; open the path on this origin. */
 const localPath = (url: string) => {
   try {
     return new URL(url).pathname;
@@ -27,7 +27,7 @@ export function TechnicianPanel({ incidentId, notifications }: { incidentId: str
       }
     >
       <div className="stack">
-        {notifications.length === 0 && <p className="small muted">No text sent yet. Faultzy texts the technician at High priority.</p>}
+        {notifications.length === 0 && <p className="small muted">No text sent yet. GhostShift texts the technician at High priority.</p>}
         {notifications.map((n) => (
           <div key={n.id} className="sms">
             <div className="row xs">

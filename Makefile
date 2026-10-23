@@ -1,4 +1,4 @@
-# Faultzy developer commands. Requires uv (Python) and npm (Node 18+).
+# GhostShift developer commands. Requires uv (Python) and npm (Node 18+).
 .PHONY: setup api web dev test typecheck build check check-bedrock fixtures demo-smoke text-me clean
 
 setup:            ## Install backend and frontend dependencies
@@ -6,7 +6,7 @@ setup:            ## Install backend and frontend dependencies
 	cd frontend && npm install
 
 api:              ## Run the FastAPI backend on :8000 (auto-reload)
-	cd backend && uv run uvicorn faultzy.main:app --reload --port 8000
+	cd backend && uv run uvicorn ghostshift.main:app --reload --port 8000
 
 web:              ## Run the Vite frontend on :5173 (proxies /api to :8000)
 	cd frontend && npm run dev

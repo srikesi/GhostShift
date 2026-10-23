@@ -1,9 +1,9 @@
 ---
 name: ui-quality
-description: Build or review Faultzy frontend UI (dashboard panels, mobile inspection page, charts, assembly drawings) to the product's industrial design standard — graphite/off-white, status-only color, honest provenance, responsive and accessible.
+description: Build or review GhostShift frontend UI (dashboard panels, mobile inspection page, charts, assembly drawings) to the product's industrial design standard — graphite/off-white, status-only color, honest provenance, responsive and accessible.
 ---
 
-# Faultzy UI quality
+# GhostShift UI quality
 
 ## Purpose
 Keep the interface credible for an industrial operations team: dense but legible, every simulated value identifiable, color reserved for status.
@@ -20,7 +20,7 @@ Keep the interface credible for an industrial operations team: dense but legible
 ## Rules
 - Palette: graphite + warm off-white, light only (no dark mode). Amber/red only for watch/warning/critical; normal parts and sensors stay neutral. No gradients, glow, glassmorphism or emoji.
 - Typography: IBM Plex Sans for text, IBM Plex Mono for ids, numbers and units (bundled via @fontsource, works offline). Icons: lucide-react only.
-- Plain words. Write "normal", "time to danger limit", "priority", "+84% vs normal". Do not show σ, z-scores, "RUL", "deterministic", "heuristic", "uncalibrated" or "provenance" in the main UI; that detail belongs in the collapsed *How Faultzy decided* section.
+- Plain words. Write "normal", "time to danger limit", "priority", "+84% vs normal". Do not show σ, z-scores, "RUL", "deterministic", "heuristic", "uncalibrated" or "provenance" in the main UI; that detail belongs in the collapsed *How GhostShift decided* section.
 - Two scales, never mixed: sensor/part condition = Normal/Watch/Warning/Critical (`SeverityPill`); problem urgency = Low/Medium/High/Urgent (`PriorityPill`). When a machine has an open problem, show its priority, not its sensor severity.
 - Provenance without clutter: the top bar states demo/live mode. Use `SimTag` only on outputs a viewer could mistake for real (texts, orders, stock, the sensor panel). Use `ProviderNote` only when a live provider was used, fell back or failed; built-in rules show nothing.
 - Safety copy: never imply a button isolates or makes equipment safe. Approval "records a decision"; ordering and dispatch are tagged Simulated.

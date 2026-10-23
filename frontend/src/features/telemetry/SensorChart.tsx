@@ -17,8 +17,8 @@ function useWidth<T extends HTMLElement>() {
   const [w, setW] = useState(560);
   useLayoutEffect(() => {
     if (!ref.current) return;
-    setW(Math.max(260, ref.current.clientWidth - 16)); // measure now; the observer may fire late
-    const ro = new ResizeObserver(([e]) => setW(Math.max(260, e.contentRect.width)));
+    setW(Math.max(200, ref.current.clientWidth - 16)); // measure now; the observer may fire late
+    const ro = new ResizeObserver(([e]) => setW(Math.max(200, e.contentRect.width)));
     ro.observe(ref.current);
     return () => ro.disconnect();
   }, []);
@@ -68,7 +68,8 @@ export function SensorChart({ sensor, points, length, assessment }: Props) {
   const last = series[series.length - 1];
   const lastV = values[values.length - 1];
   const ticks = [lo + (hi - lo) * 0.15, (lo + hi) / 2, hi - (hi - lo) * 0.15];
-  const tickStep = (48 / Math.max(1, length - 1)) * pw >= 64 ? 48 : 96;
+  // Label every 12, 24 or 48 h: whichever is the first to leave ~64 px between labels.
+  const tickStep = [48, 96, 192].find((step) => (step / Math.max(1, length - 1)) * pw >= 64) ?? 192;
   const timeTicks = Array.from({ length: Math.ceil(length / tickStep) }, (_, k) => k * tickStep);
   const hoverPt = hover !== null ? series.reduce((a, b) => (Math.abs(b.index - hover) < Math.abs(a.index - hover) ? b : a)) : null;
   const t0 = new Date(points[0].timestamp).getTime();

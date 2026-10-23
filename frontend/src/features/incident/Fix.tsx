@@ -56,7 +56,7 @@ export function FixPanel({ view }: { view: IncidentView }) {
             ))}
           </>
         ) : (
-          <p className="small muted">No repair plan yet. See “How Faultzy decided” below.</p>
+          <p className="small muted">No repair plan yet. See “How GhostShift decided” below.</p>
         )}
       </div>
     </Panel>

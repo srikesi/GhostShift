@@ -1,6 +1,6 @@
 ---
 name: add-dataset
-description: Load a new telemetry dataset or machine (e.g. AI4I 2020, CMAPSS, a hackathon-provided CSV/S3/Timestream source) into Faultzy through a telemetry adapter, keeping raw, derived and simulated data separate.
+description: Load a new telemetry dataset or machine (e.g. AI4I 2020, CMAPSS, a hackathon-provided CSV/S3/Timestream source) into GhostShift through a telemetry adapter, keeping raw, derived and simulated data separate.
 ---
 
 # Add a dataset or machine
@@ -13,13 +13,13 @@ Feed new data to the agents through the normalized `TelemetryWindow` contract wi
 - Adding another demo machine/scenario.
 
 ## Inspect first
-- `backend/faultzy/schemas/telemetry.py` (`TelemetryPoint`, `TelemetryWindow`) and `schemas/machine.py` (`Machine`, `SensorDefinition`, `SensorLimits`).
-- `backend/faultzy/integrations/ai4i.py` — reference adapter: column map, unit conversion, synthesized timestamps, `unavailable_fields`, labels kept out of agent inputs.
-- `backend/faultzy/integrations/telemetry_fixture.py` — `CompositeTelemetryProvider.add()` routing.
-- `backend/faultzy/fixtures/{machines,fault_modes,site}.json` — for fixture-style machines.
+- `backend/ghostshift/schemas/telemetry.py` (`TelemetryPoint`, `TelemetryWindow`) and `schemas/machine.py` (`Machine`, `SensorDefinition`, `SensorLimits`).
+- `backend/ghostshift/integrations/ai4i.py` — reference adapter: column map, unit conversion, synthesized timestamps, `unavailable_fields`, labels kept out of agent inputs.
+- `backend/ghostshift/integrations/telemetry_fixture.py` — `CompositeTelemetryProvider.add()` routing.
+- `backend/ghostshift/fixtures/{machines,fault_modes,site}.json` — for fixture-style machines.
 
 ## Checklist
-1. Inventory the dataset's columns, units, sampling, timestamps and labels. Write down which Faultzy sensors it **cannot** provide.
+1. Inventory the dataset's columns, units, sampling, timestamps and labels. Write down which GhostShift sensors it **cannot** provide.
 2. Write an adapter implementing `TelemetryProvider` (`machine_ids`, `length`, `window`, `health`). Convert units; map to stable sensor ids.
 3. Set provenance truthfully: `measured` for real observations, `simulated` for generated data or synthesized timestamps. Fill `unavailable_fields`.
 4. Keep ground-truth labels (failure flags, RUL targets) out of `TelemetryPoint.values`; expose them separately for evaluation only.

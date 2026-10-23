@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from faultzy.agents import narrative as narr
-from faultzy.schemas.agents import (
+from ghostshift.agents import narrative as narr
+from ghostshift.schemas.agents import (
     ActionKind,
     ApproverRole,
     DiagnosticsInput,
@@ -14,7 +14,7 @@ from faultzy.schemas.agents import (
     RiskTier,
     SafetyInput,
 )
-from faultzy.schemas.common import DataSource, Severity
+from ghostshift.schemas.common import DataSource, Severity
 
 from .conftest import CMP, VMC
 

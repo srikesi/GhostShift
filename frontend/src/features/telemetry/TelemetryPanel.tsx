@@ -122,7 +122,7 @@ function ReplayBar({ telemetry, playing, busy, onPlay, onPause, onStep, onJump, 
           />
         ))}
         {faultStart !== undefined && (
-          <span className="fault-mark" style={{ left: pct(faultStart) }} title="Simulated fault starts here (hidden from Faultzy)" />
+          <span className="fault-mark" style={{ left: pct(faultStart) }} title="Simulated fault starts here (hidden from GhostShift)" />
         )}
         <span className="cursor" style={{ left: pct(telemetry.cursor) }} aria-hidden />
       </div>

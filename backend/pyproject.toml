@@ -1,7 +1,7 @@
 [project]
-name = "faultzy"
+name = "ghostshift"
 version = "0.1.0"
-description = "Faultzy: predictive maintenance and maintenance-coordination backend"
+description = "GhostShift: predictive maintenance and maintenance-coordination backend"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.115",
@@ -22,7 +22,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["faultzy"]
+packages = ["ghostshift"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

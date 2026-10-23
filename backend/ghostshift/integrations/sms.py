@@ -32,7 +32,7 @@ class TwilioSms:
     """Twilio Programmable Messaging via REST (no SDK dependency).
 
     Real delivery is opt-in: the recipient is always `override_to`
-    (FAULTZY_DEMO_TECHNICIAN_PHONE). Fixture phone numbers are never dialled.
+    (GHOSTSHIFT_DEMO_TECHNICIAN_PHONE). Fixture phone numbers are never dialled.
     """
 
     API = "https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json"
@@ -67,7 +67,7 @@ class TwilioSms:
                              error="Twilio not configured (TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_FROM_NUMBER)")
         if not self._override_to:
             return SmsResult(delivered=False, simulated=False, attempts=0, skipped=True,
-                             error="FAULTZY_DEMO_TECHNICIAN_PHONE not set; real SMS is only sent to an explicitly configured number")
+                             error="GHOSTSHIFT_DEMO_TECHNICIAN_PHONE not set; real SMS is only sent to an explicitly configured number")
         url = self.API.format(sid=self._sid)
         last_error = None
         with httpx.Client(timeout=10.0, transport=self._transport, auth=(self._sid, self._token)) as client:
@@ -91,9 +91,9 @@ class TwilioSms:
         if not self.configured:
             detail = "Missing TWILIO_ACCOUNT_SID / TWILIO_AUTH_TOKEN / TWILIO_FROM_NUMBER"
         elif not self._override_to:
-            detail = "Configured, but FAULTZY_DEMO_TECHNICIAN_PHONE is unset so sends will be skipped"
+            detail = "Configured, but GHOSTSHIFT_DEMO_TECHNICIAN_PHONE is unset so sends will be skipped"
         else:
-            detail = "Configured; sends to FAULTZY_DEMO_TECHNICIAN_PHONE only (not probed)"
+            detail = "Configured; sends to GHOSTSHIFT_DEMO_TECHNICIAN_PHONE only (not probed)"
         return ProviderHealth(capability="sms", provider=self.info, configured=self.configured, available=None, detail=detail)
 
 

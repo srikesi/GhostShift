@@ -1,4 +1,4 @@
-# Faultzy: decisions and assumptions
+# GhostShift: decisions and assumptions
 
 Recorded during the initial build (2026-10-23). Revisit when the organizers publish final requirements.
 

@@ -15,7 +15,7 @@ import random
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-OUT = Path(__file__).resolve().parents[1] / "faultzy" / "fixtures" / "telemetry"
+OUT = Path(__file__).resolve().parents[1] / "ghostshift" / "fixtures" / "telemetry"
 START = datetime(2026, 10, 19, 6, 0, tzinfo=timezone.utc)
 INTERVAL = timedelta(minutes=15)
 N = 240

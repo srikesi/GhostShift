@@ -51,7 +51,7 @@ class TelemetryResponse(Contract):
     window: TelemetryWindow
     scenario_phases: list[ScenarioPhase]
     detection_segments: list[SeveritySegment] = Field(
-        description="Faultzy screening severity at each replay position up to the cursor (derived)"
+        description="GhostShift screening severity at each replay position up to the cursor (derived)"
     )
 
 

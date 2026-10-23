@@ -122,7 +122,7 @@ export function Dashboard() {
     const next = await api.setAutonomy(autonomy.level === "autopilot" ? "advise" : "autopilot");
     setAutonomy(next);
     if (machineId) await refresh(machineId);
-    setToast(next.level === "autopilot" ? "Autopilot on: Faultzy places parts orders itself" : "Autopilot off: people approve every order");
+    setToast(next.level === "autopilot" ? "Autopilot on: GhostShift places parts orders itself" : "Autopilot off: people approve every order");
   };
   const resetAll = async () => {
     setPlaying(false);
@@ -250,12 +250,12 @@ function TopBar({
           role="switch"
           aria-checked={on}
           onClick={onToggleAutopilot}
-          title="Autopilot lets Faultzy place parts orders itself (High priority, within the limit, part available in time). Work that needs lockout/tagout always waits for a supervisor."
+          title="Autopilot lets GhostShift place parts orders itself (High priority, within the limit, part available in time). Work that needs lockout/tagout always waits for a supervisor."
         >
           <span className="track" aria-hidden>
             <span className="knob" />
           </span>
-          Autopilot
+          <span className="label">Autopilot</span>
           <span className="hint">
             {on ? `orders parts up to ${autonomy.auto_order_limit_usd.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 })}` : "people approve orders"}
           </span>
@@ -266,8 +266,8 @@ function TopBar({
           {live.length ? `Live: ${live.join(", ")}` : "Demo · simulated data"}
         </span>
       )}
-      <button className="btn sm topbar-btn" onClick={onReset} title="Clear incidents and start over">
-        <Icon name="reset" /> Reset
+      <button className="btn sm topbar-btn" onClick={onReset} title="Clear incidents and start over" aria-label="Reset">
+        <Icon name="reset" /> <span className="label">Reset</span>
       </button>
     </header>
   );

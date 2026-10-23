@@ -232,8 +232,8 @@ class BriefingResponse(Contract):
 
 
 class AutonomyLevel(str, Enum):
-    advise = "advise"  # Faultzy drafts everything; people approve every order and work order
-    autopilot = "autopilot"  # Faultzy also places parts orders itself, within the policy below
+    advise = "advise"  # GhostShift drafts everything; people approve every order and work order
+    autopilot = "autopilot"  # GhostShift also places parts orders itself, within the policy below
 
 
 class AutonomySettings(Contract):
@@ -253,7 +253,7 @@ class ActivityEvent(Contract):
     incident_id: str
     at: datetime
     machine_time: datetime | None = Field(description="Replay clock when the step happened")
-    actor: Literal["faultzy", "policy", "person"]
+    actor: Literal["ghostshift", "policy", "person"]
     actor_name: str
     kind: str
     text: str

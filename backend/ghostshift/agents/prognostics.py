@@ -87,7 +87,7 @@ class PrognosticsAgent:
             limitations=limitations,
             provenance=Provenance(
                 source=DataSource.derived,
-                detail=f"Faultzy {METHOD}: OLS trend over last {inp.trend_points} samples to danger limit",
+                detail=f"GhostShift {METHOD}: OLS trend over last {inp.trend_points} samples to danger limit",
                 upstream_source=upstream,
             ),
         )

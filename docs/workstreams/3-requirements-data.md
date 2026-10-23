@@ -2,10 +2,10 @@
 
 **Prompt to give the agent:**
 
-> You are finishing the Faultzy hackathon project (AWS Agentic AI Hackathon, Track 2). Pull `main`, then read `README.md`, `docs/workstreams/README.md` (ownership and git rules: follow them exactly) and this file, `docs/workstreams/3-requirements-data.md`. Complete workstream 3 and push to `main` in small, verified commits. Only edit files your workstream owns. Ask the human for the official hackathon requirements, starter repository and datasets if you can't find them.
+> You are finishing the GhostShift hackathon project (AWS Agentic AI Hackathon, Track 2). Pull `main`, then read `README.md`, `docs/workstreams/README.md` (ownership and git rules: follow them exactly) and this file, `docs/workstreams/3-requirements-data.md`. Complete workstream 3 and push to `main` in small, verified commits. Only edit files your workstream owns. Ask the human for the official hackathon requirements, starter repository and datasets if you can't find them.
 
 ## Why
-The organizers announce final technical requirements, required AWS services and datasets at the event. Faultzy must meet them without breaking the working demo.
+The organizers announce final technical requirements, required AWS services and datasets at the event. GhostShift must meet them without breaking the working demo.
 
 ## Goal
 Map every official requirement to a concrete change. Implement the data and AWS-source requirements, and route the rest to the right workstream.
@@ -17,19 +17,19 @@ Map every official requirement to a concrete change. Implement the data and AWS-
 2. **Sensor coverage (done; optional extension).** Both demo machines already carry temperature, vibration, energy (`spindle_power`, `package_power`) and lube monitoring (`way_lube_pressure`, `way_lube_level`, `separator_dp`, `oil_level`), all simulated and generated from separate seeds so the original channels are unchanged. Optional: add `spindle_lube_flow` (oil-air lubrication to the front bearing) that falls slightly before the bearing degrades, as a supporting condition in `FM-VMC-SPB-WEAR`. If you do, keep the story timing (VMC-07 flagged around sample 170, High around 174, Urgent around 226) and update the tests, and ask workstream 4 to update the README demo script if numbers shift.
 3. **Industrial Machine Downtime Prediction dataset (Kaggle).** This is the best real-style dataset for our spindle story. Ask the human to download it; Kaggle needs a login. Never commit the raw file.
    - From memory, it has per-machine dates, spindle vibration, spindle bearing temperature, coolant and hydraulic-oil temperature and pressures, voltage, torque and a downtime label. **Verify the actual columns first.**
-   - Write an adapter that maps each machine ID to a Faultzy machine and converts units.
+   - Write an adapter that maps each machine ID to a GhostShift machine and converts units.
    - Derive power (energy) where possible, with `derived` provenance.
    - Treat hydraulic/lube oil signals as the lube monitor.
    - Keep the downtime label out of agent inputs; it's ground truth only.
-   - Add a small evaluation script that reports how early Faultzy flags each downtime event (lead time) and how many false alarms it raises. Judges will ask how well it works.
-4. **AI4I 2020, real file (UCI, CC BY 4.0, also mirrored on Kaggle).** The loader `integrations/ai4i.py` exists but has only run on synthetic sample rows. Ask the human before downloading the file, then set `FAULTZY_AI4I_PATH`. Add the dataset's documented failure rules as fault patterns for `ai4i_milling`:
+   - Add a small evaluation script that reports how early GhostShift flags each downtime event (lead time) and how many false alarms it raises. Judges will ask how well it works.
+4. **AI4I 2020, real file (UCI, CC BY 4.0, also mirrored on Kaggle).** The loader `integrations/ai4i.py` exists but has only run on synthetic sample rows. Ask the human before downloading the file, then set `GHOSTSHIFT_AI4I_PATH`. Add the dataset's documented failure rules as fault patterns for `ai4i_milling`:
    - heat-dissipation failure (air–process temperature gap with low speed)
    - power failure (torque × speed outside the allowed power band)
    - overstrain (tool wear × torque)
    - tool-wear failure
 
    Compute power and strain as `derived` channels in the adapter. Evaluate detections against the labels in the same evaluation script.
-5. **AWS data sources.** Implement these if the organizers require them. The AWS samples *Scale Predictive Maintenance POC* (IoT SiteWise) and *Amazon SageMaker Predictive Maintenance* (Kinesis, Glue) show the expected shape. Implement each source as a `TelemetryProvider` adapter in `backend/faultzy/integrations/`:
+5. **AWS data sources.** Implement these if the organizers require them. The AWS samples *Scale Predictive Maintenance POC* (IoT SiteWise) and *Amazon SageMaker Predictive Maintenance* (Kinesis, Glue) show the expected shape. Implement each source as a `TelemetryProvider` adapter in `backend/ghostshift/integrations/`:
    - Keep the client lazy, so there is no I/O at import or construction.
    - Map errors to `ProviderError`, give it `health()`, and use correct provenance (`measured` or `simulated`).
    - Register it in `build_container()` behind a setting in your `config.py` section.

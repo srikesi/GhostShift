@@ -1,22 +1,22 @@
 ---
 name: add-integration
-description: Add or replace an external provider in Faultzy (an AWS service, Twilio, ElevenLabs, a CMMS/ERP, a hackathon-supplied API or SDK) behind an existing or new provider interface, without breaking the offline demo.
+description: Add or replace an external provider in GhostShift (an AWS service, Twilio, ElevenLabs, a CMMS/ERP, a hackathon-supplied API or SDK) behind an existing or new provider interface, without breaking the offline demo.
 ---
 
-# Add an integration to Faultzy
+# Add an integration to GhostShift
 
 ## Purpose
-Connect a real external service through an isolated adapter so agents, orchestrator and UI do not change, and `FAULTZY_MODE=demo` keeps working offline.
+Connect a real external service through an isolated adapter so agents, orchestrator and UI do not change, and `GHOSTSHIFT_MODE=demo` keeps working offline.
 
 ## When to use
 - Organizers announce a required AWS service, SDK, API or starter repo.
 - Swapping a stub (SMS, voice, procurement, work orders, telemetry, LLM) for a real system.
 
 ## Inspect first
-- `backend/faultzy/integrations/base.py` — Protocols, `ProviderError`/`ProviderNotConfigured`, `ProviderHealth`, `info()`.
-- `backend/faultzy/container.py` — `choose_*` functions; the mode/fallback contract in the module docstring.
+- `backend/ghostshift/integrations/base.py` — Protocols, `ProviderError`/`ProviderNotConfigured`, `ProviderHealth`, `info()`.
+- `backend/ghostshift/container.py` — `choose_*` functions; the mode/fallback contract in the module docstring.
 - An existing adapter of the same shape: `bedrock.py` (boto3, lazy client), `sms.py` (httpx + bounded retry), `voice.py`.
-- `backend/faultzy/config.py` — add settings here; secrets as `SecretStr`.
+- `backend/ghostshift/config.py` — add settings here; secrets as `SecretStr`.
 - The official docs and any hackathon starter code for the service. Confirm region, model/profile ids, IAM actions and quotas in the real account before choosing defaults.
 
 ## Checklist
@@ -33,5 +33,5 @@ Connect a real external service through an isolated adapter so agents, orchestra
 ## Tests required before done
 - Unit test for the adapter with the network mocked (`httpx.MockTransport` or a fake boto3 client via `client_factory`): success, retryable failure (bounded), non-retryable failure, not-configured.
 - Selection test in `tests/test_integrations.py` for demo/auto/aws.
-- `make test` and `make typecheck` pass; `make demo-smoke` passes with `FAULTZY_MODE=demo`.
+- `make test` and `make typecheck` pass; `make demo-smoke` passes with `GHOSTSHIFT_MODE=demo`.
 - `GET /api/health` lists the provider with correct `configured`/`real` flags.

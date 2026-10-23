@@ -1,6 +1,6 @@
 ---
 name: agent-workflow
-description: Change Faultzy's agents or orchestration — add a stage, modify diagnostics/prognostics/safety/maintenance logic, add LLM reasoning, or deploy agents to AgentCore — while preserving typed contracts, safety gates and honest status reporting.
+description: Change GhostShift's agents or orchestration — add a stage, modify diagnostics/prognostics/safety/maintenance logic, add LLM reasoning, or deploy agents to AgentCore — while preserving typed contracts, safety gates and honest status reporting.
 ---
 
 # Change the agent workflow
@@ -14,10 +14,10 @@ Keep agents small, typed and independently testable; keep execution order, timeo
 - Packaging the workflow for Bedrock AgentCore or another runtime.
 
 ## Inspect first
-- `backend/faultzy/schemas/agents.py` — stage inputs/outputs (all `extra="forbid"`).
-- `backend/faultzy/agents/*.py` — one class per agent with `run(input) -> result`.
-- `backend/faultzy/orchestrator.py` — stage order, `_stage` (timeout + exception → status), `_narrative` (LLM retries/fallback), `_persist`, `_notify`, `monitor`.
-- `backend/faultzy/approvals.py` — the approval gate.
+- `backend/ghostshift/schemas/agents.py` — stage inputs/outputs (all `extra="forbid"`).
+- `backend/ghostshift/agents/*.py` — one class per agent with `run(input) -> result`.
+- `backend/ghostshift/orchestrator.py` — stage order, `_stage` (timeout + exception → status), `_narrative` (LLM retries/fallback), `_persist`, `_notify`, `monitor`.
+- `backend/ghostshift/approvals.py` — the approval gate.
 - `StageStatus` in `schemas/common.py`: success, deterministic_fallback, provider_failure, invalid_result, skipped.
 
 ## Rules

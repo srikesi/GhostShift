@@ -6,7 +6,7 @@ here. Tests pass overrides (e.g. a fake LLM) to `build_container`.
 
 Fallback conditions (documented contract):
   demo  - every capability uses its deterministic stub; no network.
-  auto  - LLM: Bedrock if FAULTZY_BEDROCK_MODEL_ID is set, otherwise the template;
+  auto  - LLM: Bedrock if GHOSTSHIFT_BEDROCK_MODEL_ID is set, otherwise the template;
           runtime errors / invalid output fall back to the template (labelled).
           SMS / voice: real provider only if selected AND configured, otherwise stub.
           Runtime failures of a configured SMS/voice provider are reported, not masked.
@@ -35,7 +35,7 @@ from .reference import load_reference_data
 from .schemas.workflow import AutonomyLevel, AutonomySettings
 from .state import Store
 
-log = logging.getLogger("faultzy")
+log = logging.getLogger("ghostshift")
 
 
 @dataclass
@@ -123,7 +123,7 @@ def build_container(settings: Settings | None = None, *, ai4i_path: Path | None 
         safety=SafetySupervisor(), maintenance=MaintenanceSupplyAgent(parts, ref.fault_mode, ref.windows_for),
         llm=llm, sms=sms,
     )
-    log.info("Faultzy container built: mode=%s llm=%s sms=%s voice=%s", s.mode.value,
+    log.info("GhostShift container built: mode=%s llm=%s sms=%s voice=%s", s.mode.value,
              llm.info.name if llm else "template", sms.info.name, voice.info.name)
     store.autonomy = AutonomySettings(level=AutonomyLevel(s.autonomy_level), auto_order_limit_usd=s.auto_order_limit_usd)
     approvals = ApprovalService(store, procurement, work_orders, machine_clock=orch.machine_time)

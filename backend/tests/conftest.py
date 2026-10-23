@@ -3,11 +3,11 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from faultzy.config import Settings
-from faultzy.container import build_container
-from faultzy.integrations.base import LlmResponse, ProviderHealth
-from faultzy.main import create_app
-from faultzy.schemas.common import ProviderInfo, ProviderKind
+from ghostshift.config import Settings
+from ghostshift.container import build_container
+from ghostshift.integrations.base import LlmResponse, ProviderHealth
+from ghostshift.main import create_app
+from ghostshift.schemas.common import ProviderInfo, ProviderKind
 
 VMC, CMP = "VMC-07", "CMP-02"
 

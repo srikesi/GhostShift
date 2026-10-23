@@ -1,4 +1,4 @@
-"""Autonomy setting: how much Faultzy may do without a person.
+"""Autonomy setting: how much GhostShift may do without a person.
 
 GET returns the current setting; PUT changes it at runtime (for demos) and applies it
 to open incidents straight away. Safety tiers and the physical-work gate never change.

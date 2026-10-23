@@ -1,5 +1,5 @@
 {
-  "_comment": "Faultzy demo machine fixtures. All machines, sensors, limits and history are fixture values for demonstration; they are not taken from a real plant.",
+  "_comment": "GhostShift demo machine fixtures. All machines, sensors, limits and history are fixture values for demonstration; they are not taken from a real plant.",
   "machines": [
     {
       "id": "VMC-07",

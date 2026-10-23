@@ -57,7 +57,7 @@ class BedrockConverseLLM:
 
     def _get_client(self):
         if not self.model_id:
-            raise ProviderNotConfigured("FAULTZY_BEDROCK_MODEL_ID is not set")
+            raise ProviderNotConfigured("GHOSTSHIFT_BEDROCK_MODEL_ID is not set")
         if self._client is None:
             self._client = self._factory(self.region, self.timeout_s)
         return self._client
@@ -91,7 +91,7 @@ class BedrockConverseLLM:
     def health(self, probe: bool = False) -> ProviderHealth:
         if not self.model_id:
             return ProviderHealth(capability="llm", provider=self.info, configured=False, available=False,
-                                  detail="Set FAULTZY_BEDROCK_MODEL_ID (verify access with `make check-bedrock`)")
+                                  detail="Set GHOSTSHIFT_BEDROCK_MODEL_ID (verify access with `make check-bedrock`)")
         if not probe:
             return ProviderHealth(capability="llm", provider=self.info, configured=True, available=None,
                                   detail=f"{self.model_id} in {self.region} (not probed; use ?probe=true)")

@@ -1,7 +1,7 @@
 """Adapter for the AI4I 2020 Predictive Maintenance dataset (UCI, CC BY 4.0).
 
 The dataset is not bundled. Download `ai4i2020.csv` and set
-`FAULTZY_AI4I_PATH=/path/to/ai4i2020.csv` to register it as machine `AI4I-MILL`.
+`GHOSTSHIFT_AI4I_PATH=/path/to/ai4i2020.csv` to register it as machine `AI4I-MILL`.
 
 What the dataset can and cannot support:
 - It has air/process temperature, rotational speed, torque and tool wear.
@@ -121,7 +121,7 @@ class AI4IDatasetAdapter:
 
     # Reference data --------------------------------------------------------
     def build_machine(self) -> Machine:
-        fx = Provenance(source=DataSource.fixture, detail="faultzy/integrations/ai4i.py adapter defaults")
+        fx = Provenance(source=DataSource.fixture, detail="ghostshift/integrations/ai4i.py adapter defaults")
         hist = MaintenanceHistory(last_service_at=_EPOCH, service_interval_hours=2000, provenance=fx)
         comp = lambda cid, name, typ: Component(  # noqa: E731
             id=cid, name=name, type=typ, visualization_id=f"ai4i-{cid}", criticality="medium", maintenance=hist
