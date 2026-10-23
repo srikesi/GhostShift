@@ -61,7 +61,7 @@ def main() -> int:
 
     llm = BedrockConverseLLM(model_id=args.model, region=args.region, timeout_s=30)
     try:
-        r = llm.complete("Reply with the single word OK.", "ping", max_tokens=5)
+        r = llm.complete("Reply with the single word OK.", "ping", max_tokens=64)
     except ProviderError as exc:
         print(f"✗ Converse failed for {args.model}: {exc}")
         return 2

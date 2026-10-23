@@ -70,7 +70,7 @@ class BedrockConverseLLM:
                 modelId=self.model_id,
                 system=[{"text": system}],
                 messages=[{"role": "user", "content": [{"text": prompt}]}],
-                inferenceConfig={"maxTokens": max_tokens, "temperature": 0.2},
+                inferenceConfig={"maxTokens": max_tokens},
             )
         except Exception as exc:  # botocore errors are imported lazily
             raise _translate(exc) from exc
