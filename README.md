@@ -80,6 +80,7 @@ Run this with the API up. It triggers the CRAH-07 fault and prints the text and 
 - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`
 - `GHOSTSHIFT_DEMO_TECHNICIAN_PHONE`: your phone. Twilio trial accounts can only text verified numbers.
 - `GHOSTSHIFT_PUBLIC_BASE_URL`: an address your phone can open, using a domain name: WhatsApp and many SMS apps don't make bare IP addresses tappable. On the same Wi-Fi, use your LAN IP through sslip.io, e.g. `http://172-24-127-47.sslip.io:5173` with `npm run dev -- --host`, or use the deployed URL.
+- Phone on a different network (or venue Wi-Fi that blocks device-to-device traffic)? Use a free Cloudflare quick tunnel: `brew install cloudflared`, run `cloudflared tunnel --url http://localhost:5173`, and set `GHOSTSHIFT_PUBLIC_BASE_URL` to the `https://….trycloudflare.com` address it prints, then restart the API. The address changes each time the tunnel restarts, and anyone with it can open the dashboard, so stop the tunnel when you're done.
 - No registered US number yet? Unregistered 10-digit senders are blocked by US carriers (Twilio error 30034). The Twilio WhatsApp sandbox works today: join it from your phone, then set `TWILIO_FROM_NUMBER=whatsapp:+14155238886`.
 
 ## Team workstreams
