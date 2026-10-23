@@ -13,7 +13,7 @@ from ..integrations.base import ProviderHealth
 from ..schemas.agents import PrognosticsInput
 from ..schemas.common import Contract, DataSource, Provenance, ProviderInfo, Severity, StageStatus
 from ..schemas.machine import ComponentHealth, Machine, MachineSummary
-from ..schemas.telemetry import ReplayRequest, ReplayResponse, ScenarioPhase, TelemetryResponse
+from ..schemas.telemetry import FaultInjectRequest, ReplayRequest, ReplayResponse, ScenarioPhase, TelemetryResponse
 from ..schemas.agents import DiagnosticsResult
 from ..schemas.workflow import (
     ActionStatus,
@@ -407,3 +407,86 @@ async def stream_telemetry_default(
     c: Container = Depends(get_container),
 ):
     return await stream_machine_telemetry(machine_id, request, speed=speed, loop=loop, c=c)
+
+
+
+@router.post("/machines/{machine_id}/inject-fault")
+async def inject_fault(
+    machine_id: str,
+    body: FaultInjectRequest,
+    request: Request,
+    c: Container = Depends(get_container),
+):
+    _machine_or_404(c, machine_id)
+    adapter = c.telemetry._for(machine_id)
+    if hasattr(adapter, "inject_fault"):
+        adapter.inject_fault(machine_id, body.fault_type)
+    elif hasattr(c.telemetry, "inject_fault"):
+        c.telemetry.inject_fault(machine_id, body.fault_type)
+
+    # Differentiated Twilio Notification dispatch
+    if body.fault_type == "mild":
+        sms_text = (
+            f"⚠️ WARNING {machine_id}: Incipient fan bearing flutter detected (2.95 mm/s, 82dB). "
+            f"Status: WATCH. Inspect: {c.settings.public_base_url}/m/{machine_id} | Human decision required."
+        )
+    else:
+        sms_text = (
+            f"🚨 CRITICAL {machine_id}: Catastrophic shaft collapse & thermal runaway (89.2°C). "
+            f"Autonomous E-STOP triggered: Power cut to 0A, Fan 0 RPM. Mandatory LOTO required before approach."
+        )
+    
+    if c.settings.demo_technician_phone:
+        c.sms.send(to=c.settings.demo_technician_phone, body=sms_text)
+
+    return {
+        "status": "fault_injected",
+        "machine_id": machine_id,
+        "fault_type": body.fault_type,
+        "sms_sent": sms_text,
+    }
+
+
+@router.post("/machines/{machine_id}/emergency-stop")
+async def emergency_stop(
+    machine_id: str,
+    request: Request,
+    c: Container = Depends(get_container),
+):
+    _machine_or_404(c, machine_id)
+    adapter = c.telemetry._for(machine_id)
+    if hasattr(adapter, "emergency_stop"):
+        adapter.emergency_stop(machine_id)
+    elif hasattr(c.telemetry, "emergency_stop"):
+        c.telemetry.emergency_stop(machine_id)
+
+    sms_text = (
+        f"🚨 EMERGENCY SHUTDOWN EXECUTED on {machine_id}: Equipment tripped offline. "
+        f"Power cut: 0A, RPM: 0. Certified Lockout/Tagout (LOTO) sign-off mandatory before restart."
+    )
+    if c.settings.demo_technician_phone:
+        c.sms.send(to=c.settings.demo_technician_phone, body=sms_text)
+
+    return {
+        "status": "estop_active",
+        "machine_id": machine_id,
+        "current_a": 0.0,
+        "rpm": 0.0,
+        "sms_sent": sms_text,
+    }
+
+
+@router.post("/machines/{machine_id}/reset-fault")
+async def reset_fault(
+    machine_id: str,
+    request: Request,
+    c: Container = Depends(get_container),
+):
+    _machine_or_404(c, machine_id)
+    adapter = c.telemetry._for(machine_id)
+    if hasattr(adapter, "reset_fault"):
+        adapter.reset_fault(machine_id)
+    elif hasattr(c.telemetry, "reset_fault"):
+        c.telemetry.reset_fault(machine_id)
+
+    return {"status": "nominal_restored", "machine_id": machine_id}

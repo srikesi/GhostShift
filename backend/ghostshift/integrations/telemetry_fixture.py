@@ -107,6 +107,9 @@ class CompositeTelemetryProvider:
         provider = self._for(machine_id)
         if hasattr(provider, "stream_tick"):
             return provider.stream_tick(machine_id, cursor)
+        for p in self._routes.values():
+            if hasattr(p, "stream_tick"):
+                return p.stream_tick(machine_id, cursor)
         from datetime import datetime, timezone
         from ..schemas.common import Severity
         from ..schemas.telemetry import Anchor3D, MultimodalTick
@@ -116,10 +119,37 @@ class CompositeTelemetryProvider:
             index=cursor,
             timestamp=pt.timestamp if pt else datetime.now(timezone.utc),
             values=pt.values if pt else {},
-            anchor_3d=Anchor3D(x=0.0, y=100.0, z=250.0, component="Spindle Centerline"),
+            anchor_3d=Anchor3D(x=0.0, y=100.0, z=250.0, component="CRAH Air Handler Centerline"),
             phase="nominal",
             severity=Severity.normal,
         )
+
+    def inject_fault(self, machine_id: str, fault_type: str) -> dict:
+        provider = self._for(machine_id)
+        if hasattr(provider, "inject_fault"):
+            return provider.inject_fault(machine_id, fault_type)
+        for p in self._routes.values():
+            if hasattr(p, "inject_fault"):
+                return p.inject_fault(machine_id, fault_type)
+        return {"status": "injected", "machine_id": machine_id, "fault_type": fault_type}
+
+    def emergency_stop(self, machine_id: str) -> dict:
+        provider = self._for(machine_id)
+        if hasattr(provider, "emergency_stop"):
+            return provider.emergency_stop(machine_id)
+        for p in self._routes.values():
+            if hasattr(p, "emergency_stop"):
+                return p.emergency_stop(machine_id)
+        return {"status": "estop_executed", "machine_id": machine_id}
+
+    def reset_fault(self, machine_id: str) -> dict:
+        provider = self._for(machine_id)
+        if hasattr(provider, "reset_fault"):
+            return provider.reset_fault(machine_id)
+        for p in self._routes.values():
+            if hasattr(p, "reset_fault"):
+                return p.reset_fault(machine_id)
+        return {"status": "nominal_restored", "machine_id": machine_id}
 
     def provider_info(self, machine_id: str):
         return self._for(machine_id).info

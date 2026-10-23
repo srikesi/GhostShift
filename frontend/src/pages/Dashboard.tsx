@@ -26,6 +26,7 @@ import { IncidentCard } from "../features/incident/IncidentCard";
 import { TechnicianPanel } from "../features/incident/Technician";
 import { WhyPanel } from "../features/incident/Why";
 import { TelemetryPanel } from "../features/telemetry/TelemetryPanel";
+import { LiveStreamPanel } from "../features/livestream/LiveStreamPanel";
 import { fmtNum, vsNormal } from "../lib/format";
 import "./dashboard.css";
 
@@ -43,6 +44,7 @@ export function Dashboard() {
   const [selectedComponent, setSelectedComponent] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [streamMode, setStreamMode] = useState<"live" | "replay">("live");
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const playingRef = useRef(false);
@@ -160,25 +162,33 @@ export function Dashboard() {
           )}
           {machine && detail && telemetry ? (
             <>
-              <MachineHeader detail={detail} />
+              <MachineHeader
+                detail={detail}
+                streamMode={streamMode}
+                onToggleStreamMode={(m) => setStreamMode(m)}
+              />
               <div className="columns">
                 <div className="col-left">
-                  <TelemetryPanel
-                    machine={machine}
-                    telemetry={telemetry}
-                    screening={detail.screening}
-                    replay={{
-                      playing,
-                      busy,
-                      onPlay: () => setPlaying(true),
-                      onPause: () => setPlaying(false),
-                      onStep: () => replay("advance", { steps: 4 }),
-                      onJump: () => replay("seek"),
-                      onEnd: () => replay("to_end"),
-                      onReset: () => replay("reset"),
-                      onSeek: (c) => replay("seek", { cursor: c }),
-                    }}
-                  />
+                  {streamMode === "live" ? (
+                    <LiveStreamPanel machineId={machine.id} />
+                  ) : (
+                    <TelemetryPanel
+                      machine={machine}
+                      telemetry={telemetry}
+                      screening={detail.screening}
+                      replay={{
+                        playing,
+                        busy,
+                        onPlay: () => setPlaying(true),
+                        onPause: () => setPlaying(false),
+                        onStep: () => replay("advance", { steps: 4 }),
+                        onJump: () => replay("seek"),
+                        onEnd: () => replay("to_end"),
+                        onReset: () => replay("reset"),
+                        onSeek: (c) => replay("seek", { cursor: c }),
+                      }}
+                    />
+                  )}
                   <Panel title="Parts" id="parts" bodyClass="panel-body parts-body">
                     <div className="assembly-wrap">
                       <PartsViews
@@ -349,7 +359,15 @@ function statusLine(d: DiagnosticsResult): string {
   return `${name} ${fmtNum(s.current_value)} ${s.unit}, ${vsNormal(s)} vs normal${limit}`;
 }
 
-function MachineHeader({ detail }: { detail: MachineDetail }) {
+function MachineHeader({
+  detail,
+  streamMode,
+  onToggleStreamMode,
+}: {
+  detail: MachineDetail;
+  streamMode: "live" | "replay";
+  onToggleStreamMode: (m: "live" | "replay") => void;
+}) {
   const m = detail.machine;
   return (
     <section className="machine-header">
@@ -362,6 +380,49 @@ function MachineHeader({ detail }: { detail: MachineDetail }) {
           {m.model} · {m.context.line}
         </p>
       </div>
+
+      {/* Mode Toggle: Real-Time Live vs Historical 60h Replay */}
+      <div className="stream-mode-toggle" style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+        <button
+          type="button"
+          className={`btn sm ${streamMode === "live" ? "primary" : ""}`}
+          style={{
+            fontWeight: streamMode === "live" ? "bold" : "normal",
+            background: streamMode === "live" ? "#0284c7" : "rgba(255,255,255,0.06)",
+            color: streamMode === "live" ? "#ffffff" : "#94a3b8",
+            border: "1px solid rgba(255,255,255,0.15)",
+            borderRadius: "6px",
+            padding: "0.35rem 0.75rem",
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.4rem",
+          }}
+          onClick={() => onToggleStreamMode("live")}
+        >
+          <span style={{ color: "#10b981", fontSize: "0.9rem" }}>●</span> Live Stream & Break Demo
+        </button>
+        <button
+          type="button"
+          className={`btn sm ${streamMode === "replay" ? "primary" : ""}`}
+          style={{
+            fontWeight: streamMode === "replay" ? "bold" : "normal",
+            background: streamMode === "replay" ? "#0284c7" : "rgba(255,255,255,0.06)",
+            color: streamMode === "replay" ? "#ffffff" : "#94a3b8",
+            border: "1px solid rgba(255,255,255,0.15)",
+            borderRadius: "6px",
+            padding: "0.35rem 0.75rem",
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.4rem",
+          }}
+          onClick={() => onToggleStreamMode("replay")}
+        >
+          <span>⏱️</span> 60-Hour Timeline Replay
+        </button>
+      </div>
+
       <div className="mh-status">
         {detail.summary.open_incident_tier ? (
           <PriorityPill tier={detail.summary.open_incident_tier} />

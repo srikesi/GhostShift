@@ -91,3 +91,11 @@ class MultimodalTick(Contract):
     anchor_3d: Anchor3D
     phase: str
     severity: Severity
+
+
+
+class FaultInjectRequest(Contract):
+    """Payload to inject simulated physical fault into real-time telemetry stream."""
+
+    fault_type: Literal["mild", "critical"]
+    component: str | None = None

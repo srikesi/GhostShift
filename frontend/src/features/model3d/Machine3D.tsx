@@ -214,7 +214,7 @@ export default function Machine3D({
       controls.dispose();
       renderer.domElement.removeEventListener("pointerdown", onDown);
       renderer.domElement.removeEventListener("pointerup", onUp);
-      scene.traverse((o) => {
+      scene.traverse((o: THREE.Object3D) => {
         if (o instanceof THREE.Mesh || o instanceof THREE.LineSegments) {
           o.geometry.dispose();
           (o.material as THREE.Material).dispose();
