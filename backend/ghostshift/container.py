@@ -29,7 +29,7 @@ from .integrations.ai4i import AI4IDatasetAdapter
 from .integrations.multimodal_stream import MultimodalStreamAdapter
 from .integrations.base import ProviderHealth
 from .integrations.bedrock import BedrockConverseLLM
-from .integrations.sms import SimulatedSms, TwilioSms
+from .integrations.sms import MultiSms, SimulatedSms, TwilioSms
 from .integrations.supply import FixturePartsCatalog, SimulatedProcurement, SimulatedWorkOrders
 from .integrations.telemetry_fixture import CompositeTelemetryProvider, FixtureTelemetryProvider
 from .integrations.voice import ElevenLabsVoice, TextOnlyVoice
@@ -92,10 +92,14 @@ def choose_sms(s: Settings):
         return SimulatedSms()
     if s.mode == ExecutionMode.auto and not s.twilio_configured:
         return SimulatedSms()
-    return TwilioSms(account_sid=s.twilio_account_sid,
-                     auth_token=s.twilio_auth_token.get_secret_value() if s.twilio_auth_token else None,
-                     from_number=s.twilio_from_number, override_to=s.demo_technician_phone,
-                     max_attempts=s.sms_max_attempts)
+    def twilio(to):
+        return TwilioSms(account_sid=s.twilio_account_sid,
+                         auth_token=s.twilio_auth_token.get_secret_value() if s.twilio_auth_token else None,
+                         from_number=s.twilio_from_number, override_to=to, max_attempts=s.sms_max_attempts)
+
+    primary = twilio(s.demo_technician_phone)
+    extras = s.extra_alert_phones
+    return MultiSms([primary, *[twilio(p) for p in extras]]) if extras else primary
 
 
 def choose_voice(s: Settings):

@@ -96,6 +96,12 @@ class Settings(BaseSettings):
     sms_max_attempts: int = Field(default=3, ge=1, le=5)
     # Real SMS is only sent to this number (opt-in, e.g. your own phone).
     demo_technician_phone: str | None = None
+    # More numbers that get every alert too, comma-separated (e.g. a teammate or supervisor).
+    alert_phones: str | None = None
+
+    @property
+    def extra_alert_phones(self) -> list[str]:
+        return [p.strip() for p in (self.alert_phones or "").split(",") if p.strip() and p.strip() != self.demo_technician_phone]
 
     # --- ElevenLabs voice --------------------------------------------------------
     voice_provider: VoiceProviderChoice = VoiceProviderChoice.stub

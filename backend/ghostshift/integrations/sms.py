@@ -138,6 +138,35 @@ class TwilioSms:
         return ProviderHealth(capability="sms", provider=self.info, configured=self.configured, available=None, detail=detail)
 
 
+class MultiSms:
+    """Sends every alert to several recipients (one provider per phone number).
+
+    The first provider is the primary: its result is what GhostShift records and what delivery checks use.
+    The others are best effort, so one bad number never blocks the rest.
+    """
+
+    def __init__(self, providers: list):
+        if not providers:
+            raise ValueError("MultiSms needs at least one provider")
+        self._providers = providers
+        self.info = providers[0].info
+
+    def send(self, *, to: str, body: str) -> SmsResult:
+        results = [p.send(to=to, body=body) for p in self._providers]
+        primary = results[0]
+        if primary.delivered:
+            return primary
+        # The primary failed; report a delivered one if any, so the alert still counts as sent.
+        return next((r for r in results[1:] if r.delivered), primary)
+
+    def delivery_status(self, external_id: str) -> DeliveryStatus:
+        return self._providers[0].delivery_status(external_id)
+
+    def health(self) -> ProviderHealth:
+        h = self._providers[0].health()
+        return h.model_copy(update={"detail": f"{h.detail}; alerts go to {len(self._providers)} numbers"})
+
+
 def _twilio_error(r: httpx.Response) -> str:
     try:
         j = r.json()
