@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
+import json
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
+from starlette.responses import StreamingResponse
 
 from .. import APP_NAME, __version__
 from ..container import Container
@@ -327,3 +330,57 @@ def demo_reset(c: Container = Depends(get_container)):
     c.reset()
     _audio_cache.clear()
     return Response(status_code=204)
+
+
+
+# ------------------------------------------------------------- streaming
+@router.get("/machines/{machine_id}/stream")
+async def stream_machine_telemetry(
+    machine_id: str,
+    request: Request,
+    speed: float = Query(default=1.0, ge=0.1, le=100.0, description="Playback speed multiplier"),
+    loop: bool = Query(default=True, description="Whether to loop the stream when reaching the end"),
+    c: Container = Depends(get_container),
+):
+    _machine_or_404(c, machine_id)
+    o = c.orchestrator
+    total_len = o.telemetry.length(machine_id)
+
+    async def event_generator():
+        cursor = o.cursor(machine_id)
+        while True:
+            if await request.is_disconnected():
+                break
+            tick = o.telemetry.stream_tick(machine_id, cursor)
+            payload = tick.model_dump(mode="json") if hasattr(tick, "model_dump") else (tick.dict() if hasattr(tick, "dict") else tick)
+            yield f"event: telemetry\ndata: {json.dumps(payload)}\n\n"
+
+            cursor += 1
+            if cursor >= total_len:
+                if loop:
+                    cursor = 0
+                else:
+                    yield 'event: end\ndata: {"status": "stream_complete"}\n\n'
+                    break
+            await asyncio.sleep(0.001 if speed >= 50.0 else (1.0 / speed))
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
+@router.get("/telemetry/stream")
+async def stream_telemetry_default(
+    request: Request,
+    machine_id: str = Query(default="VMC-07-MULTIMODAL"),
+    speed: float = Query(default=1.0, ge=0.1, le=100.0),
+    loop: bool = Query(default=True),
+    c: Container = Depends(get_container),
+):
+    return await stream_machine_telemetry(machine_id, request, speed=speed, loop=loop, c=c)

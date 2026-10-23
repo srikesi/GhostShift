@@ -24,6 +24,7 @@ from .agents import DiagnosticsAgent, MaintenanceSupplyAgent, PrognosticsAgent, 
 from .approvals import ApprovalService
 from .config import ExecutionMode, LlmProviderChoice, Settings, SmsProviderChoice, VoiceProviderChoice, get_settings
 from .integrations.ai4i import AI4IDatasetAdapter
+from .integrations.multimodal_stream import MultimodalStreamAdapter
 from .integrations.base import ProviderHealth
 from .integrations.bedrock import BedrockConverseLLM
 from .integrations.sms import SimulatedSms, TwilioSms
@@ -100,7 +101,7 @@ def choose_voice(s: Settings):
                            voice_id=s.elevenlabs_voice_id, model_id=s.elevenlabs_model_id)
 
 
-def build_container(settings: Settings | None = None, *, ai4i_path: Path | None = None, **overrides) -> Container:
+def build_container(settings: Settings | None = None, *, ai4i_path: Path | None = None, enable_multimodal: bool = False, **overrides) -> Container:
     s = settings or get_settings()
     ref = load_reference_data(s.data_dir)
     telemetry = CompositeTelemetryProvider(FixtureTelemetryProvider(ref))
@@ -109,6 +110,12 @@ def build_container(settings: Settings | None = None, *, ai4i_path: Path | None 
         adapter = AI4IDatasetAdapter(ai4i_path)
         ref.register_machine(adapter.build_machine(), adapter.build_scenario())
         telemetry.add(adapter.machine_id, adapter)
+
+    if enable_multimodal or getattr(s, "enable_multimodal", False):
+        multimodal = MultimodalStreamAdapter()
+        for mid in multimodal.machine_ids():
+            ref.register_machine(multimodal.build_machine(mid), multimodal.build_scenario(mid))
+            telemetry.add(mid, multimodal)
 
     parts = overrides.get("parts") or FixturePartsCatalog(s.data_dir / "parts_catalog.json")
     llm = overrides["llm"] if "llm" in overrides else choose_llm(s)

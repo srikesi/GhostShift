@@ -62,6 +62,7 @@ class Settings(BaseSettings):
     # Optional real dataset: path to ai4i2020.csv registers machine AI4I-MILL.
     ai4i_path: Path | None = None
     # --- Workstream 3 (data & organizer requirements): add data/AWS-source settings below ---
+    enable_multimodal: bool = False
 
     # Serve the built frontend (frontend/dist) from the API, for single-container deploys.
     static_dir: Path | None = None
