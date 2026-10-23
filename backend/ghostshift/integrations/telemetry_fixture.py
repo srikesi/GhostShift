@@ -147,24 +147,50 @@ class CompositeTelemetryProvider:
             elif ftype == "critical":
                 phase = "catastrophic_breakdown"
                 sev = Severity.critical
-                vals["fan_motor_current"] = 24.5
-                vals["compressor_motor_current"] = 185.0
-                vals["spindle_motor_current"] = 24.5
-                vals["fan_speed"] = 1310.0
-                vals["spindle_speed"] = 1310.0
-                vals["rotational_speed"] = 1310.0
-                vals["fan_vibration"] = 6.45
-                vals["fan_bearing_temp"] = 89.2
-                vals["discharge_temp"] = 96.5
-                vals["acoustic_db"] = 96.8
+                # Live dynamic oscillations: erratic bearing binding, current spikes, thermal runaway
+                rpm_jitter = math.sin(dt * 1.8) * 45.0 + math.cos(dt * 3.4) * 22.0
+                vals["fan_speed"] = round(1310.0 + rpm_jitter, 1)
+                vals["spindle_speed"] = vals["fan_speed"]
+                vals["rotational_speed"] = vals["fan_speed"]
+                
+                current_surge = math.sin(dt * 2.2) * 2.8 + (math.sin(dt * 0.7) * 1.2)
+                vals["fan_motor_current"] = round(24.5 + current_surge, 2)
+                vals["compressor_motor_current"] = round(185.0 + current_surge * 4.0, 1)
+                vals["spindle_motor_current"] = vals["fan_motor_current"]
+                
+                vib_flutter = math.sin(dt * 2.5) * 0.85 + math.cos(dt * 4.1) * 0.45
+                vals["fan_vibration"] = round(6.45 + vib_flutter, 3)
+                
+                # Upward thermal runaway creep
+                temp_creep = min(12.0, dt * 0.45) + (math.sin(dt * 0.9) * 0.8)
+                vals["fan_bearing_temp"] = round(88.0 + temp_creep, 1)
+                vals["discharge_temp"] = round(95.0 + temp_creep, 1)
+                
+                acoustic_screech = math.sin(dt * 3.1) * 3.5 + math.cos(dt * 1.4) * 2.0
+                vals["acoustic_db"] = round(96.0 + acoustic_screech, 1)
 
             elif ftype == "mild":
                 phase = "incipient_flutter"
                 sev = Severity.warning
-                vals["fan_vibration"] = 3.85
-                vals["fan_motor_current"] = 15.6
-                vals["fan_bearing_temp"] = 52.4
-                vals["acoustic_db"] = 82.4
+                # Live dynamic flutter oscillations
+                rpm_flutter = math.sin(dt * 1.2) * 16.0 + math.cos(dt * 2.1) * 8.0
+                vals["fan_speed"] = round(1450.0 + rpm_flutter, 1)
+                vals["spindle_speed"] = vals["fan_speed"]
+                vals["rotational_speed"] = vals["fan_speed"]
+                
+                vib_wobble = math.sin(dt * 1.7) * 0.45 + math.sin(dt * 3.3) * 0.25
+                vals["fan_vibration"] = round(3.85 + vib_wobble, 3)
+                
+                current_wobble = math.sin(dt * 1.1) * 0.65
+                vals["fan_motor_current"] = round(15.4 + current_wobble, 2)
+                vals["spindle_motor_current"] = vals["fan_motor_current"]
+                
+                temp_warmup = min(6.0, dt * 0.25) + (math.sin(dt * 0.5) * 0.4)
+                vals["fan_bearing_temp"] = round(51.0 + temp_warmup, 1)
+                vals["discharge_temp"] = round(54.0 + temp_warmup, 1)
+                
+                noise_chatter = math.sin(dt * 2.0) * 2.2 + math.cos(dt * 1.5) * 1.2
+                vals["acoustic_db"] = round(82.0 + noise_chatter, 1)
 
             elif ftype == "spinup":
                 phase = "soft_start_spinup"
