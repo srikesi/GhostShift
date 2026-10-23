@@ -14,8 +14,8 @@ Map every official requirement to a concrete change. Implement the data and AWS-
 1. **Requirements map first, within the first hour.** Read the official requirements and starter code, and check each service's official documentation. Write `docs/requirements-map.md`: one row per requirement, with status, owning workstream (1–4), files and notes.
    - Push it early.
    - For each requirement owned by another stream, add an entry to that stream's `docs/workstreams/inbox-<n>.md`.
-2. **Sensor coverage (done; optional extension).** Both demo machines already carry temperature, vibration, energy (`spindle_power`, `package_power`) and lube monitoring (`way_lube_pressure`, `way_lube_level`, `separator_dp`, `oil_level`), all simulated and generated from separate seeds so the original channels are unchanged. Optional: add `spindle_lube_flow` (oil-air lubrication to the front bearing) that falls slightly before the bearing degrades, as a supporting condition in `FM-VMC-SPB-WEAR`. If you do, keep the story timing (VMC-07 flagged around sample 170, High around 174, Urgent around 226) and update the tests, and ask workstream 4 to update the README demo script if numbers shift.
-3. **Industrial Machine Downtime Prediction dataset (Kaggle).** This is the best real-style dataset for our spindle story. Ask the human to download it; Kaggle needs a login. Never commit the raw file.
+2. **Sensor coverage (done; optional extension).** Both demo machines already carry temperature, vibration, energy (`fan_power`, `compressor_power`) and lube monitoring on the chiller (`oil_temp`, `oil_level`, `oil_separator_dp`), plus humidifier water pressure and level on the CRAH, all simulated and generated from separate seeds so the original channels are unchanged. Optional: add a bearing-lubrication signal (e.g. grease condition from an online monitor) that worsens slightly before the fan bearings degrade, as a supporting condition in `FM-CRAH-FAN-BRG`. If you do, keep the story timing (CRAH-07 flagged around sample 170, High around 174, Urgent around 226) and update the tests, and ask workstream 4 to update the README demo script if numbers shift.
+3. **Industrial Machine Downtime Prediction dataset (Kaggle).** It's machine-shop data, but its spindle vibration and bearing temperature map well onto our fan-bearing story. Use it to test detection on real-style data. Ask the human to download it; Kaggle needs a login. Never commit the raw file.
    - From memory, it has per-machine dates, spindle vibration, spindle bearing temperature, coolant and hydraulic-oil temperature and pressures, voltage, torque and a downtime label. **Verify the actual columns first.**
    - Write an adapter that maps each machine ID to a GhostShift machine and converts units.
    - Derive power (energy) where possible, with `derived` provenance.
@@ -44,7 +44,7 @@ Map every official requirement to a concrete change. Implement the data and AWS-
    - Add a schematic in `frontend/src/features/assembly/drawings.tsx`, keyed by `visualization_id` (the generic fallback works until then).
    - Add a scenario so it can be replayed.
 8. **Contracts.** If you add fields to machine, telemetry or reference schemas, or to routes in `api/routes.py`, update only the matching interfaces in `frontend/src/api/types.ts` and `client.ts`.
-9. **Keep the demo intact.** VMC-07 and CMP-02 and their stories must keep working as described in `README.md`.
+9. **Keep the demo intact.** CRAH-07 and CH-02 and their stories must keep working as described in `README.md`.
 
 ## Verify before declaring done
 - New tests in `backend/tests/test_data_*.py` for each adapter, with AWS calls mocked (a fake client or botocore Stubber):

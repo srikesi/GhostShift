@@ -21,12 +21,12 @@ import sys
 import httpx
 
 API = os.environ.get("GHOSTSHIFT_API_URL", "http://127.0.0.1:8000")
-FAULT_STEPS = {"VMC-07": [172, 216], "CMP-02": [150]}
+FAULT_STEPS = {"CRAH-07": [172, 216], "CH-02": [150]}
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--machine", default="VMC-07", choices=sorted(FAULT_STEPS))
+    ap.add_argument("--machine", default="CRAH-07", choices=sorted(FAULT_STEPS))
     args = ap.parse_args()
     c = httpx.Client(base_url=API, timeout=30)
     try:

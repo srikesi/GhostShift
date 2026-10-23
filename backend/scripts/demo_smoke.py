@@ -3,7 +3,7 @@
     make api          # in one terminal
     make demo-smoke   # in another
 
-Resets state, replays VMC-07 from normal operation to the end, and checks that
+Resets state, replays CRAH-07 from normal operation to the end, and checks that
 each step of the story happens: detection, SMS, inspection link, approval gate.
 Exits non-zero on the first failed expectation.
 """
@@ -33,12 +33,12 @@ def main() -> None:
     expect(health["app"] == "GhostShift", f"API healthy, mode={health['mode']}")
     c.post("/api/demo/reset")
 
-    m = c.get("/api/machines/VMC-07").json()
-    expect(m["summary"]["status"] == "normal", "VMC-07 starts normal")
+    m = c.get("/api/machines/CRAH-07").json()
+    expect(m["summary"]["status"] == "normal", "CRAH-07 starts normal")
 
     tiers, incident_id = [], None
     while True:
-        r = c.post("/api/machines/VMC-07/replay", json={"action": "advance", "steps": 2}).json()
+        r = c.post("/api/machines/CRAH-07/replay", json={"action": "advance", "steps": 2}).json()
         if r["triggered_incident_id"]:
             incident_id = r["triggered_incident_id"]
             view = c.get(f"/api/incidents/{incident_id}").json()
@@ -54,9 +54,9 @@ def main() -> None:
 
     view = c.get(f"/api/incidents/{incident_id}").json()
     inc = view["incident"]
-    expect(inc["affected_component_id"] == "spindle_front_bearing", "Affected component: spindle front bearing")
+    expect(inc["affected_component_id"] == "fan_bearing", "Affected component: fan bearing")
     expect(inc["prognostics"]["rul"]["supportable"], "RUL estimate is supportable and qualified")
-    expect(view["requisition"]["sku"] == "FZ-BRG-7014-P4DB", "Part proposed: FZ-BRG-7014-P4DB")
+    expect(view["requisition"]["sku"] == "GS-BRG-FAN-KIT", "Part proposed: GS-BRG-FAN-KIT")
     expect(len(view["notifications"]) >= 2, "Technician SMS sent (high) and re-sent on escalation")
     token = view["notifications"][-1]["inspection_url"].rsplit("/m/", 1)[1]
     insp = c.get(f"/api/inspect/{token}")
@@ -69,7 +69,7 @@ def main() -> None:
     c.post("/api/demo/reset")
     before = c.get("/api/autonomy").json()["level"]
     c.put("/api/autonomy", json={"level": "autopilot"})
-    r = c.post("/api/machines/CMP-02/replay", json={"action": "seek", "cursor": 150}).json()
+    r = c.post("/api/machines/CH-02/replay", json={"action": "seek", "cursor": 150}).json()
     cv = c.get(f"/api/incidents/{r['triggered_incident_id']}").json()
     req = next(a for a in cv["actions"] if a["kind"] == "submit_requisition")
     wo = next(a for a in cv["actions"] if a["kind"] == "dispatch_work_order")

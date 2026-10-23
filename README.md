@@ -41,14 +41,14 @@ pip also works: `cd backend && python3.12 -m venv .venv && .venv/bin/pip install
 
 ## Demo script (about 3 minutes)
 
-1. **Normal.** VMC-07 opens with every sensor inside its shaded normal range. The small marker above the timeline shows where the simulated fault starts; GhostShift never sees that marker.
-2. **Play.** Readings advance 30 min per tick. Around sample 170, spindle vibration leaves its normal range. GhostShift opens a problem at **Medium** priority and pauses. *Why it was flagged* shows the readings against normal and the matching fault pattern. No alarm limit has been crossed yet.
+1. **Normal.** CRAH-07 opens with every sensor inside its shaded normal range. The small marker above the timeline shows where the simulated fault starts; GhostShift never sees that marker.
+2. **Play.** Readings advance 30 min per tick. Around sample 170, the supply fan's vibration on CRAH-07 leaves its normal range. GhostShift opens a problem at **Medium** priority and pauses. *Why it was flagged* shows the readings against normal and the matching fault pattern. No alarm limit has been crossed yet.
 3. **Play again.** At sample 174 the earliest time-to-limit estimate drops under 72 h. Priority goes to **High** and the technician gets a text, still before any alarm limit is crossed. The problem card shows the time to the danger limit as a range, the next downtime, and the part.
-4. **Recommended fix.** Bearing set `FZ-BRG-7014-P4DB` is in stock, the night-shift downtime comes before the earliest limit estimate, and the steps are listed.
+4. **Recommended fix.** The bearing kit `GS-BRG-FAN-KIT` ($240) is in the critical spares cage, the planned maintenance window (with CRAH-08 covering the load) comes before the earliest limit estimate, and the steps start with confirming the redundant unit is carrying the load.
 5. **Approvals.** Approve the part order, then *Send order*. You get `SIM-PR-00001`, a simulated record. Next, try approving the work order without ticking the lockout/tagout box: the backend refuses. Tick it and the approval goes through.
 6. **Technician view.** Click *Technician view* (or open the texted link on a phone). The affected part is highlighted on the drawing, with the readings, time to limit, job steps and the other parts.
 7. **Escalation (optional).** Play to the end. At sample 226 priority becomes **Urgent**, a second text says "ESCALATED", and the work order now also needs the operations manager.
-8. **Second machine.** CMP-02 → *Skip to fault*: oil-cooler fouling. The in-stock cleaning kit beats a replacement core with a 3-day lead time, and GhostShift warns that the next planned downtime may be too late.
+8. **Second machine.** CH-02 → *Skip to fault*: oil-cooler fouling. The in-stock cleaning kit beats a replacement core with a 3-day lead time, and GhostShift warns that the next planned downtime may be too late.
 
 ## Autonomy demo (about 1 minute)
 
@@ -56,7 +56,7 @@ GhostShift runs every step on its own except the ones that need a person by poli
 
 1. Click **Reset**, then turn on **Autopilot** in the top bar ("orders parts up to $2,500").
 2. Press **Play** and don't touch anything else. GhostShift pauses when it flags the problem (Medium priority). *What GhostShift did* shows it already drafted the part order and the work order, and it is **holding** the order until priority is High.
-3. Press **Play** again. At High priority the **Autopilot** places the $1,840 bearing order itself (simulated), texts the technician with "Part ordered", and the timeline shows "10 on its own · 0 by people".
+3. Press **Play** again. At High priority the **Autopilot** places the $240 bearing kit order itself (simulated), texts the technician with "Part ordered", and the timeline shows "10 on its own · 0 by people".
 4. The only step left is **You: approve work order (lockout/tagout sign-off)**. Physical work never runs without a person, even on Autopilot.
 5. Turn Autopilot off and reset to show the contrast: the same run stops at "Approve the order" and waits.
 
@@ -74,7 +74,7 @@ When a problem reaches High priority, GhostShift texts the technician a link to 
 make text-me
 ```
 
-Run this with the API up. It triggers the VMC-07 fault and prints the text and its link. In demo mode the text is recorded, not sent. To get a real text, set these in `.env` and restart the API:
+Run this with the API up. It triggers the CRAH-07 fault and prints the text and its link. In demo mode the text is recorded, not sent. To get a real text, set these in `.env` and restart the API:
 
 - `GHOSTSHIFT_MODE=auto` and `GHOSTSHIFT_SMS_PROVIDER=twilio`
 - `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`
@@ -195,7 +195,7 @@ This runs the backend pytest suite (68 tests), the frontend type check, and the 
 make demo-smoke
 ```
 
-Run this with the API up. It replays VMC-07 end to end and asserts each step of the story.
+Run this with the API up. It replays CRAH-07 end to end and asserts each step of the story.
 
 Tests cover each agent without an LLM; the orchestrator with fake LLMs (success, retryable, non-retryable, invalid, unsafe, timeout, auto vs aws); the approval gate (no execute before approval, wrong role, attestation, rejection, partial approval, double decision); API contracts; inspection-token scoping and expiry; and every adapter with the network mocked (Twilio, ElevenLabs, Bedrock, AI4I).
 
@@ -203,11 +203,11 @@ Tests cover each agent without an LLM; the orchestrator with fake LLMs (success,
 
 | Item | Status |
 |---|---|
-| Telemetry for VMC-07 / CMP-02 | **Simulated** (deterministic, `scripts/generate_fixtures.py`) |
+| Telemetry for CRAH-07 / CH-02 | **Simulated** (deterministic, `scripts/generate_fixtures.py`) |
 | Machines, limits, maintenance history, parts, prices, calendar | **Fixture** reference data |
 | Stock and lead times | **Simulated**, not live inventory |
 | Diagnostics, risk, RUL, safety tier | **Deterministic analysis** on the data above (derived from simulated data) |
-| Energy and lube readings (spindle/package power, way-lube pressure and level, separator pressure drop, oil level) | **Simulated** |
+| Energy and lube readings (fan and compressor power, humidifier water pressure and level, oil-separator pressure drop, oil level) | **Simulated** |
 | Autopilot ordering | Real policy decision; the order itself is **simulated** |
 | Narrative | Deterministic template, or **real Bedrock inference** when configured |
 | Requisitions and work-order dispatch | **Simulated**; nothing is ordered or created in an external system |

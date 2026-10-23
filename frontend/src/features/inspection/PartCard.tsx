@@ -36,7 +36,7 @@ export function PartCard({ component, health, incident }: Props) {
 
       {part && (
         <div className="replace">
-          <div className="xs strong">Replace with</div>
+          <div className="xs strong">Part needed</div>
           <div className="small">
             <span className="mono">{part.sku}</span> · {part.description}
           </div>

@@ -88,7 +88,7 @@ def deterministic(inp: NarrativeInput) -> IncidentNarrative:
 
 
 def _sms_finding(a) -> str:
-    """Compact ASCII finding, e.g. 'Spindle vibration 2.91 mm/s, 1.9x baseline, alert limit exceeded'."""
+    """Compact ASCII finding, e.g. 'Fan vibration 2.85 mm/s, 1.8x normal, over alert limit'."""
     name = a.sensor_name.split(" (")[0]
     unit = a.unit.replace("°", "deg ").replace("µ", "u")
     ratio = a.current_value / a.baseline.mean if a.baseline.mean else 0

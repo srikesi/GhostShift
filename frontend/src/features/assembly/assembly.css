@@ -210,3 +210,14 @@
 .gen-part.affected {
   border: 2px solid var(--ink);
 }
+
+.assembly .structure .coil {
+  fill: none;
+  stroke: var(--ink-3);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.assembly .pipe.water {
+  stroke: #9fb3c4;
+}

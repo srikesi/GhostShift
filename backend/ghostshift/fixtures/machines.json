@@ -1,211 +1,629 @@
 {
-  "_comment": "GhostShift demo machine fixtures. All machines, sensors, limits and history are fixture values for demonstration; they are not taken from a real plant.",
+  "_comment": "GhostShift demo equipment for a data center. All equipment, sensors, limits and history are fixture values for demonstration; they are not taken from a real facility.",
   "machines": [
     {
-      "id": "VMC-07",
-      "display_name": "VMC-07 Vertical Machining Center",
-      "machine_type": "vertical_machining_center",
-      "model": "VMC-4020 (40-taper, 12k rpm spindle)",
-      "drawing": "vmc",
+      "id": "CRAH-07",
+      "display_name": "CRAH-07 Computer Room Air Handler",
+      "machine_type": "crah",
+      "model": "CRAH-CW150 (chilled water, 150 kW, EC fans)",
+      "drawing": "crah",
       "context": {
-        "site": "Austin Plant 2",
-        "line": "Cell B · Precision housings",
-        "shift_pattern": "3 shifts, 24/5",
-        "duty": "Aluminium roughing and finishing, 6000-9000 rpm"
+        "site": "Austin DC-2",
+        "line": "Data hall 2 · Row C cooling",
+        "shift_pattern": "24/7 operations",
+        "duty": "Cools ~120 kW of IT load; N+1 with CRAH-08"
       },
-      "provenance": {"source": "fixture", "detail": "fixtures/machines.json"},
+      "provenance": {
+        "source": "fixture",
+        "detail": "fixtures/machines.json"
+      },
       "components": [
         {
-          "id": "spindle_front_bearing",
-          "name": "Spindle front bearing set",
-          "type": "angular_contact_bearing_set",
-          "visualization_id": "vmc-spindle-front-bearing",
+          "id": "fan_bearing",
+          "name": "Supply fan motor bearings",
+          "type": "fan_motor_bearing",
+          "visualization_id": "crah-fan-bearing",
           "criticality": "high",
-          "description": "Matched angular-contact pair at the spindle nose; carries cutting loads.",
-          "maintenance": {"last_service_at": "2025-12-15T00:00:00Z", "service_interval_hours": 8000, "provenance": {"source": "fixture", "detail": "fixtures/machines.json maintenance history"}}
+          "description": "Front and rear bearings of the EC supply-fan motor.",
+          "maintenance": {
+            "last_service_at": "2025-12-15T00:00:00Z",
+            "service_interval_hours": 8000,
+            "provenance": {
+              "source": "fixture",
+              "detail": "fixtures/machines.json maintenance history"
+            }
+          }
         },
         {
-          "id": "spindle_rear_bearing",
-          "name": "Spindle rear bearing",
-          "type": "cylindrical_roller_bearing",
-          "visualization_id": "vmc-spindle-rear-bearing",
+          "id": "fan_impeller",
+          "name": "Supply fan impeller",
+          "type": "fan_impeller",
+          "visualization_id": "crah-fan-impeller",
           "criticality": "high",
-          "description": "Floating rear support bearing.",
-          "maintenance": {"last_service_at": "2025-11-04T00:00:00Z", "service_interval_hours": 10000, "provenance": {"source": "fixture", "detail": "fixtures/machines.json maintenance history"}}
+          "description": "Backward-curved impeller on the supply fan.",
+          "maintenance": {
+            "last_service_at": "2025-11-04T00:00:00Z",
+            "service_interval_hours": 10000,
+            "provenance": {
+              "source": "fixture",
+              "detail": "fixtures/machines.json maintenance history"
+            }
+          }
         },
         {
-          "id": "spindle_motor",
-          "name": "Spindle drive motor",
-          "type": "ac_spindle_motor",
-          "visualization_id": "vmc-spindle-motor",
+          "id": "fan_motor",
+          "name": "Supply fan EC motor",
+          "type": "ec_fan_motor",
+          "visualization_id": "crah-fan-motor",
           "criticality": "high",
-          "description": "Belt-coupled AC spindle motor, 15 kW.",
-          "maintenance": {"last_service_at": "2026-03-12T00:00:00Z", "service_interval_hours": 12000, "provenance": {"source": "fixture", "detail": "fixtures/machines.json maintenance history"}}
+          "description": "Electronically commutated motor driving the supply fan.",
+          "maintenance": {
+            "last_service_at": "2026-03-12T00:00:00Z",
+            "service_interval_hours": 12000,
+            "provenance": {
+              "source": "fixture",
+              "detail": "fixtures/machines.json maintenance history"
+            }
+          }
         },
         {
-          "id": "ball_screw_x",
-          "name": "X-axis ball screw",
-          "type": "ball_screw",
-          "visualization_id": "vmc-ball-screw-x",
+          "id": "air_filter",
+          "name": "Air filter bank",
+          "type": "air_filter",
+          "visualization_id": "crah-air-filter",
           "criticality": "medium",
-          "description": "X-axis ball screw and support bearings.",
-          "maintenance": {"last_service_at": "2026-05-10T00:00:00Z", "service_interval_hours": 6000, "provenance": {"source": "fixture", "detail": "fixtures/machines.json maintenance history"}}
+          "description": "Return-air filter panels (MERV 8).",
+          "maintenance": {
+            "last_service_at": "2026-05-10T00:00:00Z",
+            "service_interval_hours": 6000,
+            "provenance": {
+              "source": "fixture",
+              "detail": "fixtures/machines.json maintenance history"
+            }
+          }
         },
         {
-          "id": "coolant_pump",
-          "name": "Through-spindle coolant pump",
-          "type": "centrifugal_pump",
-          "visualization_id": "vmc-coolant-pump",
+          "id": "chw_valve",
+          "name": "Chilled-water control valve",
+          "type": "chw_valve",
+          "visualization_id": "crah-chw-valve",
           "criticality": "medium",
-          "description": "High-pressure coolant pump in the base tank.",
-          "maintenance": {"last_service_at": "2026-06-02T00:00:00Z", "service_interval_hours": 4000, "provenance": {"source": "fixture", "detail": "fixtures/machines.json maintenance history"}}
+          "description": "Two-way valve controlling chilled-water flow through the coil.",
+          "maintenance": {
+            "last_service_at": "2026-06-02T00:00:00Z",
+            "service_interval_hours": 4000,
+            "provenance": {
+              "source": "fixture",
+              "detail": "fixtures/machines.json maintenance history"
+            }
+          }
         },
         {
-          "id": "tool_changer",
-          "name": "Tool changer carousel",
-          "type": "atc_carousel",
-          "visualization_id": "vmc-tool-changer",
+          "id": "condensate_pump",
+          "name": "Condensate pump",
+          "type": "condensate_pump",
+          "visualization_id": "crah-condensate-pump",
           "criticality": "medium",
-          "description": "24-pocket side-mount tool changer.",
-          "maintenance": {"last_service_at": "2026-08-20T00:00:00Z", "service_interval_hours": 3000, "provenance": {"source": "fixture", "detail": "fixtures/machines.json maintenance history"}}
+          "description": "Removes condensate from the coil drain pan.",
+          "maintenance": {
+            "last_service_at": "2026-08-20T00:00:00Z",
+            "service_interval_hours": 3000,
+            "provenance": {
+              "source": "fixture",
+              "detail": "fixtures/machines.json maintenance history"
+            }
+          }
         },
         {
-          "id": "way_lube_unit",
-          "name": "Way lubrication unit",
-          "type": "lube_pump",
-          "visualization_id": "vmc-way-lube",
+          "id": "humidifier",
+          "name": "Humidifier",
+          "type": "humidifier",
+          "visualization_id": "crah-humidifier",
           "criticality": "low",
-          "description": "Automatic way-lube pump and reservoir.",
-          "maintenance": {"last_service_at": "2026-08-30T00:00:00Z", "service_interval_hours": 2000, "provenance": {"source": "fixture", "detail": "fixtures/machines.json maintenance history"}}
+          "description": "Electrode steam humidifier keeping the hall within humidity limits.",
+          "maintenance": {
+            "last_service_at": "2026-08-30T00:00:00Z",
+            "service_interval_hours": 2000,
+            "provenance": {
+              "source": "fixture",
+              "detail": "fixtures/machines.json maintenance history"
+            }
+          }
         }
       ],
       "sensors": [
-        {"id": "spindle_vib_rms", "name": "Spindle vibration (RMS velocity)", "unit": "mm/s", "component_id": "spindle_front_bearing", "role": "health", "sample_interval_s": 900,
-         "limits": {"direction": "above", "alert": 2.8, "danger": 7.1, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
-         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/VMC-07.csv (generated by scripts/generate_fixtures.py)"}},
-        {"id": "spindle_bearing_temp", "name": "Front bearing temperature", "unit": "°C", "component_id": "spindle_front_bearing", "role": "health", "sample_interval_s": 900,
-         "limits": {"direction": "above", "alert": 60, "danger": 70, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
-         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/VMC-07.csv"}},
-        {"id": "spindle_motor_current", "name": "Spindle motor current", "unit": "A", "component_id": "spindle_motor", "role": "health", "sample_interval_s": 900,
-         "limits": {"direction": "above", "alert": 18, "danger": 20, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
-         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/VMC-07.csv"}},
-        {"id": "spindle_speed", "name": "Spindle speed", "unit": "rpm", "component_id": "spindle_motor", "role": "context", "sample_interval_s": 900, "limits": null,
-         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/VMC-07.csv"}},
-        {"id": "coolant_pressure", "name": "Coolant supply pressure", "unit": "bar", "component_id": "coolant_pump", "role": "health", "sample_interval_s": 900,
-         "limits": {"direction": "below", "alert": 5.5, "danger": 4.5, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
-         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/VMC-07.csv"}},
-        {"id": "x_following_error", "name": "X-axis following error", "unit": "µm", "component_id": "ball_screw_x", "role": "health", "sample_interval_s": 900,
-         "limits": {"direction": "above", "alert": 8, "danger": 12, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
-         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/VMC-07.csv"}},
-        {"id": "spindle_power", "name": "Spindle power", "unit": "kW", "component_id": "spindle_motor", "role": "health", "sample_interval_s": 900,
-         "limits": {"direction": "above", "alert": 13, "danger": 15, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
-         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/VMC-07.csv"}},
-        {"id": "way_lube_pressure", "name": "Way lube pressure", "unit": "bar", "component_id": "way_lube_unit", "role": "health", "sample_interval_s": 900,
-         "limits": {"direction": "below", "alert": 1.6, "danger": 1.2, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
-         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/VMC-07.csv"}},
-        {"id": "way_lube_level", "name": "Way lube reservoir level", "unit": "%", "component_id": "way_lube_unit", "role": "health", "sample_interval_s": 900,
-         "limits": {"direction": "below", "alert": 25, "danger": 15, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
-         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/VMC-07.csv"}}
+        {
+          "id": "fan_vibration",
+          "name": "Fan vibration (RMS velocity)",
+          "unit": "mm/s",
+          "component_id": "fan_bearing",
+          "role": "health",
+          "sample_interval_s": 900,
+          "limits": {
+            "direction": "above",
+            "alert": 2.8,
+            "danger": 7.1,
+            "provenance": {
+              "source": "fixture",
+              "detail": "Site alarm limits (fixture values)"
+            }
+          },
+          "provenance": {
+            "source": "simulated",
+            "detail": "fixtures/telemetry/CRAH-07.csv (generated by scripts/generate_fixtures.py)"
+          }
+        },
+        {
+          "id": "fan_bearing_temp",
+          "name": "Fan bearing temperature",
+          "unit": "°C",
+          "component_id": "fan_bearing",
+          "role": "health",
+          "sample_interval_s": 900,
+          "limits": {
+            "direction": "above",
+            "alert": 60,
+            "danger": 70,
+            "provenance": {
+              "source": "fixture",
+              "detail": "Site alarm limits (fixture values)"
+            }
+          },
+          "provenance": {
+            "source": "simulated",
+            "detail": "fixtures/telemetry/CRAH-07.csv (generated by scripts/generate_fixtures.py)"
+          }
+        },
+        {
+          "id": "fan_motor_current",
+          "name": "Fan motor current",
+          "unit": "A",
+          "component_id": "fan_motor",
+          "role": "health",
+          "sample_interval_s": 900,
+          "limits": {
+            "direction": "above",
+            "alert": 18,
+            "danger": 20,
+            "provenance": {
+              "source": "fixture",
+              "detail": "Site alarm limits (fixture values)"
+            }
+          },
+          "provenance": {
+            "source": "simulated",
+            "detail": "fixtures/telemetry/CRAH-07.csv (generated by scripts/generate_fixtures.py)"
+          }
+        },
+        {
+          "id": "fan_speed",
+          "name": "Fan speed",
+          "unit": "rpm",
+          "component_id": "fan_motor",
+          "role": "context",
+          "sample_interval_s": 900,
+          "limits": null,
+          "provenance": {
+            "source": "simulated",
+            "detail": "fixtures/telemetry/CRAH-07.csv (generated by scripts/generate_fixtures.py)"
+          }
+        },
+        {
+          "id": "chw_supply_pressure",
+          "name": "Chilled-water supply pressure",
+          "unit": "bar",
+          "component_id": "chw_valve",
+          "role": "health",
+          "sample_interval_s": 900,
+          "limits": {
+            "direction": "below",
+            "alert": 5.5,
+            "danger": 4.5,
+            "provenance": {
+              "source": "fixture",
+              "detail": "Site alarm limits (fixture values)"
+            }
+          },
+          "provenance": {
+            "source": "simulated",
+            "detail": "fixtures/telemetry/CRAH-07.csv (generated by scripts/generate_fixtures.py)"
+          }
+        },
+        {
+          "id": "filter_dp",
+          "name": "Air filter pressure drop",
+          "unit": "Pa",
+          "component_id": "air_filter",
+          "role": "health",
+          "sample_interval_s": 900,
+          "limits": {
+            "direction": "above",
+            "alert": 240,
+            "danger": 360,
+            "provenance": {
+              "source": "fixture",
+              "detail": "Site alarm limits (fixture values)"
+            }
+          },
+          "provenance": {
+            "source": "simulated",
+            "detail": "fixtures/telemetry/CRAH-07.csv (generated by scripts/generate_fixtures.py)"
+          }
+        },
+        {
+          "id": "fan_power",
+          "name": "Fan power",
+          "unit": "kW",
+          "component_id": "fan_motor",
+          "role": "health",
+          "sample_interval_s": 900,
+          "limits": {
+            "direction": "above",
+            "alert": 13,
+            "danger": 15,
+            "provenance": {
+              "source": "fixture",
+              "detail": "Site alarm limits (fixture values)"
+            }
+          },
+          "provenance": {
+            "source": "simulated",
+            "detail": "fixtures/telemetry/CRAH-07.csv (generated by scripts/generate_fixtures.py)"
+          }
+        },
+        {
+          "id": "humidifier_water_pressure",
+          "name": "Humidifier water pressure",
+          "unit": "bar",
+          "component_id": "humidifier",
+          "role": "health",
+          "sample_interval_s": 900,
+          "limits": {
+            "direction": "below",
+            "alert": 1.6,
+            "danger": 1.2,
+            "provenance": {
+              "source": "fixture",
+              "detail": "Site alarm limits (fixture values)"
+            }
+          },
+          "provenance": {
+            "source": "simulated",
+            "detail": "fixtures/telemetry/CRAH-07.csv (generated by scripts/generate_fixtures.py)"
+          }
+        },
+        {
+          "id": "humidifier_level",
+          "name": "Humidifier reservoir level",
+          "unit": "%",
+          "component_id": "humidifier",
+          "role": "health",
+          "sample_interval_s": 900,
+          "limits": {
+            "direction": "below",
+            "alert": 25,
+            "danger": 15,
+            "provenance": {
+              "source": "fixture",
+              "detail": "Site alarm limits (fixture values)"
+            }
+          },
+          "provenance": {
+            "source": "simulated",
+            "detail": "fixtures/telemetry/CRAH-07.csv (generated by scripts/generate_fixtures.py)"
+          }
+        }
       ]
     },
     {
-      "id": "CMP-02",
-      "display_name": "CMP-02 Rotary Screw Air Compressor",
-      "machine_type": "rotary_screw_compressor",
-      "model": "RS-75 oil-injected, 75 kW, air-cooled",
-      "drawing": "compressor",
+      "id": "CH-02",
+      "display_name": "CH-02 Air-Cooled Screw Chiller",
+      "machine_type": "air_cooled_chiller",
+      "model": "ACS-400 (air-cooled screw chiller, 400 kW)",
+      "drawing": "chiller",
       "context": {
-        "site": "Austin Plant 2",
-        "line": "Utilities · Compressed air header A",
-        "shift_pattern": "Continuous, 24/7",
-        "duty": "Base-load compressor, 7.5 bar(g) header"
+        "site": "Austin DC-2",
+        "line": "Chiller plant · Loop A",
+        "shift_pattern": "24/7 operations",
+        "duty": "Lead chiller for data halls 1–2; N+1 with CH-03"
       },
-      "provenance": {"source": "fixture", "detail": "fixtures/machines.json"},
+      "provenance": {
+        "source": "fixture",
+        "detail": "fixtures/machines.json"
+      },
       "components": [
         {
-          "id": "airend",
-          "name": "Airend (screw element)",
-          "type": "screw_airend",
-          "visualization_id": "cmp-airend",
+          "id": "compressor",
+          "name": "Screw compressor",
+          "type": "screw_compressor",
+          "visualization_id": "ch-compressor",
           "criticality": "high",
-          "description": "Oil-injected twin-screw compression element.",
-          "maintenance": {"last_service_at": "2024-09-10T00:00:00Z", "service_interval_hours": 40000, "provenance": {"source": "fixture", "detail": "fixtures/machines.json maintenance history"}}
+          "description": "Semi-hermetic twin-screw refrigerant compressor.",
+          "maintenance": {
+            "last_service_at": "2024-09-10T00:00:00Z",
+            "service_interval_hours": 40000,
+            "provenance": {
+              "source": "fixture",
+              "detail": "fixtures/machines.json maintenance history"
+            }
+          }
         },
         {
           "id": "oil_cooler",
           "name": "Oil cooler",
-          "type": "air_oil_cooler",
-          "visualization_id": "cmp-oil-cooler",
+          "type": "oil_cooler",
+          "visualization_id": "ch-oil-cooler",
           "criticality": "high",
-          "description": "Air-blast oil cooler core; rejects compression heat.",
-          "maintenance": {"last_service_at": "2026-02-18T00:00:00Z", "service_interval_hours": 4000, "provenance": {"source": "fixture", "detail": "fixtures/machines.json maintenance history"}}
+          "description": "Air-cooled heat exchanger that cools the compressor's lubricating oil.",
+          "maintenance": {
+            "last_service_at": "2026-02-18T00:00:00Z",
+            "service_interval_hours": 4000,
+            "provenance": {
+              "source": "fixture",
+              "detail": "fixtures/machines.json maintenance history"
+            }
+          }
         },
         {
-          "id": "cooling_fan_motor",
-          "name": "Cooling fan motor",
-          "type": "fan_motor",
-          "visualization_id": "cmp-cooling-fan",
+          "id": "condenser_fans",
+          "name": "Condenser fans",
+          "type": "condenser_fan",
+          "visualization_id": "ch-condenser-fans",
           "criticality": "medium",
-          "description": "Axial fan drawing air through the oil cooler.",
-          "maintenance": {"last_service_at": "2026-02-18T00:00:00Z", "service_interval_hours": 16000, "provenance": {"source": "fixture", "detail": "fixtures/machines.json maintenance history"}}
+          "description": "Fans drawing outdoor air across the condenser and oil cooler coils.",
+          "maintenance": {
+            "last_service_at": "2026-02-18T00:00:00Z",
+            "service_interval_hours": 16000,
+            "provenance": {
+              "source": "fixture",
+              "detail": "fixtures/machines.json maintenance history"
+            }
+          }
         },
         {
-          "id": "drive_motor",
-          "name": "Main drive motor",
-          "type": "induction_motor",
-          "visualization_id": "cmp-drive-motor",
+          "id": "compressor_motor",
+          "name": "Compressor motor",
+          "type": "compressor_motor",
+          "visualization_id": "ch-compressor-motor",
           "criticality": "high",
-          "description": "75 kW TEFC induction motor, direct coupled.",
-          "maintenance": {"last_service_at": "2025-12-01T00:00:00Z", "service_interval_hours": 16000, "provenance": {"source": "fixture", "detail": "fixtures/machines.json maintenance history"}}
+          "description": "Motor driving the screw compressor.",
+          "maintenance": {
+            "last_service_at": "2025-12-01T00:00:00Z",
+            "service_interval_hours": 16000,
+            "provenance": {
+              "source": "fixture",
+              "detail": "fixtures/machines.json maintenance history"
+            }
+          }
         },
         {
           "id": "oil_separator",
-          "name": "Oil separator element",
-          "type": "separator_element",
-          "visualization_id": "cmp-oil-separator",
+          "name": "Oil separator",
+          "type": "oil_separator",
+          "visualization_id": "ch-oil-separator",
           "criticality": "medium",
-          "description": "Coalescing separator in the receiver tank.",
-          "maintenance": {"last_service_at": "2026-06-20T00:00:00Z", "service_interval_hours": 4000, "provenance": {"source": "fixture", "detail": "fixtures/machines.json maintenance history"}}
+          "description": "Separates oil from refrigerant discharge gas and returns it to the compressor.",
+          "maintenance": {
+            "last_service_at": "2026-06-20T00:00:00Z",
+            "service_interval_hours": 4000,
+            "provenance": {
+              "source": "fixture",
+              "detail": "fixtures/machines.json maintenance history"
+            }
+          }
         },
         {
-          "id": "inlet_valve",
-          "name": "Inlet (load/unload) valve",
-          "type": "inlet_valve",
-          "visualization_id": "cmp-inlet-valve",
+          "id": "evaporator",
+          "name": "Evaporator",
+          "type": "evaporator",
+          "visualization_id": "ch-evaporator",
           "criticality": "medium",
-          "description": "Modulating inlet valve.",
-          "maintenance": {"last_service_at": "2025-10-01T00:00:00Z", "service_interval_hours": 8000, "provenance": {"source": "fixture", "detail": "fixtures/machines.json maintenance history"}}
+          "description": "Shell-and-tube heat exchanger that chills the data-center water loop.",
+          "maintenance": {
+            "last_service_at": "2025-10-01T00:00:00Z",
+            "service_interval_hours": 8000,
+            "provenance": {
+              "source": "fixture",
+              "detail": "fixtures/machines.json maintenance history"
+            }
+          }
         }
       ],
       "sensors": [
-        {"id": "discharge_temp", "name": "Airend discharge temperature", "unit": "°C", "component_id": "airend", "role": "health", "sample_interval_s": 900,
-         "limits": {"direction": "above", "alert": 98, "danger": 110, "provenance": {"source": "fixture", "detail": "Site alarm / trip limits (fixture values)"}},
-         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/CMP-02.csv (generated by scripts/generate_fixtures.py)"}},
-        {"id": "oil_injection_temp", "name": "Oil injection temperature (cooler outlet)", "unit": "°C", "component_id": "oil_cooler", "role": "health", "sample_interval_s": 900,
-         "limits": {"direction": "above", "alert": 75, "danger": 85, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
-         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/CMP-02.csv"}},
-        {"id": "cooling_fan_current", "name": "Cooling fan motor current", "unit": "A", "component_id": "cooling_fan_motor", "role": "health", "sample_interval_s": 900,
-         "limits": {"direction": "above", "alert": 8.5, "danger": 9.5, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
-         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/CMP-02.csv"}},
-        {"id": "motor_current", "name": "Main motor current", "unit": "A", "component_id": "drive_motor", "role": "health", "sample_interval_s": 900,
-         "limits": {"direction": "above", "alert": 145, "danger": 155, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
-         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/CMP-02.csv"}},
-        {"id": "airend_vibration", "name": "Airend vibration (RMS velocity)", "unit": "mm/s", "component_id": "airend", "role": "health", "sample_interval_s": 900,
-         "limits": {"direction": "above", "alert": 4.5, "danger": 7.1, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
-         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/CMP-02.csv"}},
-        {"id": "ambient_temp", "name": "Room temperature", "unit": "°C", "component_id": "oil_cooler", "role": "context", "sample_interval_s": 900, "limits": null,
-         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/CMP-02.csv"}},
-        {"id": "discharge_pressure", "name": "Package discharge pressure", "unit": "bar(g)", "component_id": "inlet_valve", "role": "context", "sample_interval_s": 900, "limits": null,
-         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/CMP-02.csv"}},
-        {"id": "package_power", "name": "Package power", "unit": "kW", "component_id": "drive_motor", "role": "health", "sample_interval_s": 900,
-         "limits": {"direction": "above", "alert": 80, "danger": 88, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
-         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/CMP-02.csv"}},
-        {"id": "separator_dp", "name": "Oil separator pressure drop", "unit": "bar", "component_id": "oil_separator", "role": "health", "sample_interval_s": 900,
-         "limits": {"direction": "above", "alert": 0.8, "danger": 1.0, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
-         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/CMP-02.csv"}},
-        {"id": "oil_level", "name": "Oil level", "unit": "%", "component_id": "oil_separator", "role": "health", "sample_interval_s": 900,
-         "limits": {"direction": "below", "alert": 60, "danger": 50, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
-         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/CMP-02.csv"}}
+        {
+          "id": "discharge_temp",
+          "name": "Compressor discharge temperature",
+          "unit": "°C",
+          "component_id": "compressor",
+          "role": "health",
+          "sample_interval_s": 900,
+          "limits": {
+            "direction": "above",
+            "alert": 98,
+            "danger": 110,
+            "provenance": {
+              "source": "fixture",
+              "detail": "Site alarm limits (fixture values)"
+            }
+          },
+          "provenance": {
+            "source": "simulated",
+            "detail": "fixtures/telemetry/CH-02.csv (generated by scripts/generate_fixtures.py)"
+          }
+        },
+        {
+          "id": "oil_temp",
+          "name": "Oil temperature (cooler outlet)",
+          "unit": "°C",
+          "component_id": "oil_cooler",
+          "role": "health",
+          "sample_interval_s": 900,
+          "limits": {
+            "direction": "above",
+            "alert": 75,
+            "danger": 85,
+            "provenance": {
+              "source": "fixture",
+              "detail": "Site alarm limits (fixture values)"
+            }
+          },
+          "provenance": {
+            "source": "simulated",
+            "detail": "fixtures/telemetry/CH-02.csv (generated by scripts/generate_fixtures.py)"
+          }
+        },
+        {
+          "id": "condenser_fan_current",
+          "name": "Condenser fan current",
+          "unit": "A",
+          "component_id": "condenser_fans",
+          "role": "health",
+          "sample_interval_s": 900,
+          "limits": {
+            "direction": "above",
+            "alert": 8.5,
+            "danger": 9.5,
+            "provenance": {
+              "source": "fixture",
+              "detail": "Site alarm limits (fixture values)"
+            }
+          },
+          "provenance": {
+            "source": "simulated",
+            "detail": "fixtures/telemetry/CH-02.csv (generated by scripts/generate_fixtures.py)"
+          }
+        },
+        {
+          "id": "compressor_motor_current",
+          "name": "Compressor motor current",
+          "unit": "A",
+          "component_id": "compressor_motor",
+          "role": "health",
+          "sample_interval_s": 900,
+          "limits": {
+            "direction": "above",
+            "alert": 145,
+            "danger": 155,
+            "provenance": {
+              "source": "fixture",
+              "detail": "Site alarm limits (fixture values)"
+            }
+          },
+          "provenance": {
+            "source": "simulated",
+            "detail": "fixtures/telemetry/CH-02.csv (generated by scripts/generate_fixtures.py)"
+          }
+        },
+        {
+          "id": "compressor_vibration",
+          "name": "Compressor vibration (RMS velocity)",
+          "unit": "mm/s",
+          "component_id": "compressor",
+          "role": "health",
+          "sample_interval_s": 900,
+          "limits": {
+            "direction": "above",
+            "alert": 4.5,
+            "danger": 7.1,
+            "provenance": {
+              "source": "fixture",
+              "detail": "Site alarm limits (fixture values)"
+            }
+          },
+          "provenance": {
+            "source": "simulated",
+            "detail": "fixtures/telemetry/CH-02.csv (generated by scripts/generate_fixtures.py)"
+          }
+        },
+        {
+          "id": "outdoor_temp",
+          "name": "Outdoor air temperature",
+          "unit": "°C",
+          "component_id": "condenser_fans",
+          "role": "context",
+          "sample_interval_s": 900,
+          "limits": null,
+          "provenance": {
+            "source": "simulated",
+            "detail": "fixtures/telemetry/CH-02.csv (generated by scripts/generate_fixtures.py)"
+          }
+        },
+        {
+          "id": "chw_supply_temp",
+          "name": "Chilled-water supply temperature",
+          "unit": "°C",
+          "component_id": "evaporator",
+          "role": "context",
+          "sample_interval_s": 900,
+          "limits": null,
+          "provenance": {
+            "source": "simulated",
+            "detail": "fixtures/telemetry/CH-02.csv (generated by scripts/generate_fixtures.py)"
+          }
+        },
+        {
+          "id": "compressor_power",
+          "name": "Compressor power",
+          "unit": "kW",
+          "component_id": "compressor_motor",
+          "role": "health",
+          "sample_interval_s": 900,
+          "limits": {
+            "direction": "above",
+            "alert": 160,
+            "danger": 176,
+            "provenance": {
+              "source": "fixture",
+              "detail": "Site alarm limits (fixture values)"
+            }
+          },
+          "provenance": {
+            "source": "simulated",
+            "detail": "fixtures/telemetry/CH-02.csv (generated by scripts/generate_fixtures.py)"
+          }
+        },
+        {
+          "id": "oil_separator_dp",
+          "name": "Oil separator pressure drop",
+          "unit": "bar",
+          "component_id": "oil_separator",
+          "role": "health",
+          "sample_interval_s": 900,
+          "limits": {
+            "direction": "above",
+            "alert": 0.8,
+            "danger": 1.0,
+            "provenance": {
+              "source": "fixture",
+              "detail": "Site alarm limits (fixture values)"
+            }
+          },
+          "provenance": {
+            "source": "simulated",
+            "detail": "fixtures/telemetry/CH-02.csv (generated by scripts/generate_fixtures.py)"
+          }
+        },
+        {
+          "id": "oil_level",
+          "name": "Oil level",
+          "unit": "%",
+          "component_id": "oil_separator",
+          "role": "health",
+          "sample_interval_s": 900,
+          "limits": {
+            "direction": "below",
+            "alert": 60,
+            "danger": 50,
+            "provenance": {
+              "source": "fixture",
+              "detail": "Site alarm limits (fixture values)"
+            }
+          },
+          "provenance": {
+            "source": "simulated",
+            "detail": "fixtures/telemetry/CH-02.csv (generated by scripts/generate_fixtures.py)"
+          }
+        }
       ]
     }
   ]

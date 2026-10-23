@@ -30,7 +30,7 @@ Add a Bedrock-powered copilot. It answers questions about a machine or incident 
    No tool may approve, reject or execute actions, change a priority tier, or send messages. Validate every tool input with Pydantic, and return errors to the model as tool results.
 3. **Maintenance documents.** Add a `search_maintenance_docs(query, machine_type)` tool so answers can cite real procedures.
    - In `aws` or `auto` mode with a configured knowledge base id, back it with a Bedrock Knowledge Base (Retrieve API).
-   - Offline, use a few short, clearly labelled sample procedures stored in a new `backend/ghostshift/knowledge/` folder (yours), searched by keyword: spindle bearing replacement, oil cooler cleaning, way-lube checks.
+   - Offline, use a few short, clearly labelled sample procedures stored in a new `backend/ghostshift/knowledge/` folder (yours), searched by keyword: CRAH fan bearing replacement, chiller oil cooler cleaning, CRAH filter change.
    - Answers must say which document they used.
 4. **Supervisor over specialists.** This is the multi-agent part of the pitch. Make the copilot a supervisor agent that delegates to the existing specialist agents (diagnostics, prognostics, safety, maintenance & supply) through tools, and explains how they combined. If the organizers require Strands or AgentCore, use its "agents as tools" pattern. Show the delegation in the UI's "Steps" list.
 5. **API.** Add `POST /api/copilot/ask` with `{machine_id, incident_id?, question}`. It returns `{answer, tool_calls[], status, provider}`, using the existing `StageStatus` values. Add endpoints only in `api/copilot_routes.py`, which is already registered.
@@ -55,6 +55,6 @@ Add a Bedrock-powered copilot. It answers questions about a machine or incident 
   - an attempt to call a non-existent or forbidden tool
   - the answer never changing tier or approvals
 - `make check` is green. With `GHOSTSHIFT_MODE=demo`, `make demo-smoke` passes.
-- Manual check: with `GHOSTSHIFT_MODE=auto` and a model id, ask the 3 suggested questions in the UI on VMC-07 at "Skip to fault". Answers cite real numbers from tools.
+- Manual check: with `GHOSTSHIFT_MODE=auto` and a model id, ask the 3 suggested questions in the UI on CRAH-07 at "Skip to fault". Answers cite real numbers from tools.
 - Tests cover the document search tool offline: it returns the right sample procedure, and the answer names its source.
 - `docs/copilot.md` documents the tools, modes, model id, knowledge base setup and limits.

@@ -9,7 +9,7 @@ from ghostshift.integrations.base import LlmResponse, ProviderHealth
 from ghostshift.main import create_app
 from ghostshift.schemas.common import ProviderInfo, ProviderKind
 
-VMC, CMP = "VMC-07", "CMP-02"
+CRAH, CH = "CRAH-07", "CH-02"
 
 
 def make_settings(**kw) -> Settings:
@@ -50,10 +50,10 @@ class FakeLLM:
 
 
 VALID_NARRATIVE = (
-    '{"headline": "VMC-07 spindle bearing wear detected", '
-    '"summary": "Spindle vibration has risen well above baseline and crossed the alert limit.", '
-    '"technician_brief": "Check spindle front bearing; isolate per site LOTO before work.", '
-    '"sms_key_finding": "Spindle vibration above alert limit"}'
+    '{"headline": "CRAH-07 fan bearing wear detected", '
+    '"summary": "Fan vibration has risen well above baseline and crossed the alert limit.", '
+    '"technician_brief": "Check fan bearing; isolate per site LOTO before work.", '
+    '"sms_key_finding": "Fan vibration above alert limit"}'
 )
 
 

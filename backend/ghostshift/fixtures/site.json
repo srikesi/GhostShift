@@ -2,39 +2,88 @@
   "_comment": "Site reference data for the demo: replay scenarios, planned downtime windows and on-call technicians. Phone numbers are fictional 555-01xx numbers.",
   "scenarios": [
     {
-      "machine_id": "VMC-07",
-      "telemetry_file": "telemetry/VMC-07.csv",
+      "machine_id": "CRAH-07",
+      "telemetry_file": "telemetry/CRAH-07.csv",
       "baseline_start_index": 0,
       "baseline_end_index": 95,
       "initial_cursor": 120,
       "jump_cursor": 216,
       "phases": [
-        {"label": "Normal operation", "start_index": 0, "end_index": 139},
-        {"label": "Simulated bearing degradation", "start_index": 140, "end_index": 239}
+        {
+          "label": "Normal operation",
+          "start_index": 0,
+          "end_index": 139
+        },
+        {
+          "label": "Simulated fan bearing wear",
+          "start_index": 140,
+          "end_index": 239
+        }
       ]
     },
     {
-      "machine_id": "CMP-02",
-      "telemetry_file": "telemetry/CMP-02.csv",
+      "machine_id": "CH-02",
+      "telemetry_file": "telemetry/CH-02.csv",
       "baseline_start_index": 0,
       "baseline_end_index": 95,
       "initial_cursor": 110,
       "jump_cursor": 205,
       "phases": [
-        {"label": "Normal operation", "start_index": 0, "end_index": 119},
-        {"label": "Simulated oil cooler fouling", "start_index": 120, "end_index": 239}
+        {
+          "label": "Normal operation",
+          "start_index": 0,
+          "end_index": 119
+        },
+        {
+          "label": "Simulated oil cooler fouling",
+          "start_index": 120,
+          "end_index": 239
+        }
       ]
     }
   ],
   "downtime_windows": [
-    {"machine_id": "VMC-07", "label": "Night-shift planned downtime", "start": "2026-10-21T22:00:00Z", "end": "2026-10-22T06:00:00Z"},
-    {"machine_id": "VMC-07", "label": "Weekend PM window", "start": "2026-10-24T14:00:00Z", "end": "2026-10-24T23:00:00Z"},
-    {"machine_id": "VMC-07", "label": "Night-shift planned downtime", "start": "2026-10-27T22:00:00Z", "end": "2026-10-28T06:00:00Z"},
-    {"machine_id": "CMP-02", "label": "Header A switchover to CMP-03 (backup)", "start": "2026-10-22T04:00:00Z", "end": "2026-10-22T09:00:00Z"},
-    {"machine_id": "CMP-02", "label": "Sunday utilities window", "start": "2026-10-25T06:00:00Z", "end": "2026-10-25T14:00:00Z"}
+    {
+      "machine_id": "CRAH-07",
+      "label": "Planned maintenance window (CRAH-08 covering)",
+      "start": "2026-10-21T22:00:00Z",
+      "end": "2026-10-22T06:00:00Z"
+    },
+    {
+      "machine_id": "CRAH-07",
+      "label": "Weekend maintenance window",
+      "start": "2026-10-24T14:00:00Z",
+      "end": "2026-10-24T23:00:00Z"
+    },
+    {
+      "machine_id": "CRAH-07",
+      "label": "Planned maintenance window (CRAH-08 covering)",
+      "start": "2026-10-27T22:00:00Z",
+      "end": "2026-10-28T06:00:00Z"
+    },
+    {
+      "machine_id": "CH-02",
+      "label": "Load transfer to standby chiller CH-03",
+      "start": "2026-10-22T04:00:00Z",
+      "end": "2026-10-22T09:00:00Z"
+    },
+    {
+      "machine_id": "CH-02",
+      "label": "Sunday chiller plant window",
+      "start": "2026-10-25T06:00:00Z",
+      "end": "2026-10-25T14:00:00Z"
+    }
   ],
   "technicians": [
-    {"machine_id": "VMC-07", "label": "R. Alvarez · Maintenance technician, Cell B", "phone": "+15125550142"},
-    {"machine_id": "CMP-02", "label": "D. Okafor · Utilities technician", "phone": "+15125550178"}
+    {
+      "machine_id": "CRAH-07",
+      "label": "R. Alvarez · Critical facilities technician, Data hall 2",
+      "phone": "+15125550142"
+    },
+    {
+      "machine_id": "CH-02",
+      "label": "D. Okafor · Chiller plant technician",
+      "phone": "+15125550178"
+    }
   ]
 }

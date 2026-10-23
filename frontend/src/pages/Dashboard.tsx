@@ -242,7 +242,7 @@ function TopBar({
     <header className="topbar">
       <Wordmark />
       <span className="topbar-sep" />
-      <span className="topbar-ctx">Austin Plant 2</span>
+      <span className="topbar-ctx">Austin DC-2</span>
       <span className="spacer" />
       {autonomy && (
         <button

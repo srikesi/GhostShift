@@ -154,3 +154,8 @@
 .m-others li button.active {
   font-weight: 600;
 }
+
+.guide .video-btn {
+  align-self: flex-start;
+  margin-top: var(--s-1);
+}

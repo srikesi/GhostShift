@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .conftest import CMP, VMC, seek
+from .conftest import CH, CRAH, seek
 
 
 def autopilot(client, on=True, limit=None):
@@ -24,7 +24,7 @@ def action(v, kind):
 
 def test_off_by_default_people_approve_everything(client):
     assert client.get("/api/autonomy").json() == {"level": "advise", "auto_order_limit_usd": 2500.0}
-    v = view(client, seek(client, VMC, 216)["triggered_incident_id"])
+    v = view(client, seek(client, CRAH, 216)["triggered_incident_id"])
     assert action(v, "submit_requisition")["status"] == "awaiting_approval"
     kinds = [e["kind"] for e in v["activity"]]
     assert kinds[:4] == ["detected", "priority", "drafted", "scheduled"] and "notified" in kinds
@@ -34,12 +34,12 @@ def test_off_by_default_people_approve_everything(client):
 
 def test_autopilot_orders_part_at_high_priority_but_not_physical_work(client):
     autopilot(client)
-    first = seek(client, VMC, 172)  # Medium priority
+    first = seek(client, CRAH, 172)  # Medium priority
     v = view(client, first["triggered_incident_id"])
     assert action(v, "submit_requisition")["status"] == "awaiting_approval"
     assert any("waiting until priority is High" in e["text"] for e in v["activity"])
 
-    seek(client, VMC, 216)  # High priority
+    seek(client, CRAH, 216)  # High priority
     v = view(client, first["triggered_incident_id"])
     req = action(v, "submit_requisition")
     assert req["status"] == "completed_simulated"
@@ -54,7 +54,7 @@ def test_autopilot_orders_part_at_high_priority_but_not_physical_work(client):
 
 def test_autopilot_never_releases_work_order_even_when_urgent(client):
     autopilot(client)
-    r = seek(client, VMC, 239)
+    r = seek(client, CRAH, 239)
     v = view(client, r["triggered_incident_id"])
     wo = action(v, "dispatch_work_order")
     assert wo["status"] == "awaiting_approval"
@@ -63,21 +63,21 @@ def test_autopilot_never_releases_work_order_even_when_urgent(client):
 
 
 def test_autopilot_holds_orders_over_the_limit(client):
-    autopilot(client, limit=1000)
-    v = view(client, seek(client, VMC, 216)["triggered_incident_id"])
+    autopilot(client, limit=100)
+    v = view(client, seek(client, CRAH, 216)["triggered_incident_id"])
     assert action(v, "submit_requisition")["status"] == "awaiting_approval"
-    assert any("over the $1,000 auto-order limit" in e["text"] for e in v["activity"])
+    assert any("over the $100 auto-order limit" in e["text"] for e in v["activity"])
 
 
 def test_switching_autopilot_on_applies_to_open_problems(client):
-    incident_id = seek(client, CMP, 150)["triggered_incident_id"]
+    incident_id = seek(client, CH, 150)["triggered_incident_id"]
     assert action(view(client, incident_id), "submit_requisition")["status"] == "awaiting_approval"
     autopilot(client)
     assert action(view(client, incident_id), "submit_requisition")["status"] == "completed_simulated"
 
 
 def test_api_decisions_are_never_marked_automated(client):
-    v = view(client, seek(client, VMC, 216)["triggered_incident_id"])
+    v = view(client, seek(client, CRAH, 216)["triggered_incident_id"])
     req = action(v, "submit_requisition")
     r = client.post(f"/api/actions/{req['id']}/decision", json={
         "role": "maintenance_supervisor", "approver_name": "Auto-order policy", "decision": "approve"})

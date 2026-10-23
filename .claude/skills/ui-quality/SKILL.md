@@ -36,6 +36,6 @@ Keep the interface credible for an industrial operations team: dense but legible
 
 ## Verification required before done
 - `make typecheck` and `make build` pass.
-- Run the app (`make dev`), play the VMC-07 replay to the end, and check the dashboard at 1440/1024 and `/m/<token>` at 375 width: `document.documentElement.scrollWidth === clientWidth`.
+- Run the app (`make dev`), play the CRAH-07 replay to the end, and check the dashboard at 1440/1024 and `/m/<token>` at 375 width: `document.documentElement.scrollWidth === clientWidth`.
 - Count words on the incident screen (`document.querySelector('main').innerText.split(/\s+/).length`); it should stay around 600 or below.
 - Screenshot the problem column and mobile view; confirm the Simulated tags are on texts and orders and nothing implies physical isolation.

@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from .conftest import VMC, seek
+from .conftest import CRAH, seek
 
 
 def _incident(client, cursor=216):
-    r = seek(client, VMC, cursor)
+    r = seek(client, CRAH, cursor)
     view = client.get(f"/api/incidents/{r['triggered_incident_id']}").json()
     return view, {a["kind"]: a for a in view["actions"]}
 

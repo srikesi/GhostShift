@@ -1,37 +1,174 @@
 {
   "_comment": "Demo parts catalog. SKUs, prices, stock and lead times are fixture/simulated values; they are not live inventory or vendor quotes.",
   "parts": [
-    {"sku": "FZ-BRG-7014-P4DB", "description": "Spindle front bearing set, 7014 angular contact, P4, matched DB pair", "manufacturer_part_number": "7014C-P4-DB (generic)",
-     "component_types": ["angular_contact_bearing_set"], "machine_models": ["VMC-4020"], "fault_modes": {"FM-VMC-SPB-WEAR": 1.0},
-     "unit_cost_usd": 1840.0, "quantity_per_job": 1,
-     "availability": {"on_hand": 1, "lead_time_days": 0, "location": "MRO crib A-14 (Plant 2)"}},
-    {"sku": "FZ-SPC-4020-EXCH", "description": "Spindle cartridge exchange unit (rebuilt), VMC-4020", "manufacturer_part_number": "SPC-4020-RB",
-     "component_types": ["angular_contact_bearing_set", "cylindrical_roller_bearing"], "machine_models": ["VMC-4020"], "fault_modes": {"FM-VMC-SPB-WEAR": 0.9},
-     "unit_cost_usd": 9650.0, "quantity_per_job": 1,
-     "availability": {"on_hand": 0, "lead_time_days": 5, "location": "Vendor exchange programme"}},
-    {"sku": "FZ-PMP-CL-075", "description": "High-pressure coolant pump, 0.75 kW", "manufacturer_part_number": "HPC-075-20",
-     "component_types": ["centrifugal_pump"], "machine_models": ["VMC-4020"], "fault_modes": {"FM-VMC-COOLANT-LOSS": 0.8},
-     "unit_cost_usd": 1215.0, "quantity_per_job": 1,
-     "availability": {"on_hand": 0, "lead_time_days": 4, "location": "Distributor"}},
-    {"sku": "FZ-BSC-X-4020", "description": "X-axis ball screw assembly, VMC-4020", "manufacturer_part_number": "BS-X40-1020",
-     "component_types": ["ball_screw"], "machine_models": ["VMC-4020"], "fault_modes": {"FM-VMC-BALLSCREW": 1.0},
-     "unit_cost_usd": 3120.0, "quantity_per_job": 1,
-     "availability": {"on_hand": 0, "lead_time_days": 10, "location": "OEM"}},
-    {"sku": "FZ-OCL-RS75-CORE", "description": "Oil cooler core, RS-75 package", "manufacturer_part_number": "RS75-OC-01",
-     "component_types": ["air_oil_cooler"], "machine_models": ["RS-75"], "fault_modes": {"FM-CMP-COOLER-FOUL": 1.0},
-     "unit_cost_usd": 2380.0, "quantity_per_job": 1,
-     "availability": {"on_hand": 0, "lead_time_days": 3, "location": "Distributor (Round Rock)"}},
-    {"sku": "FZ-OCL-CLN-KIT", "description": "Cooler external cleaning kit (non-acid coil cleaner, fin comb, sprayer)", "manufacturer_part_number": "CK-COIL-04",
-     "component_types": ["air_oil_cooler"], "machine_models": ["RS-75", "VMC-4020"], "fault_modes": {"FM-CMP-COOLER-FOUL": 0.8},
-     "unit_cost_usd": 145.0, "quantity_per_job": 1,
-     "availability": {"on_hand": 4, "lead_time_days": 0, "location": "MRO crib C-02 (Plant 2)"}},
-    {"sku": "FZ-FAN-RS75-MTR", "description": "Cooling fan motor, RS-75", "manufacturer_part_number": "RS75-FM-2.2",
-     "component_types": ["fan_motor"], "machine_models": ["RS-75"], "fault_modes": {"FM-CMP-FAN-FAIL": 1.0},
-     "unit_cost_usd": 690.0, "quantity_per_job": 1,
-     "availability": {"on_hand": 1, "lead_time_days": 0, "location": "MRO crib C-05 (Plant 2)"}},
-    {"sku": "FZ-OSP-RS75", "description": "Oil separator element, RS-75", "manufacturer_part_number": "RS75-SEP",
-     "component_types": ["separator_element"], "machine_models": ["RS-75"], "fault_modes": {},
-     "unit_cost_usd": 310.0, "quantity_per_job": 1,
-     "availability": {"on_hand": 2, "lead_time_days": 0, "location": "MRO crib C-03 (Plant 2)"}}
+    {
+      "sku": "GS-BRG-FAN-KIT",
+      "description": "Fan motor bearing kit (2 × 6309-2RS bearings, grease, seals)",
+      "manufacturer_part_number": "BK-6309-2RS-PAIR",
+      "component_types": [
+        "fan_motor_bearing"
+      ],
+      "machine_models": [
+        "CRAH-CW150"
+      ],
+      "fault_modes": {
+        "FM-CRAH-FAN-BRG": 1.0
+      },
+      "unit_cost_usd": 240.0,
+      "quantity_per_job": 1,
+      "availability": {
+        "on_hand": 2,
+        "lead_time_days": 0,
+        "location": "Critical spares cage (DC-2)"
+      }
+    },
+    {
+      "sku": "GS-ECF-450-MOD",
+      "description": "EC fan module, 450 mm, complete",
+      "manufacturer_part_number": "ECF450-3K",
+      "component_types": [
+        "fan_motor_bearing",
+        "fan_impeller",
+        "ec_fan_motor"
+      ],
+      "machine_models": [
+        "CRAH-CW150"
+      ],
+      "fault_modes": {
+        "FM-CRAH-FAN-BRG": 0.9
+      },
+      "unit_cost_usd": 3900.0,
+      "quantity_per_job": 1,
+      "availability": {
+        "on_hand": 0,
+        "lead_time_days": 3,
+        "location": "OEM distributor"
+      }
+    },
+    {
+      "sku": "GS-VLV-CHW-DN50",
+      "description": "Chilled-water control valve and actuator, DN50",
+      "manufacturer_part_number": "CV-DN50-ACT",
+      "component_types": [
+        "chw_valve"
+      ],
+      "machine_models": [
+        "CRAH-CW150"
+      ],
+      "fault_modes": {
+        "FM-CRAH-CHW-LOW": 0.8
+      },
+      "unit_cost_usd": 1215.0,
+      "quantity_per_job": 1,
+      "availability": {
+        "on_hand": 0,
+        "lead_time_days": 4,
+        "location": "Distributor"
+      }
+    },
+    {
+      "sku": "GS-FLT-M8-SET",
+      "description": "Air filter set, MERV 8 (12 panels)",
+      "manufacturer_part_number": "FLT-M8-610x610",
+      "component_types": [
+        "air_filter"
+      ],
+      "machine_models": [
+        "CRAH-CW150"
+      ],
+      "fault_modes": {
+        "FM-CRAH-FILTER": 1.0
+      },
+      "unit_cost_usd": 310.0,
+      "quantity_per_job": 1,
+      "availability": {
+        "on_hand": 6,
+        "lead_time_days": 0,
+        "location": "Critical spares cage (DC-2)"
+      }
+    },
+    {
+      "sku": "GS-OCL-ACS400-CORE",
+      "description": "Oil cooler coil, ACS-400",
+      "manufacturer_part_number": "ACS400-OC-01",
+      "component_types": [
+        "oil_cooler"
+      ],
+      "machine_models": [
+        "ACS-400"
+      ],
+      "fault_modes": {
+        "FM-CH-OILCOOLER-FOUL": 1.0
+      },
+      "unit_cost_usd": 2380.0,
+      "quantity_per_job": 1,
+      "availability": {
+        "on_hand": 0,
+        "lead_time_days": 3,
+        "location": "Distributor (Round Rock)"
+      }
+    },
+    {
+      "sku": "GS-CLN-COIL-KIT",
+      "description": "Coil cleaning kit (non-acid cleaner, fin comb, sprayer)",
+      "manufacturer_part_number": "CK-COIL-04",
+      "component_types": [
+        "oil_cooler"
+      ],
+      "machine_models": [
+        "ACS-400",
+        "CRAH-CW150"
+      ],
+      "fault_modes": {
+        "FM-CH-OILCOOLER-FOUL": 0.8
+      },
+      "unit_cost_usd": 145.0,
+      "quantity_per_job": 1,
+      "availability": {
+        "on_hand": 4,
+        "lead_time_days": 0,
+        "location": "Chiller plant stores"
+      }
+    },
+    {
+      "sku": "GS-CFAN-ACS400",
+      "description": "Condenser fan motor, ACS-400",
+      "manufacturer_part_number": "ACS400-CFM-2.2",
+      "component_types": [
+        "condenser_fan"
+      ],
+      "machine_models": [
+        "ACS-400"
+      ],
+      "fault_modes": {
+        "FM-CH-CONDFAN": 1.0
+      },
+      "unit_cost_usd": 690.0,
+      "quantity_per_job": 1,
+      "availability": {
+        "on_hand": 1,
+        "lead_time_days": 0,
+        "location": "Chiller plant stores"
+      }
+    },
+    {
+      "sku": "GS-OSP-ACS400",
+      "description": "Oil separator element, ACS-400",
+      "manufacturer_part_number": "ACS400-SEP",
+      "component_types": [
+        "oil_separator"
+      ],
+      "machine_models": [
+        "ACS-400"
+      ],
+      "fault_modes": {},
+      "unit_cost_usd": 310.0,
+      "quantity_per_job": 1,
+      "availability": {
+        "on_hand": 2,
+        "lead_time_days": 0,
+        "location": "Chiller plant stores"
+      }
+    }
   ]
 }
