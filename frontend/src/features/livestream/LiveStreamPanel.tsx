@@ -4,6 +4,8 @@ import "./livestream.css";
 
 interface LiveStreamPanelProps {
   machineId: string;
+  /** Called after a trigger runs, so the page can load the problem, schedule and call it started. */
+  onChanged?: () => void;
 }
 
 interface TelemetryPayload {
@@ -49,7 +51,7 @@ function callNote(call: { status: string; error: string | null } | null | undefi
   return call.error ? ` The scheduling call could not be placed: ${call.error}` : " GhostShift is calling to agree a repair date.";
 }
 
-export function LiveStreamPanel({ machineId }: LiveStreamPanelProps) {
+export function LiveStreamPanel({ machineId, onChanged }: LiveStreamPanelProps) {
   const [telemetry, setTelemetry] = useState<TelemetryPayload | null>(null);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
   const [smsAlert, setSmsAlert] = useState<string | null>(null);
@@ -101,6 +103,7 @@ export function LiveStreamPanel({ machineId }: LiveStreamPanelProps) {
       setStatusMsg(`Error injecting fault: ${err}`);
     } finally {
       setLoading(false);
+      onChanged?.();
     }
   };
 
@@ -118,6 +121,7 @@ export function LiveStreamPanel({ machineId }: LiveStreamPanelProps) {
       setStatusMsg(`Error executing E-STOP: ${err}`);
     } finally {
       setLoading(false);
+      onChanged?.();
     }
   };
 
@@ -134,6 +138,7 @@ export function LiveStreamPanel({ machineId }: LiveStreamPanelProps) {
       setStatusMsg(`Error resetting: ${err}`);
     } finally {
       setLoading(false);
+      onChanged?.();
     }
   };
 

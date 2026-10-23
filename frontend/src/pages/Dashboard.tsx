@@ -113,6 +113,13 @@ export function Dashboard() {
     return () => clearTimeout(t);
   }, [playing, telemetry, replay]);
 
+  // In live view, triggers and calls change things on the server, so keep the problem column current.
+  useEffect(() => {
+    if (streamMode !== "live" || !machineId) return;
+    const t = setInterval(() => refresh(machineId).catch(() => undefined), 4000);
+    return () => clearInterval(t);
+  }, [streamMode, machineId, refresh]);
+
   useEffect(() => {
     if (!toast) return;
     const t = setTimeout(() => setToast(null), 4000);
@@ -176,7 +183,7 @@ export function Dashboard() {
               <div className="columns">
                 <div className="col-left">
                   {streamMode === "live" ? (
-                    <LiveStreamPanel machineId={machine.id} />
+                    <LiveStreamPanel machineId={machine.id} onChanged={() => refresh(machine.id).catch(() => undefined)} />
                   ) : (
                     <TelemetryPanel
                       machine={machine}
