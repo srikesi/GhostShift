@@ -76,6 +76,7 @@ class ApprovalRecord(Contract):
     decided_by: str | None = None
     decided_at: datetime | None = None
     note: str | None = None
+    automated: bool = Field(default=False, description="Decided by the autopilot policy, not a person")
 
 
 class ProposedAction(Contract):
@@ -200,6 +201,7 @@ class IncidentView(Contract):
     work_order: WorkOrder | None
     notifications: list[Notification]
     latest_run: WorkflowRun | None
+    activity: list["ActivityEvent"] = Field(default_factory=list)
 
 
 class ComponentWithHealth(Contract):
@@ -227,3 +229,34 @@ class BriefingResponse(Contract):
     provider: ProviderInfo
     status: StageStatus
     error: str | None = None
+
+
+class AutonomyLevel(str, Enum):
+    advise = "advise"  # Faultzy drafts everything; people approve every order and work order
+    autopilot = "autopilot"  # Faultzy also places parts orders itself, within the policy below
+
+
+class AutonomySettings(Contract):
+    level: AutonomyLevel
+    auto_order_limit_usd: float = Field(ge=0, le=100_000)
+
+
+class AutonomyUpdate(Contract):
+    level: AutonomyLevel
+    auto_order_limit_usd: float | None = Field(default=None, ge=0, le=100_000)
+
+
+class ActivityEvent(Contract):
+    """One step in an incident's history, and who took it."""
+
+    id: str
+    incident_id: str
+    at: datetime
+    machine_time: datetime | None = Field(description="Replay clock when the step happened")
+    actor: Literal["faultzy", "policy", "person"]
+    actor_name: str
+    kind: str
+    text: str
+
+
+IncidentView.model_rebuild()

@@ -14,7 +14,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from . import APP_NAME, __version__
-from .api import copilot_routes
+from .api import autonomy_routes, copilot_routes
 from .api.routes import router
 from .api.static import mount_frontend
 from .approvals import GateError
@@ -32,9 +32,10 @@ def create_app(container: Container | None = None) -> FastAPI:
                   description="Faultzy predictive maintenance and maintenance-coordination API")
     app.state.container = container
     app.add_middleware(CORSMiddleware, allow_origins=container.settings.cors_origins, allow_credentials=False,
-                       allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
+                       allow_methods=["GET", "POST", "PUT"], allow_headers=["Content-Type"])
     app.include_router(router)
     app.include_router(copilot_routes.router)
+    app.include_router(autonomy_routes.router)
 
     @app.exception_handler(GateError)
     async def _gate(_: Request, exc: GateError):

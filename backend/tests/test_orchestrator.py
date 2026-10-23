@@ -32,8 +32,9 @@ def test_anomalous_run_full_pipeline(container):
     assert run.status == WorkflowStatus.awaiting_approval
     names = [s.name for s in run.stages]
     assert names == ["telemetry", "diagnostics", "prognostics", "safety_supervisor", "maintenance_supply",
-                     "safety_gate", "narrative", "records", "notification"]
-    assert all(s.status == StageStatus.success for s in run.stages)
+                     "safety_gate", "narrative", "records", "autopilot", "notification"]
+    assert stage(run, "autopilot").status == StageStatus.skipped  # off by default
+    assert all(s.status == StageStatus.success for s in run.stages if s.name != "autopilot")
     inc = container.store.incidents[run.incident_id]
     assert inc.affected_component_id == "spindle_front_bearing"
     assert inc.narrative_status == StageStatus.success and inc.narrative_provider.real is False

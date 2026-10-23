@@ -32,6 +32,7 @@ from .integrations.telemetry_fixture import CompositeTelemetryProvider, FixtureT
 from .integrations.voice import ElevenLabsVoice, TextOnlyVoice
 from .orchestrator import TEMPLATE_PROVIDER, Orchestrator
 from .reference import load_reference_data
+from .schemas.workflow import AutonomyLevel, AutonomySettings
 from .state import Store
 
 log = logging.getLogger("faultzy")
@@ -124,6 +125,9 @@ def build_container(settings: Settings | None = None, *, ai4i_path: Path | None 
     )
     log.info("Faultzy container built: mode=%s llm=%s sms=%s voice=%s", s.mode.value,
              llm.info.name if llm else "template", sms.info.name, voice.info.name)
+    store.autonomy = AutonomySettings(level=AutonomyLevel(s.autonomy_level), auto_order_limit_usd=s.auto_order_limit_usd)
+    approvals = ApprovalService(store, procurement, work_orders, machine_clock=orch.machine_time)
+    orch.approvals = approvals
     return Container(settings=s, reference=ref, telemetry=telemetry, llm=llm, parts=parts, procurement=procurement,
                      work_orders=work_orders, sms=sms, voice=voice, store=store, orchestrator=orch,
-                     approvals=ApprovalService(store, procurement, work_orders))
+                     approvals=approvals)

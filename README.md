@@ -54,6 +54,18 @@ pip also works: `cd backend && python3.12 -m venv .venv && .venv/bin/pip install
 7. **Escalation (optional).** Play to the end. At sample 226 priority becomes **Urgent**, a second text says "ESCALATED", and the work order now also needs the operations manager.
 8. **Second machine.** CMP-02 → *Skip to fault*: oil-cooler fouling. The in-stock cleaning kit beats a replacement core with a 3-day lead time, and Faultzy warns that the next planned downtime may be too late.
 
+## Autonomy demo (about 1 minute)
+
+Faultzy runs every step on its own except the ones that need a person by policy.
+
+1. Click **Reset**, then turn on **Autopilot** in the top bar ("orders parts up to $2,500").
+2. Press **Play** and don't touch anything else. Faultzy pauses when it flags the problem (Medium priority). *What Faultzy did* shows it already drafted the part order and the work order, and it is **holding** the order until priority is High.
+3. Press **Play** again. At High priority the **Autopilot** places the $1,840 bearing order itself (simulated), texts the technician with "Part ordered", and the timeline shows "10 on its own · 0 by people".
+4. The only step left is **You: approve work order (lockout/tagout sign-off)**. Physical work never runs without a person, even on Autopilot.
+5. Turn Autopilot off and reset to show the contrast: the same run stops at "Approve the order" and waits.
+
+Autopilot rules (deterministic code in `orchestrator.py`): High or Urgent priority, only the maintenance supervisor's approval required, cost within the limit (`FAULTZY_AUTO_ORDER_LIMIT_USD`), and the part in stock or arriving before the earliest estimated limit. Orders over the limit, or ones needing the operations manager, are held for a person with the reason logged.
+
 *How Faultzy decided* (collapsed, at the bottom of the problem column) holds the rule details, priority reasons, estimate method, limitations and the step-by-step log. **Reset** in the top bar clears all state, and so does restarting the API.
 
 UI wording: sensor condition is *Normal / Watch / Warning / Critical*. Problem priority is *Low / Medium / High / Urgent* (the safety tiers routine / elevated / high / critical). Outputs that only exist in the simulation (texts, orders, stock) carry a small *Simulated* tag, and the top bar says "Demo · simulated data".
@@ -130,7 +142,8 @@ Diagnosis, risk, safety and approvals are deterministic in every mode. The LLM o
 | POST | `/api/actions/{id}/execute` | Returns 409 unless every required role approved |
 | GET | `/api/work-orders`, `/api/requisitions`, `/api/notifications` | Records |
 | GET | `/api/inspect/{token}` | Token-scoped mobile payload. Unknown and expired tokens both return 404 |
-| POST | `/api/demo/reset` | Clear state |
+| GET / PUT | `/api/autonomy` | Read or change Autopilot (`{"level": "advise" \| "autopilot", "auto_order_limit_usd"}`). Turning it on applies to open problems immediately |
+| POST | `/api/demo/reset` | Clear state (keeps the Autopilot setting) |
 
 Errors always use the form `{"error": {"code", "message", "details"}}`.
 
@@ -198,6 +211,8 @@ Tests cover each agent without an LLM; the orchestrator with fake LLMs (success,
 | Machines, limits, maintenance history, parts, prices, calendar | **Fixture** reference data |
 | Stock and lead times | **Simulated**, not live inventory |
 | Diagnostics, risk, RUL, safety tier | **Deterministic analysis** on the data above (derived from simulated data) |
+| Energy and lube readings (spindle/package power, way-lube pressure and level, separator pressure drop, oil level) | **Simulated** |
+| Autopilot ordering | Real policy decision; the order itself is **simulated** |
 | Narrative | Deterministic template, or **real Bedrock inference** when configured |
 | Requisitions and work-order dispatch | **Simulated**; nothing is ordered or created in an external system |
 | SMS | Recorded (simulated), or **real Twilio** when opted in |

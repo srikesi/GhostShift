@@ -15,7 +15,7 @@ Four agents, on different computers, finish Faultzy at the same time and push st
 |---|---|
 | `backend/faultzy/agents/**`, `backend/faultzy/orchestrator.py`, `backend/faultzy/approvals.py` | 1 |
 | `backend/faultzy/schemas/agents.py`, `schemas/workflow.py`, `schemas/common.py` | 1 |
-| `backend/faultzy/integrations/bedrock.py`, `backend/faultzy/api/copilot_routes.py`, `backend/agentcore/**` (new) | 1 |
+| `backend/faultzy/integrations/bedrock.py`, `backend/faultzy/api/copilot_routes.py`, `backend/faultzy/api/autonomy_routes.py`, `backend/agentcore/**` (new) | 1 |
 | `container.py`: `choose_llm()` only | 1 |
 | `backend/pyproject.toml`, `backend/uv.lock` | 1 (others: request in inbox) |
 | `frontend/src/features/copilot/**`, `backend/faultzy/knowledge/**` (new) | 1 |

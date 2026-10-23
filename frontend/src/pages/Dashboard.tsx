@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError } from "../api/client";
 import type {
+  AutonomySettings,
   DecisionRequest,
   DiagnosticsResult,
   HealthResponse,
@@ -13,6 +14,7 @@ import { Icon, Panel, PriorityPill, SeverityPill, Wordmark } from "../components
 import { AssemblyDiagram } from "../features/assembly/AssemblyDiagram";
 import { ComponentHealthTable } from "../features/components/ComponentHealthTable";
 import { CopilotPanel } from "../features/copilot/CopilotPanel";
+import { ActivityPanel } from "../features/incident/Activity";
 import { ApprovalsPanel } from "../features/incident/Approvals";
 import { DetailsPanel } from "../features/incident/Details";
 import { FixPanel } from "../features/incident/Fix";
@@ -28,6 +30,7 @@ const TICK_STEPS = 2;
 
 export function Dashboard() {
   const [health, setHealth] = useState<HealthResponse | null>(null);
+  const [autonomy, setAutonomy] = useState<AutonomySettings | null>(null);
   const [machines, setMachines] = useState<MachineSummary[]>([]);
   const [machineId, setMachineId] = useState<string | null>(null);
   const [detail, setDetail] = useState<MachineDetail | null>(null);
@@ -53,8 +56,9 @@ export function Dashboard() {
   useEffect(() => {
     (async () => {
       try {
-        const [h, ms] = await Promise.all([api.health(), api.machines()]);
+        const [h, ms, a] = await Promise.all([api.health(), api.machines(), api.autonomy()]);
         setHealth(h);
+        setAutonomy(a);
         setMachines(ms);
         setMachineId((cur) => cur ?? ms[0]?.id ?? null);
       } catch (e) {
@@ -113,6 +117,13 @@ export function Dashboard() {
     await api.execute(actionId);
     if (machineId) await refresh(machineId);
   };
+  const toggleAutopilot = async () => {
+    if (!autonomy) return;
+    const next = await api.setAutonomy(autonomy.level === "autopilot" ? "advise" : "autopilot");
+    setAutonomy(next);
+    if (machineId) await refresh(machineId);
+    setToast(next.level === "autopilot" ? "Autopilot on: Faultzy places parts orders itself" : "Autopilot off: people approve every order");
+  };
   const resetAll = async () => {
     setPlaying(false);
     await api.resetDemo();
@@ -126,7 +137,7 @@ export function Dashboard() {
 
   return (
     <div className="app">
-      <TopBar health={health} onReset={resetAll} />
+      <TopBar health={health} autonomy={autonomy} onToggleAutopilot={toggleAutopilot} onReset={resetAll} />
       <div className="layout">
         <aside className="sidebar" aria-label="Machines">
           <MachineList machines={machines} selected={machineId} onSelect={setMachineId} />
@@ -186,6 +197,7 @@ export function Dashboard() {
                   {incident ? (
                     <>
                       <IncidentCard view={incident} />
+                      <ActivityPanel view={incident} />
                       <WhyPanel incident={incident.incident} machine={machine} />
                       <FixPanel view={incident} />
                       <ApprovalsPanel view={incident} onDecide={onDecide} onExecute={onExecute} />
@@ -213,7 +225,18 @@ export function Dashboard() {
   );
 }
 
-function TopBar({ health, onReset }: { health: HealthResponse | null; onReset: () => void }) {
+function TopBar({
+  health,
+  autonomy,
+  onToggleAutopilot,
+  onReset,
+}: {
+  health: HealthResponse | null;
+  autonomy: AutonomySettings | null;
+  onToggleAutopilot: () => void;
+  onReset: () => void;
+}) {
+  const on = autonomy?.level === "autopilot";
   const live = health?.providers.filter((p) => p.provider.real && p.configured).map((p) => p.provider.name) ?? [];
   return (
     <header className="topbar">
@@ -221,6 +244,23 @@ function TopBar({ health, onReset }: { health: HealthResponse | null; onReset: (
       <span className="topbar-sep" />
       <span className="topbar-ctx">Austin Plant 2</span>
       <span className="spacer" />
+      {autonomy && (
+        <button
+          className="autopilot"
+          role="switch"
+          aria-checked={on}
+          onClick={onToggleAutopilot}
+          title="Autopilot lets Faultzy place parts orders itself (High priority, within the limit, part available in time). Work that needs lockout/tagout always waits for a supervisor."
+        >
+          <span className="track" aria-hidden>
+            <span className="knob" />
+          </span>
+          Autopilot
+          <span className="hint">
+            {on ? `orders parts up to ${autonomy.auto_order_limit_usd.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 })}` : "people approve orders"}
+          </span>
+        </button>
+      )}
       {health && (
         <span className="mode-chip" title={health.providers.map((p) => `${p.capability}: ${p.detail}`).join("\n")}>
           {live.length ? `Live: ${live.join(", ")}` : "Demo · simulated data"}

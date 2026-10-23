@@ -64,6 +64,19 @@ def main() -> None:
 
     act = next(a for a in view["actions"] if a["kind"] == "dispatch_work_order")
     expect(c.post(f"/api/actions/{act['id']}/execute").status_code == 409, "Unapproved work order cannot execute")
+
+    # Autonomy: with Autopilot on, the compressor's in-stock cleaning kit is ordered with no person involved.
+    c.post("/api/demo/reset")
+    before = c.get("/api/autonomy").json()["level"]
+    c.put("/api/autonomy", json={"level": "autopilot"})
+    r = c.post("/api/machines/CMP-02/replay", json={"action": "seek", "cursor": 150}).json()
+    cv = c.get(f"/api/incidents/{r['triggered_incident_id']}").json()
+    req = next(a for a in cv["actions"] if a["kind"] == "submit_requisition")
+    wo = next(a for a in cv["actions"] if a["kind"] == "dispatch_work_order")
+    expect(req["status"] == "completed_simulated", "Autopilot placed the parts order on its own")
+    expect(wo["status"] == "awaiting_approval", "Physical work still waits for a person")
+    c.put("/api/autonomy", json={"level": before})
+    c.post("/api/demo/reset")
     print("\nDemo story verified.")
 
 

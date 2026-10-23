@@ -82,6 +82,9 @@ class Settings(BaseSettings):
     llm_timeout_s: float = 20.0
     llm_max_attempts: int = Field(default=2, ge=1, le=5)
     # --- Workstream 1 (agentic copilot): add copilot/agent settings below ---
+    # advise: people approve every order. autopilot: Faultzy places parts orders itself within the limit.
+    autonomy_level: str = Field(default="advise", pattern="^(advise|autopilot)$")
+    auto_order_limit_usd: float = Field(default=2500.0, ge=0)
 
 
     # --- Twilio SMS ------------------------------------------------------------

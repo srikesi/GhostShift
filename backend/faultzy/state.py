@@ -14,7 +14,16 @@ from datetime import datetime, timedelta
 from threading import RLock
 
 from .schemas.common import utcnow
-from .schemas.workflow import Incident, Notification, ProposedAction, Requisition, WorkflowRun, WorkOrder
+from .schemas.workflow import (
+    ActivityEvent,
+    AutonomySettings,
+    Incident,
+    Notification,
+    ProposedAction,
+    Requisition,
+    WorkflowRun,
+    WorkOrder,
+)
 
 
 @dataclass
@@ -36,6 +45,9 @@ class Store:
     # sha256(token) -> grant. Raw tokens are never stored here.
     grants: dict[str, InspectionGrant] = field(default_factory=dict)
     notified_tier: dict[str, str] = field(default_factory=dict)
+    activity: list[ActivityEvent] = field(default_factory=list)
+    # Runtime autonomy setting (kept across demo resets; set from config at startup).
+    autonomy: AutonomySettings | None = None
     _seq: dict[str, int] = field(default_factory=lambda: defaultdict(int))
 
     def next_id(self, prefix: str) -> str:
@@ -46,9 +58,21 @@ class Store:
     def reset(self) -> None:
         with self.lock:
             for d in (self.cursors, self.runs, self.incidents, self.actions, self.requisitions,
-                      self.work_orders, self.notifications, self.grants, self.notified_tier):
+                      self.work_orders, self.notifications, self.grants, self.notified_tier, self.activity):
                 d.clear()
             self._seq.clear()
+
+    def log(self, incident_id: str, actor: str, actor_name: str, kind: str, text: str,
+            machine_time: datetime | None) -> ActivityEvent:
+        with self.lock:
+            ev = ActivityEvent(id=self.next_id("EV"), incident_id=incident_id, at=utcnow(), machine_time=machine_time,
+                               actor=actor, actor_name=actor_name, kind=kind, text=text)
+            self.activity.append(ev)
+            return ev
+
+    def activity_for(self, incident_id: str) -> list[ActivityEvent]:
+        with self.lock:
+            return [e for e in self.activity if e.incident_id == incident_id]
 
     def open_incident_for(self, machine_id: str) -> Incident | None:
         with self.lock:

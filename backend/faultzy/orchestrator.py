@@ -26,6 +26,7 @@ from .integrations.base import LlmProvider, ProviderError, SmsProvider, info
 from .reference import ReferenceData
 from .schemas.agents import (
     ActionKind,
+    ApproverRole,
     DiagnosticsInput,
     DiagnosticsResult,
     IncidentNarrative,
@@ -43,6 +44,8 @@ from .schemas.telemetry import SeveritySegment, TelemetryWindow
 from .schemas.workflow import (
     ActionStatus,
     ApprovalRecord,
+    AutonomyLevel,
+    DecisionRequest,
     Decision,
     Incident,
     Notification,
@@ -60,6 +63,8 @@ from .state import Store
 TEMPLATE_PROVIDER = info("narrative-template", ProviderKind.deterministic)
 DETERMINISTIC = info("faultzy-deterministic", ProviderKind.deterministic)
 TIER_RANK = {RiskTier.routine: 0, RiskTier.elevated: 1, RiskTier.high: 2, RiskTier.critical: 3}
+PRIORITY = {RiskTier.routine: "Low", RiskTier.elevated: "Medium", RiskTier.high: "High", RiskTier.critical: "Urgent"}
+AUTO_ORDER_NAME = "Auto-order policy"
 
 
 class StageFailed(Exception):
@@ -99,6 +104,7 @@ class Orchestrator:
         self.maintenance = maintenance
         self.llm = llm
         self.sms = sms
+        self.approvals = None  # ApprovalService; set by the container (it needs this orchestrator's clock)
         self._pool = ThreadPoolExecutor(max_workers=4, thread_name_prefix="faultzy-stage")
         self._screen_cached = lru_cache(maxsize=4096)(self._screen_uncached)
 
@@ -217,11 +223,22 @@ class Orchestrator:
         n_input = narr.build_input(machine, diag, prog, safety, maint)
         narrative, n_status, n_provider = self._narrative(run, n_input)
 
+        before = self.store.open_incident_for(mid)
+        before = before.model_copy() if before else None
         incident = self._required(run, "records", DETERMINISTIC, lambda: self._persist(
             run, machine, diag, prog, safety, maint, narrative, n_status, n_provider))
         run.incident_id = incident.id
+        self._log_progress(incident, before, machine, n_input, as_of)
 
-        self._notify(run, machine, incident, n_input)
+        started, t0 = utcnow(), time.perf_counter()
+        notes = self._autopilot(incident, as_of)
+        run.stages.append(StageRecord(
+            name="autopilot", status=StageStatus.success if notes is not None else StageStatus.skipped,
+            provider=DETERMINISTIC, started_at=started, duration_ms=round((time.perf_counter() - t0) * 1000, 2),
+            attempts=1 if notes is not None else 0, warnings=notes or [],
+            fallback_reason=None if notes is not None else "Autopilot is off; people approve orders"))
+
+        self._notify(run, machine, incident, n_input, as_of)
         with self.store.lock:
             pending = any(self.store.actions[a].status == ActionStatus.awaiting_approval for a in incident.action_ids)
         run.status = WorkflowStatus.awaiting_approval if pending else WorkflowStatus.completed
@@ -394,8 +411,99 @@ class Orchestrator:
                     act = act.model_copy(update=dict(requires_isolation_attestation=True))
             st.actions[act.id] = act
 
+    # -------------------------------------------------------------- activity
+    def machine_time(self, incident_id: str):
+        """Replay clock for an incident's machine (the timestamp at the current cursor)."""
+        inc = self.store.incidents.get(incident_id)
+        if inc is None:
+            return None
+        c = self.cursor(inc.machine_id)
+        pts = self.telemetry.window(inc.machine_id, c, c).points
+        return pts[-1].timestamp if pts else None
+
+    def _log_progress(self, inc: Incident, before: Incident | None, machine, n_input: NarrativeInput, as_of) -> None:
+        log = lambda kind, text: self.store.log(inc.id, "faultzy", "Faultzy", kind, text, as_of)  # noqa: E731
+        comp = next((c.name.lower() for c in machine.components if c.id == inc.affected_component_id), "machine")
+        hyp = inc.diagnostics.hypotheses[0] if inc.diagnostics.hypotheses else None
+        if before is None:
+            what = f"likely {hyp.name.lower()}" if hyp else f"unusual readings on the {comp}"
+            log("detected", f"Spotted {what}: {n_input.sms_finding[0].lower()}{n_input.sms_finding[1:]}")
+        tier = inc.safety.risk_tier
+        if before is None or TIER_RANK[tier] > TIER_RANK[before.safety.risk_tier]:
+            log("priority", f"Set priority to {PRIORITY[tier]}: {inc.safety.rationale[0][0].lower()}{inc.safety.rationale[0][1:]}")
+        if inc.requisition_id and (before is None or not before.requisition_id):
+            req = self.store.requisitions[inc.requisition_id]
+            log("drafted", f"Picked part {req.sku} and drafted order {req.id}")
+        if inc.work_order_id and (before is None or not before.work_order_id):
+            w = inc.maintenance.maintenance_window if inc.maintenance else None
+            slot = f"{w.label.lower()} ({w.start:%a %H:%M} UTC)" if w else "a slot once one fits"
+            log("scheduled", f"Proposed {slot} and drafted work order {inc.work_order_id}")
+
+    def _autopilot(self, inc: Incident, as_of) -> list[str] | None:
+        """Place eligible parts orders without a person. Returns notes, or None when autopilot is off.
+
+        Policy (deterministic): High or Urgent priority, only the maintenance supervisor's approval
+        required, cost within the auto-order limit, and the part in stock or arriving before the
+        earliest estimated limit. Physical work is never released automatically.
+        """
+        a = self.store.autonomy
+        if a is None or a.level != AutonomyLevel.autopilot or self.approvals is None:
+            return None
+        notes: list[str] = []
+        for act_id in list(inc.action_ids):
+            act = self.store.actions[act_id]
+            if act.status != ActionStatus.awaiting_approval:
+                continue
+            if act.kind == ActionKind.dispatch_work_order:
+                self._log_once(inc, "handoff", f"Left work order {act.target_id} for a supervisor: physical work needs "
+                                               "a lockout/tagout sign-off", as_of)
+                continue
+            ok, reason = self._can_auto_order(inc, act, a.auto_order_limit_usd)
+            if not ok:
+                notes.append(reason)
+                self._log_once(inc, "held", f"Held the parts order: {reason}", as_of)
+                continue
+            self.approvals.decide(act.id, DecisionRequest(
+                role=ApproverRole.maintenance_supervisor, approver_name=AUTO_ORDER_NAME, decision="approve",
+                note=reason), automated=True)
+            self.approvals.execute(act.id, actor="policy", actor_name=AUTO_ORDER_NAME)
+            notes.append(f"Ordered automatically: {reason}")
+        return notes
+
+    def _can_auto_order(self, inc: Incident, act: ProposedAction, limit: float) -> tuple[bool, str]:
+        if TIER_RANK[inc.safety.risk_tier] < TIER_RANK[RiskTier.high]:
+            return False, "waiting until priority is High"
+        if [r.role for r in act.approvals] != [ApproverRole.maintenance_supervisor]:
+            return False, "this order also needs the operations manager"
+        req = self.store.requisitions[act.target_id]
+        if req.estimated_cost_usd is None or req.estimated_cost_usd > limit:
+            cost = "unknown cost" if req.estimated_cost_usd is None else f"${req.estimated_cost_usd:,.0f}"
+            return False, f"{cost} is over the ${limit:,.0f} auto-order limit"
+        part = inc.maintenance.proposed_part if inc.maintenance else None
+        if part is None:
+            return False, "no matching part"
+        avail = part.availability
+        rul = inc.prognostics.rul
+        if (avail.on_hand or 0) >= req.quantity:
+            when = "in stock"
+        elif avail.lead_time_days is not None and rul and rul.supportable and rul.lower_hours is not None \
+                and avail.lead_time_days * 24 <= rul.lower_hours:
+            when = f"arrives in {avail.lead_time_days:g} d, before the earliest limit"
+        else:
+            return False, "the part might not arrive before the limit"
+        return True, f"within the ${limit:,.0f} limit, {when}"
+
+    def _log_once(self, inc: Incident, kind: str, text: str, as_of) -> None:
+        if not any(e.kind == kind and e.text == text for e in self.store.activity_for(inc.id)):
+            self.store.log(inc.id, "faultzy", "Faultzy", kind, text, as_of)
+
+    def autopilot_sweep(self) -> None:
+        """Apply the autonomy setting to open incidents right away (e.g. after it is switched on)."""
+        for inc in [i for i in self.store.incidents.values() if i.status == "open"]:
+            self._autopilot(inc, self.machine_time(inc.id))
+
     # ------------------------------------------------------------ notification
-    def _notify(self, run: WorkflowRun, machine, incident: Incident, n_input: NarrativeInput) -> None:
+    def _notify(self, run: WorkflowRun, machine, incident: Incident, n_input: NarrativeInput, as_of=None) -> None:
         tier = incident.safety.risk_tier
         prev = self.store.notified_tier.get(incident.id)
         if not incident.safety.notify_technician:
@@ -413,8 +521,10 @@ class Orchestrator:
         url = f"{self.settings.public_base_url}/m/{token}"
         comp = next((c.name for c in machine.components if c.id == incident.affected_component_id), "component")
         lead = "ESCALATED to " if prev else ""
+        req = self.store.requisitions.get(incident.requisition_id) if incident.requisition_id else None
+        ordered = " Part ordered." if req and req.status in (RecordStatus.submitted, RecordStatus.submitted_simulated) else ""
         body = (f"Faultzy {lead}{tier.value.upper()}: {machine.id} {comp.lower()} - "
-                f"{incident.narrative.sms_key_finding}. {n_input.rul_text.capitalize()}. Open: {url}")
+                f"{incident.narrative.sms_key_finding}. {n_input.rul_text.capitalize()}.{ordered} Open: {url}")
 
         result, rec = self._stage("notification", self.sms.info, lambda: self.sms.send(to=tech.phone, body=body))
         if result is None:
@@ -444,6 +554,12 @@ class Orchestrator:
             inc.notification_ids.append(note.id)
             if status in (NotificationStatus.sent, NotificationStatus.simulated_sent):
                 self.store.notified_tier[incident.id] = tier.value
+        who = tech.label.split(" · ")[0]
+        if status in (NotificationStatus.sent, NotificationStatus.simulated_sent):
+            text = f"Texted {who} a link to the technician view" + (" (simulated)" if status == NotificationStatus.simulated_sent else "")
+        else:
+            text = f"Text to {who} was not sent: {error}"
+        self.store.log(incident.id, "faultzy", "Faultzy", "notified", text, as_of)
 
 
 def _mask(phone: str) -> str:

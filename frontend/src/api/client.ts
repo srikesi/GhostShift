@@ -1,4 +1,5 @@
 import type {
+  AutonomySettings,
   BriefingResponse,
   DecisionRequest,
   HealthResponse,
@@ -62,4 +63,7 @@ export const api = {
   inspect: (token: string) => request<InspectionView>(`/api/inspect/${encodeURIComponent(token)}`),
   inspectBriefing: (token: string) => request<BriefingResponse>(`/api/inspect/${encodeURIComponent(token)}/briefing`),
   resetDemo: () => post<void>("/api/demo/reset"),
+  autonomy: () => request<AutonomySettings>("/api/autonomy"),
+  setAutonomy: (level: AutonomySettings["level"]) =>
+    request<AutonomySettings>("/api/autonomy", { method: "PUT", body: JSON.stringify({ level }) }),
 };

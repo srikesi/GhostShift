@@ -8,6 +8,9 @@ never stops, isolates or otherwise acts on physical equipment.
 
 from __future__ import annotations
 
+from datetime import datetime
+from typing import Callable
+
 from .integrations.base import ProcurementProvider, ProviderError, WorkOrderProvider
 from .schemas.agents import ActionKind
 from .schemas.common import utcnow
@@ -25,10 +28,13 @@ class GateError(Exception):
 
 
 class ApprovalService:
-    def __init__(self, store: Store, procurement: ProcurementProvider, work_orders: WorkOrderProvider):
+    def __init__(self, store: Store, procurement: ProcurementProvider, work_orders: WorkOrderProvider,
+                 machine_clock: Callable[[str], datetime | None] | None = None):
         self.store = store
         self.procurement = procurement
         self.work_orders = work_orders
+        # Replay time for an incident's machine, so activity is stamped in the same clock as the sensors.
+        self.machine_clock = machine_clock or (lambda _incident_id: None)
 
     def _get(self, action_id: str) -> ProposedAction:
         act = self.store.actions.get(action_id)
@@ -36,7 +42,8 @@ class ApprovalService:
             raise GateError(404, "not_found", f"Action '{action_id}' not found")
         return act
 
-    def decide(self, action_id: str, req: DecisionRequest) -> ProposedAction:
+    def decide(self, action_id: str, req: DecisionRequest, *, automated: bool = False) -> ProposedAction:
+        """Record one role's decision. `automated` is only set by the autopilot policy, never by the API."""
         with self.store.lock:
             act = self._get(action_id)
             if act.status != ActionStatus.awaiting_approval:
@@ -54,6 +61,7 @@ class ApprovalService:
             now = utcnow()
             slot.decision = Decision.approved if req.decision == "approve" else Decision.rejected
             slot.decided_by, slot.decided_at, slot.note = req.approver_name, now, req.note
+            slot.automated = automated
             if req.decision == "approve" and act.requires_isolation_attestation:
                 act.isolation_attested_by = req.approver_name
             if slot.decision == Decision.rejected:
@@ -62,9 +70,12 @@ class ApprovalService:
             elif all(a.decision == Decision.approved for a in act.approvals):
                 act.status = ActionStatus.approved
             act.updated_at = now
+            verb = "approved" if slot.decision == Decision.approved else "rejected"
+            self._log(act, "policy" if automated else "person", req.approver_name, f"decision_{verb}",
+                      f"{verb.capitalize()} {self._describe(act)}" + (f": {req.note}" if req.note else ""))
             return act
 
-    def execute(self, action_id: str) -> ProposedAction:
+    def execute(self, action_id: str, *, actor: str = "person", actor_name: str = "Supervisor") -> ProposedAction:
         with self.store.lock:
             act = self._get(action_id)
             if act.status != ActionStatus.approved or not all(a.decision == Decision.approved for a in act.approvals):
@@ -88,7 +99,20 @@ class ApprovalService:
             act.updated_at = utcnow()
             self._set_target_status(act, RecordStatus.submitted_simulated if result.simulated else RecordStatus.submitted,
                                     result.external_reference)
+            sent = "Placed" if act.kind == ActionKind.submit_requisition else "Released"
+            self._log(act, actor, actor_name, "executed",
+                      f"{sent} {self._describe(act)} ({result.external_reference}{', simulated' if result.simulated else ''})")
             return act
+
+    def _describe(self, act: ProposedAction) -> str:
+        if act.kind == ActionKind.submit_requisition:
+            req = self.store.requisitions.get(act.target_id)
+            cost = f", ${req.estimated_cost_usd:,.0f}" if req and req.estimated_cost_usd is not None else ""
+            return f"order for {req.sku}{cost}" if req else "parts order"
+        return f"work order {act.target_id}"
+
+    def _log(self, act: ProposedAction, actor: str, actor_name: str, kind: str, text: str) -> None:
+        self.store.log(act.incident_id, actor, actor_name, kind, text, self.machine_clock(act.incident_id))
 
     def _set_target_status(self, act: ProposedAction, status: RecordStatus, ref: str | None = None) -> None:
         table = self.store.requisitions if act.kind == ActionKind.submit_requisition else self.store.work_orders

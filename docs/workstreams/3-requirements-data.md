@@ -14,13 +14,7 @@ Map every official requirement to a concrete change. Implement the data and AWS-
 1. **Requirements map first, within the first hour.** Read the official requirements and starter code, and check each service's official documentation. Write `docs/requirements-map.md`: one row per requirement, with status, owning workstream (1–4), files and notes.
    - Push it early.
    - For each requirement owned by another stream, add an entry to that stream's `docs/workstreams/inbox-<n>.md`.
-2. **Close the sensor gap (highest priority).** The pitch says Faultzy uses *temperature, energy, vibration and lube monitor* data. The demo machines already have temperature and vibration, but energy exists only as motor current, and there are no lube sensors (the way-lube unit shows "No sensors"). Add simulated sensors with limits in `fixtures/machines.json`, and generate them in `scripts/generate_fixtures.py`, staying deterministic:
-   - **VMC-07:**
-     - `spindle_power` (kW, energy, on the spindle motor)
-     - `way_lube_pressure` (bar) and `way_lube_level` (%) on the way-lube unit
-     - Optionally `spindle_lube_flow` (oil-air lubrication to the front bearing). It can fall slightly before the bearing degrades, as a supporting condition in `FM-VMC-SPB-WEAR`.
-   - **CMP-02:** `package_power` (kW) and `oil_filter_dp` (bar), plus `oil_level` (%) as lube monitoring.
-   - Keep the story timing: VMC-07 flagged around sample 170, High around 174, Urgent around 226. If any numbers shift, update the tests, `README.md` demo script (ask workstream 4 through its inbox) and `scripts/demo_smoke.py` expectations.
+2. **Sensor coverage (done; optional extension).** Both demo machines already carry temperature, vibration, energy (`spindle_power`, `package_power`) and lube monitoring (`way_lube_pressure`, `way_lube_level`, `separator_dp`, `oil_level`), all simulated and generated from separate seeds so the original channels are unchanged. Optional: add `spindle_lube_flow` (oil-air lubrication to the front bearing) that falls slightly before the bearing degrades, as a supporting condition in `FM-VMC-SPB-WEAR`. If you do, keep the story timing (VMC-07 flagged around sample 170, High around 174, Urgent around 226) and update the tests, and ask workstream 4 to update the README demo script if numbers shift.
 3. **Industrial Machine Downtime Prediction dataset (Kaggle).** This is the best real-style dataset for our spindle story. Ask the human to download it; Kaggle needs a login. Never commit the raw file.
    - From memory, it has per-machine dates, spindle vibration, spindle bearing temperature, coolant and hydraulic-oil temperature and pressures, voltage, torque and a downtime label. **Verify the actual columns first.**
    - Write an adapter that maps each machine ID to a Faultzy machine and converts units.
@@ -62,6 +56,5 @@ Map every official requirement to a concrete change. Implement the data and AWS-
 - A test that each new machine runs through `orchestrator.run()`.
 - `make check` is green, and `make demo-smoke` passes in demo mode.
 - With credentials, `GET /api/health` shows each new source as configured. The dashboard shows the new machine and its charts.
-- The dashboard shows energy and lube charts for both demo machines, and the way-lube unit is no longer "No sensors".
 - The evaluation script runs on each real dataset available, and its results (lead time, false alarms) are recorded in `docs/data.md`.
 - `docs/requirements-map.md` is complete, and `docs/data.md` documents every source and its gaps.

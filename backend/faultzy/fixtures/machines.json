@@ -96,6 +96,15 @@
          "provenance": {"source": "simulated", "detail": "fixtures/telemetry/VMC-07.csv"}},
         {"id": "x_following_error", "name": "X-axis following error", "unit": "µm", "component_id": "ball_screw_x", "role": "health", "sample_interval_s": 900,
          "limits": {"direction": "above", "alert": 8, "danger": 12, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
+         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/VMC-07.csv"}},
+        {"id": "spindle_power", "name": "Spindle power", "unit": "kW", "component_id": "spindle_motor", "role": "health", "sample_interval_s": 900,
+         "limits": {"direction": "above", "alert": 13, "danger": 15, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
+         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/VMC-07.csv"}},
+        {"id": "way_lube_pressure", "name": "Way lube pressure", "unit": "bar", "component_id": "way_lube_unit", "role": "health", "sample_interval_s": 900,
+         "limits": {"direction": "below", "alert": 1.6, "danger": 1.2, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
+         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/VMC-07.csv"}},
+        {"id": "way_lube_level", "name": "Way lube reservoir level", "unit": "%", "component_id": "way_lube_unit", "role": "health", "sample_interval_s": 900,
+         "limits": {"direction": "below", "alert": 25, "danger": 15, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
          "provenance": {"source": "simulated", "detail": "fixtures/telemetry/VMC-07.csv"}}
       ]
     },
@@ -187,6 +196,15 @@
         {"id": "ambient_temp", "name": "Room temperature", "unit": "°C", "component_id": "oil_cooler", "role": "context", "sample_interval_s": 900, "limits": null,
          "provenance": {"source": "simulated", "detail": "fixtures/telemetry/CMP-02.csv"}},
         {"id": "discharge_pressure", "name": "Package discharge pressure", "unit": "bar(g)", "component_id": "inlet_valve", "role": "context", "sample_interval_s": 900, "limits": null,
+         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/CMP-02.csv"}},
+        {"id": "package_power", "name": "Package power", "unit": "kW", "component_id": "drive_motor", "role": "health", "sample_interval_s": 900,
+         "limits": {"direction": "above", "alert": 80, "danger": 88, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
+         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/CMP-02.csv"}},
+        {"id": "separator_dp", "name": "Oil separator pressure drop", "unit": "bar", "component_id": "oil_separator", "role": "health", "sample_interval_s": 900,
+         "limits": {"direction": "above", "alert": 0.8, "danger": 1.0, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
+         "provenance": {"source": "simulated", "detail": "fixtures/telemetry/CMP-02.csv"}},
+        {"id": "oil_level", "name": "Oil level", "unit": "%", "component_id": "oil_separator", "role": "health", "sample_interval_s": 900,
+         "limits": {"direction": "below", "alert": 60, "danger": 50, "provenance": {"source": "fixture", "detail": "Site alarm limits (fixture values)"}},
          "provenance": {"source": "simulated", "detail": "fixtures/telemetry/CMP-02.csv"}}
       ]
     }

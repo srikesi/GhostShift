@@ -369,6 +369,7 @@ export interface ApprovalRecord {
   decided_by: string | null;
   decided_at: string | null;
   note: string | null;
+  automated: boolean;
 }
 
 export interface ProposedAction {
@@ -462,6 +463,23 @@ export interface IncidentView {
   work_order: WorkOrder | null;
   notifications: Notification[];
   latest_run: WorkflowRun | null;
+  activity: ActivityEvent[];
+}
+
+export interface ActivityEvent {
+  id: string;
+  incident_id: string;
+  at: string;
+  machine_time: string | null;
+  actor: "faultzy" | "policy" | "person";
+  actor_name: string;
+  kind: string;
+  text: string;
+}
+
+export interface AutonomySettings {
+  level: "advise" | "autopilot";
+  auto_order_limit_usd: number;
 }
 
 export interface InspectionView {

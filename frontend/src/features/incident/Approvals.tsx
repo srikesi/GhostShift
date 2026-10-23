@@ -88,8 +88,10 @@ function ActionCard({ action, view, onDecide, onExecute }: { action: ProposedAct
         <ul className="clean decisions xs">
           {decided.map((r) => (
             <li key={r.role} className={`decision-${r.decision}`}>
-              <Icon name={r.decision === "approved" ? "check" : "x"} /> {r.decision === "approved" ? "Approved" : "Rejected"} by{" "}
-              {r.decided_by} ({roleLabel[r.role].toLowerCase()})
+              <Icon name={r.decision === "approved" ? "check" : "x"} />{" "}
+              {r.automated
+                ? `Approved automatically by autopilot (${r.note ?? "within policy"})`
+                : `${r.decision === "approved" ? "Approved" : "Rejected"} by ${r.decided_by} (${roleLabel[r.role].toLowerCase()})`}
             </li>
           ))}
         </ul>

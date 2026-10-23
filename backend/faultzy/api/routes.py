@@ -190,6 +190,7 @@ def _view(c: Container, incident_id: str) -> IncidentView:
         work_order=st.work_orders.get(inc.work_order_id) if inc.work_order_id else None,
         notifications=[st.notifications[n] for n in inc.notification_ids],
         latest_run=st.runs.get(inc.run_ids[-1]) if inc.run_ids else None,
+        activity=st.activity_for(inc.id),
     )
 
 

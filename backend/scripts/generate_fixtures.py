@@ -71,6 +71,29 @@ def cmp02(rng: random.Random) -> list[dict]:
     return rows
 
 
+def vmc07_energy_lube(rows: list[dict], rng: random.Random) -> None:
+    """Energy and lubrication channels. Separate RNG so the original channels are unchanged."""
+    onset = 140
+    for i, row in enumerate(rows):
+        x = max(0, i - onset)
+        vib_deg = 0.239 * (math.exp(0.025 * x) - 1) if x else 0.0
+        load = 0.03 * math.sin(2 * math.pi * i / 32)
+        hours_since_refill = (i * 0.25) % 24  # reservoir topped up once a day
+        row["spindle_power"] = 7.5 + 40 * load + rng.gauss(0, 0.25) + 0.25 * vib_deg
+        row["way_lube_pressure"] = 2.2 + 0.08 * math.sin(2 * math.pi * i / 8) + rng.gauss(0, 0.03)
+        row["way_lube_level"] = 80.0 - 0.4 * hours_since_refill + rng.gauss(0, 0.3)
+
+
+def cmp02_energy_lube(rows: list[dict], rng: random.Random) -> None:
+    onset = 120
+    for i, row in enumerate(rows):
+        x = max(0, i - onset)
+        foul = 0.12 * x + 0.0004 * x * x
+        row["package_power"] = 62.0 + 0.3 * (row["ambient_temp"] - 24.0) + rng.gauss(0, 0.6) + 0.03 * foul
+        row["separator_dp"] = 0.35 + rng.gauss(0, 0.01)
+        row["oil_level"] = 85.0 + rng.gauss(0, 0.4)
+
+
 def write(machine_id: str, rows: list[dict]) -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     fields = ["index", "timestamp", *rows[0].keys()]
@@ -87,5 +110,9 @@ def write(machine_id: str, rows: list[dict]) -> None:
 
 
 if __name__ == "__main__":
-    write("VMC-07", vmc07(random.Random(7)))
-    write("CMP-02", cmp02(random.Random(2)))
+    vmc = vmc07(random.Random(7))
+    vmc07_energy_lube(vmc, random.Random(107))
+    write("VMC-07", vmc)
+    cmp = cmp02(random.Random(2))
+    cmp02_energy_lube(cmp, random.Random(102))
+    write("CMP-02", cmp)
