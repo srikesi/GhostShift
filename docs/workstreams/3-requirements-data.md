@@ -14,21 +14,43 @@ Map every official requirement to a concrete change. Implement the data and AWS-
 1. **Requirements map first, within the first hour.** Read the official requirements and starter code, and check each service's official documentation. Write `docs/requirements-map.md`: one row per requirement, with status, owning workstream (1–4), files and notes.
    - Push it early.
    - For each requirement owned by another stream, add an entry to that stream's `docs/workstreams/inbox-<n>.md`.
-2. **AWS data sources.** If required (for example IoT SiteWise, Timestream, S3, Kinesis or IoT Core), implement each as a `TelemetryProvider` adapter in `backend/faultzy/integrations/`.
+2. **Close the sensor gap (highest priority).** The pitch says Faultzy uses *temperature, energy, vibration and lube monitor* data. The demo machines already have temperature and vibration, but energy exists only as motor current, and there are no lube sensors (the way-lube unit shows "No sensors"). Add simulated sensors with limits in `fixtures/machines.json`, and generate them in `scripts/generate_fixtures.py`, staying deterministic:
+   - **VMC-07:**
+     - `spindle_power` (kW, energy, on the spindle motor)
+     - `way_lube_pressure` (bar) and `way_lube_level` (%) on the way-lube unit
+     - Optionally `spindle_lube_flow` (oil-air lubrication to the front bearing). It can fall slightly before the bearing degrades, as a supporting condition in `FM-VMC-SPB-WEAR`.
+   - **CMP-02:** `package_power` (kW) and `oil_filter_dp` (bar), plus `oil_level` (%) as lube monitoring.
+   - Keep the story timing: VMC-07 flagged around sample 170, High around 174, Urgent around 226. If any numbers shift, update the tests, `README.md` demo script (ask workstream 4 through its inbox) and `scripts/demo_smoke.py` expectations.
+3. **Industrial Machine Downtime Prediction dataset (Kaggle).** This is the best real-style dataset for our spindle story. Ask the human to download it; Kaggle needs a login. Never commit the raw file.
+   - From memory, it has per-machine dates, spindle vibration, spindle bearing temperature, coolant and hydraulic-oil temperature and pressures, voltage, torque and a downtime label. **Verify the actual columns first.**
+   - Write an adapter that maps each machine ID to a Faultzy machine and converts units.
+   - Derive power (energy) where possible, with `derived` provenance.
+   - Treat hydraulic/lube oil signals as the lube monitor.
+   - Keep the downtime label out of agent inputs; it's ground truth only.
+   - Add a small evaluation script that reports how early Faultzy flags each downtime event (lead time) and how many false alarms it raises. Judges will ask how well it works.
+4. **AI4I 2020, real file (UCI, CC BY 4.0, also mirrored on Kaggle).** The loader `integrations/ai4i.py` exists but has only run on synthetic sample rows. Ask the human before downloading the file, then set `FAULTZY_AI4I_PATH`. Add the dataset's documented failure rules as fault patterns for `ai4i_milling`:
+   - heat-dissipation failure (air–process temperature gap with low speed)
+   - power failure (torque × speed outside the allowed power band)
+   - overstrain (tool wear × torque)
+   - tool-wear failure
+
+   Compute power and strain as `derived` channels in the adapter. Evaluate detections against the labels in the same evaluation script.
+5. **AWS data sources.** Implement these if the organizers require them. The AWS samples *Scale Predictive Maintenance POC* (IoT SiteWise) and *Amazon SageMaker Predictive Maintenance* (Kinesis, Glue) show the expected shape. Implement each source as a `TelemetryProvider` adapter in `backend/faultzy/integrations/`:
    - Keep the client lazy, so there is no I/O at import or construction.
    - Map errors to `ProviderError`, give it `health()`, and use correct provenance (`measured` or `simulated`).
    - Register it in `build_container()` behind a setting in your `config.py` section.
    - Follow `.claude/skills/add-integration` and `.claude/skills/add-dataset`.
-3. **Datasets.** Load the organizer data, or the real AI4I 2020 CSV if allowed, through an adapter.
+   - Skip SageMaker model training unless it is required; it costs hours and the rules-based detection already works.
+6. **General dataset rules.**
    - Document which fields exist and which are missing.
-   - Keep ground-truth labels out of agent inputs.
    - If the data is not a run-to-failure trajectory, the time-to-limit estimate should say "not estimated". Don't force a number.
-4. **New machines.** If the data implies a different machine type:
+   - Raw datasets stay out of git (add their paths to `.gitignore` through workstream 4's inbox). Keep a few synthetic rows in `backend/tests/data/` for tests.
+7. **New machines.** If the data implies a different machine type:
    - Add components, sensor limits and fault patterns in `fixtures/`.
    - Add a schematic in `frontend/src/features/assembly/drawings.tsx`, keyed by `visualization_id` (the generic fallback works until then).
    - Add a scenario so it can be replayed.
-5. **Contracts.** If you add fields to machine, telemetry or reference schemas, or to routes in `api/routes.py`, update only the matching interfaces in `frontend/src/api/types.ts` and `client.ts`.
-6. **Keep the demo intact.** VMC-07 and CMP-02 and their stories must keep working exactly as in `README.md`.
+8. **Contracts.** If you add fields to machine, telemetry or reference schemas, or to routes in `api/routes.py`, update only the matching interfaces in `frontend/src/api/types.ts` and `client.ts`.
+9. **Keep the demo intact.** VMC-07 and CMP-02 and their stories must keep working as described in `README.md`.
 
 ## Verify before declaring done
 - New tests in `backend/tests/test_data_*.py` for each adapter, with AWS calls mocked (a fake client or botocore Stubber):
@@ -40,4 +62,6 @@ Map every official requirement to a concrete change. Implement the data and AWS-
 - A test that each new machine runs through `orchestrator.run()`.
 - `make check` is green, and `make demo-smoke` passes in demo mode.
 - With credentials, `GET /api/health` shows each new source as configured. The dashboard shows the new machine and its charts.
+- The dashboard shows energy and lube charts for both demo machines, and the way-lube unit is no longer "No sensors".
+- The evaluation script runs on each real dataset available, and its results (lead time, false alarms) are recorded in `docs/data.md`.
 - `docs/requirements-map.md` is complete, and `docs/data.md` documents every source and its gaps.

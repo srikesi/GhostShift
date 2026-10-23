@@ -10,6 +10,11 @@ Today every agent is deterministic, and Bedrock only rewords the incident summar
 ## Goal
 Add a Bedrock-powered copilot. It answers questions about a machine or incident by calling Faultzy's existing deterministic functions as tools, and it can run an investigation when an incident opens.
 
+## Reference designs (read first)
+- **AWS sample: Sample Agentic Maintenance Assistant.** This is the closest match to what you are building: fault simulation, asset-specific models, maintenance documents and a conversational assistant. Reuse its agent and tool structure where it fits. Don't copy its data or infrastructure wholesale.
+- **AWS sample: Scale Predictive Maintenance POC.** Use its Bedrock Knowledge Base pattern for maintenance documents (step 3 below).
+- Get both from the hackathon resources page, or ask the human for the links. Note the license of anything you reuse in `docs/copilot.md`.
+
 ## Build
 1. **Tool-use loop.** In `integrations/bedrock.py`, add tool use through the Converse API (`toolConfig`). The loop is bounded (for example, at most 6 tool calls), has per-call timeouts, and maps errors to `ProviderError`. Keep the existing `complete()` working.
 2. **Tools** (in a new module under `backend/faultzy/agents/`) are read-only wrappers over existing code:
@@ -23,17 +28,22 @@ Add a Bedrock-powered copilot. It answers questions about a machine or incident 
    - draft a work order (returns a draft only)
 
    No tool may approve, reject or execute actions, change a priority tier, or send messages. Validate every tool input with Pydantic, and return errors to the model as tool results.
-3. **API.** Add `POST /api/copilot/ask` with `{machine_id, incident_id?, question}`. It returns `{answer, tool_calls[], status, provider}`, using the existing `StageStatus` values. Add endpoints only in `api/copilot_routes.py`, which is already registered.
-4. **Modes.**
+3. **Maintenance documents.** Add a `search_maintenance_docs(query, machine_type)` tool so answers can cite real procedures.
+   - In `aws` or `auto` mode with a configured knowledge base id, back it with a Bedrock Knowledge Base (Retrieve API).
+   - Offline, use a few short, clearly labelled sample procedures stored in a new `backend/faultzy/knowledge/` folder (yours), searched by keyword: spindle bearing replacement, oil cooler cleaning, way-lube checks.
+   - Answers must say which document they used.
+4. **Supervisor over specialists.** This is the multi-agent part of the pitch. Make the copilot a supervisor agent that delegates to the existing specialist agents (diagnostics, prognostics, safety, maintenance & supply) through tools, and explains how they combined. If the organizers require Strands or AgentCore, use its "agents as tools" pattern. Show the delegation in the UI's "Steps" list.
+5. **API.** Add `POST /api/copilot/ask` with `{machine_id, incident_id?, question}`. It returns `{answer, tool_calls[], status, provider}`, using the existing `StageStatus` values. Add endpoints only in `api/copilot_routes.py`, which is already registered.
+6. **Modes.**
    - `demo`: no network. Return a clearly labelled built-in answer for a few suggested questions, built from the same tools without a model. Otherwise say the copilot needs Bedrock.
    - `auto`: use Bedrock if configured, otherwise fall back with a label.
    - `aws`: report failures; don't mask them.
-5. **Investigation (optional, if time allows).** When the orchestrator opens or escalates an incident, the copilot may write the narrative by calling tools. Validate the output exactly as `agents/narrative.py` does (including the unsafe-claim filter). Fall back to the template.
-6. **UI.** Implement `frontend/src/features/copilot/CopilotPanel.tsx`; it's already rendered on the dashboard.
+7. **Investigation (optional, if time allows).** When the orchestrator opens or escalates an incident, the copilot may write the narrative by calling tools. Validate the output exactly as `agents/narrative.py` does (including the unsafe-claim filter). Fall back to the template.
+8. **UI.** Implement `frontend/src/features/copilot/CopilotPanel.tsx`; it's already rendered on the dashboard.
    - A question box and 3 suggested questions, such as "Why was this flagged?", "What happens if we wait until the weekend?" and "Which other parts should we check?".
    - The answer, plus a collapsed "Steps" list of the tool calls.
    - Put types and fetch calls in `features/copilot/`. Add no new npm dependencies. Follow the ui-quality skill: plain words, and show the provider label only when a live model was used, fell back or failed.
-7. **AgentCore / Strands.** Only if the organizers require it: add `backend/agentcore/` with an entrypoint that builds the container and calls the same copilot. FastAPI remains the local runtime.
+9. **AgentCore / Strands.** Only if the organizers require it: add `backend/agentcore/` with an entrypoint that builds the container and calls the same copilot. FastAPI remains the local runtime.
 
 ## Verify before declaring done
 - `make check-bedrock` succeeds in the workshop account. Record the model id you chose in `docs/copilot.md`, but never credentials.
@@ -46,4 +56,5 @@ Add a Bedrock-powered copilot. It answers questions about a machine or incident 
   - the answer never changing tier or approvals
 - `make check` is green. With `FAULTZY_MODE=demo`, `make demo-smoke` passes.
 - Manual check: with `FAULTZY_MODE=auto` and a model id, ask the 3 suggested questions in the UI on VMC-07 at "Skip to fault". Answers cite real numbers from tools.
-- `docs/copilot.md` documents the tools, modes, model id and limits.
+- Tests cover the document search tool offline: it returns the right sample procedure, and the answer names its source.
+- `docs/copilot.md` documents the tools, modes, model id, knowledge base setup and limits.

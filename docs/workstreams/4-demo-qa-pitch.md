@@ -25,7 +25,7 @@ Deliver a tested, polished frontend, CI on every push, and a pitch kit: demo scr
    - Keyboard use, so focus is visible and the SVG parts are reachable.
 
    Fix what you own. Send the rest to the owners' inboxes. Don't touch `features/copilot/**` or `features/assembly/**`.
-4. **Pitch kit** in `docs/pitch/`:
+4. **Pitch kit** in `docs/pitch/`. Start from `docs/pitch/positioning.md`, which maps the brief (multi-agent; temperature, energy, vibration and lube data; failure prediction; useful life; auto-ordering; scheduling) to what the build does today. Keep its **Today** column current as streams land, and never claim more than it says.
    - `demo-script.md`: a 3-minute, click-by-click script with what to say. Start from the README demo script, and add the copilot and the live text once streams 1 and 2 land.
    - `slides.md`: a slide outline covering problem, demo story, architecture diagram (Mermaid), the agentic design, safety (deterministic gates and human approval), AWS services used, what is real versus simulated, and what's next.
    - `qa.md`: likely judge questions with honest answers. Examples: how accurate is the time-to-limit; what is simulated; how does it scale; why can't the model override safety.
