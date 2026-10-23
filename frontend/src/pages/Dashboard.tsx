@@ -20,6 +20,7 @@ import { DetailsPanel } from "../features/incident/Details";
 import { FixPanel } from "../features/incident/Fix";
 import { InventoryPanel } from "../features/inventory/InventoryPanel";
 import { MachineThumb } from "../features/machine/MachinePhoto";
+import "../features/machine/machine.css";
 import { PartsViews } from "../features/machine/PartsViews";
 import { SchedulePanel } from "../features/schedule/SchedulePanel";
 import { WeekCalendar } from "../features/schedule/WeekCalendar";
@@ -387,45 +388,12 @@ function MachineHeader({
         </p>
       </div>
 
-      {/* Mode Toggle: Real-Time Live vs Historical 60h Replay */}
-      <div className="stream-mode-toggle" style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-        <button
-          type="button"
-          className={`btn sm ${streamMode === "live" ? "primary" : ""}`}
-          style={{
-            fontWeight: streamMode === "live" ? "bold" : "normal",
-            background: streamMode === "live" ? "#0284c7" : "rgba(255,255,255,0.06)",
-            color: streamMode === "live" ? "#ffffff" : "#94a3b8",
-            border: "1px solid rgba(255,255,255,0.15)",
-            borderRadius: "6px",
-            padding: "0.35rem 0.75rem",
-            cursor: "pointer",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.4rem",
-          }}
-          onClick={() => onToggleStreamMode("live")}
-        >
-          <span style={{ color: "#10b981", fontSize: "0.9rem" }}>●</span> Live Stream & Break Demo
+      <div className="seg" role="group" aria-label="Data view">
+        <button type="button" aria-pressed={streamMode === "live"} onClick={() => onToggleStreamMode("live")}>
+          Live stream
         </button>
-        <button
-          type="button"
-          className={`btn sm ${streamMode === "replay" ? "primary" : ""}`}
-          style={{
-            fontWeight: streamMode === "replay" ? "bold" : "normal",
-            background: streamMode === "replay" ? "#0284c7" : "rgba(255,255,255,0.06)",
-            color: streamMode === "replay" ? "#ffffff" : "#94a3b8",
-            border: "1px solid rgba(255,255,255,0.15)",
-            borderRadius: "6px",
-            padding: "0.35rem 0.75rem",
-            cursor: "pointer",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "0.4rem",
-          }}
-          onClick={() => onToggleStreamMode("replay")}
-        >
-          <span>⏱️</span> 60-Hour Timeline Replay
+        <button type="button" aria-pressed={streamMode === "replay"} onClick={() => onToggleStreamMode("replay")}>
+          60-hour replay
         </button>
       </div>
 

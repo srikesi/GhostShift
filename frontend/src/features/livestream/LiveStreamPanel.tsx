@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { Panel, SeverityPill, SimTag } from "../../components/ui";
 import "./livestream.css";
 
 interface LiveStreamPanelProps {
@@ -73,8 +74,8 @@ export function LiveStreamPanel({ machineId }: LiveStreamPanelProps) {
       setSmsAlert(data.sms_sent);
       setStatusMsg(
         type === "mild"
-          ? "⚠️ Mild Anomaly Injected — Warning thresholds crossed. Twilio SMS dispatched with inspection link for human call."
-          : "🚨 Catastrophic Breakdown Injected — High thermal runaway & severe acoustic screeching detected!"
+          ? "Mild anomaly started. Warning limits were crossed and a text with the technician link was sent."
+          : "Breakdown started. Severe overheating and loud grinding detected."
       );
     } catch (err) {
       setStatusMsg(`Error injecting fault: ${err}`);
@@ -92,7 +93,7 @@ export function LiveStreamPanel({ machineId }: LiveStreamPanelProps) {
       const data = await res.json();
       setActiveFault("estop");
       setSmsAlert(data.sms_sent);
-      setStatusMsg("🛑 AUTONOMOUS E-STOP EXECUTED — Power cut to 0A, Fan halted at 0 RPM. Mandatory LOTO required.");
+      setStatusMsg("Emergency stop done. Power is cut and the fan has halted. Lockout/tagout is required before any work.");
     } catch (err) {
       setStatusMsg(`Error executing E-STOP: ${err}`);
     } finally {
@@ -108,7 +109,7 @@ export function LiveStreamPanel({ machineId }: LiveStreamPanelProps) {
       });
       setActiveFault("nominal");
       setSmsAlert(null);
-      setStatusMsg("✅ Equipment Restored — Normal Cold-Aisle Operating Parameters Active.");
+      setStatusMsg("Back to normal operation.");
     } catch (err) {
       setStatusMsg(`Error resetting: ${err}`);
     } finally {
@@ -124,176 +125,124 @@ export function LiveStreamPanel({ machineId }: LiveStreamPanelProps) {
   const anchor = telemetry?.anchor_3d;
   const severity = telemetry?.severity ?? "normal";
 
+  const waiting = telemetry === null; // no reading yet: show dashes instead of zeros that look like a tripped machine
+  const gauges: { label: string; value: string; unit: string; tone: string; hint: string }[] = [
+    {
+      label: "Fan motor current",
+      value: current.toFixed(1),
+      unit: "A",
+      tone: current === 0 ? "danger" : "",
+      hint: current === 0 ? "Power tripped (0 A)" : "Normal: about 14.2 A",
+    },
+    {
+      label: "Fan speed",
+      value: String(Math.round(rpm)),
+      unit: "rpm",
+      tone: rpm === 0 ? "danger" : "",
+      hint: rpm === 0 ? "Fan halted" : "Target: 1,750 rpm",
+    },
+    {
+      label: "Vibration",
+      value: vib.toFixed(2),
+      unit: "mm/s",
+      tone: vib > 4 ? "danger" : vib > 2.5 ? "warn" : "",
+      hint: "Danger limit: 4.5 mm/s",
+    },
+    {
+      label: "Acoustic noise",
+      value: acoustic.toFixed(1),
+      unit: "dB",
+      tone: acoustic > 90 ? "danger" : acoustic > 75 ? "warn" : "",
+      hint: "Grinding and squeal level",
+    },
+    {
+      label: "Hotspot temperature",
+      value: temp.toFixed(1),
+      unit: "°C",
+      tone: temp > 80 ? "danger" : temp > 50 ? "warn" : "",
+      hint: activeFault === "estop" ? "Cooling toward 22 °C room temperature" : "Alert limit: 75 °C",
+    },
+  ];
+
+  const triggers: { label: string; note: string; onClick: () => void; danger?: boolean }[] = [
+    { label: "Mild anomaly", note: "Fan flutter, sends a text with the link", onClick: () => injectFault("mild") },
+    { label: "Breakdown", note: "Shaft failure and overheating", onClick: () => injectFault("critical") },
+    { label: "Emergency stop", note: "Cut power, fan to 0 rpm, lockout/tagout", onClick: triggerEstop, danger: true },
+    { label: "Reset", note: "Back to normal operation", onClick: resetFault },
+  ];
+
   return (
-    <div className={`livestream-card ${activeFault}`}>
-      <div className="livestream-header">
-        <div className="livestream-title">
-          <span className="live-pulse-dot" />
-          <span className="live-label">LIVE SENSOR STREAM</span>
-          <span className="live-machine-tag">{machineId}</span>
-        </div>
-        <div className="livestream-status-badge">
-          <span className={`status-pill ${severity}`}>
-            {severity.toUpperCase()}
-          </span>
-          <span className="phase-pill">{telemetry?.phase ?? "CONNECTING"}</span>
-        </div>
-      </div>
+    <Panel
+      title={
+        <>
+          Live sensor stream <span className="mono live-machine">{machineId}</span> <SimTag title="Simulated sensor feed" />
+        </>
+      }
+      id="livestream"
+      className={`livestream ${activeFault}`}
+      actions={
+        <span className="live-badges">
+          <SeverityPill severity={severity} />
+          <span className="tag">{telemetry?.phase ?? "connecting"}</span>
+        </span>
+      }
+    >
+      <div className="stack">
+        <section aria-label="Demo triggers">
+          <p className="eyebrow">Demo triggers</p>
+          <p className="xs muted">Start a failure to see GhostShift react and send its alerts.</p>
+          <div className="trigger-row">
+            {triggers.map((t) => (
+              <button key={t.label} type="button" className={`trigger btn ${t.danger ? "danger" : ""}`} disabled={loading} onClick={t.onClick}>
+                <strong>{t.label}</strong>
+                <span className="xs muted">{t.note}</span>
+              </button>
+            ))}
+          </div>
+        </section>
 
-      {/* Interactive Trigger Controls */}
-      <div className="break-controls-banner">
-        <div className="break-controls-label">
-          <span>OPERATIONAL DEMO TRIGGERS</span>
-          <span className="break-subtitle">Inject live failures to test agent orchestration & Twilio alerts</span>
-        </div>
-        <div className="break-buttons-row">
-          <button
-            type="button"
-            className="btn-trigger mild"
-            disabled={loading}
-            onClick={() => injectFault("mild")}
-          >
-            <span className="btn-icon">⚡</span>
-            <div className="btn-text-wrap">
-              <strong>Break: Mild Anomaly</strong>
-              <small>Flutter / SMS human link</small>
+        {statusMsg && (
+          <div className={`notice small ${activeFault === "nominal" ? "" : "warn"}`} role="status">
+            <span>{statusMsg}</span>
+          </div>
+        )}
+
+        <div className="gauge-grid">
+          {gauges.map((g) => (
+            <div key={g.label} className="gauge">
+              <span className="xs muted">{g.label}</span>
+              <span className={`gauge-value mono ${waiting ? "" : g.tone}`}>
+                {waiting ? "—" : g.value} <span className="gauge-unit">{g.unit}</span>
+              </span>
+              <span className="xs muted">{waiting ? "Waiting for a reading" : g.hint}</span>
             </div>
-          </button>
-
-          <button
-            type="button"
-            className="btn-trigger critical"
-            disabled={loading}
-            onClick={() => injectFault("critical")}
-          >
-            <span className="btn-icon">💥</span>
-            <div className="btn-text-wrap">
-              <strong>Break: Catastrophic Trip</strong>
-              <small>Shaft breakdown / Overheat</small>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            className="btn-trigger estop"
-            disabled={loading}
-            onClick={triggerEstop}
-          >
-            <span className="btn-icon">🛑</span>
-            <div className="btn-text-wrap">
-              <strong>Emergency E-STOP</strong>
-              <small>Cut power 0A / 0 RPM / LOTO</small>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            className="btn-trigger reset"
-            disabled={loading}
-            onClick={resetFault}
-          >
-            <span className="btn-icon">↺</span>
-            <div className="btn-text-wrap">
-              <strong>Reset Baseline</strong>
-              <small>Restore nominal health</small>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      {/* Status or Alert Notification Banner */}
-      {statusMsg && (
-        <div className={`live-feedback-banner ${activeFault}`}>
-          <span>{statusMsg}</span>
-        </div>
-      )}
-
-      {/* Live Digital Readout Gauges */}
-      <div className="telemetry-gauges-grid">
-        <div className="gauge-box">
-          <span className="gauge-label">FAN / MOTOR CURRENT</span>
-          <div className="gauge-value-wrap">
-            <span className={`gauge-value ${current === 0 ? "zero-cut" : ""}`}>
-              {current.toFixed(1)}
-            </span>
-            <span className="gauge-unit">A</span>
-          </div>
-          <span className="gauge-hint">{current === 0 ? "POWER TRIPPED (0A)" : "Normal nominal: 14.2 A"}</span>
-        </div>
-
-        <div className="gauge-box">
-          <span className="gauge-label">FAN / SHAFT SPEED</span>
-          <div className="gauge-value-wrap">
-            <span className={`gauge-value ${rpm === 0 ? "zero-cut" : ""}`}>
-              {Math.round(rpm)}
-            </span>
-            <span className="gauge-unit">RPM</span>
-          </div>
-          <span className="gauge-hint">{rpm === 0 ? "IMPELLER HALTED" : "Operating target: 1,750 RPM"}</span>
-        </div>
-
-        <div className="gauge-box">
-          <span className="gauge-label">VIBRATION RMS</span>
-          <div className="gauge-value-wrap">
-            <span className={`gauge-value ${vib > 4.0 ? "danger" : vib > 2.5 ? "warn" : ""}`}>
-              {vib.toFixed(2)}
-            </span>
-            <span className="gauge-unit">mm/s</span>
-          </div>
-          <span className="gauge-hint">Danger threshold: 4.5 mm/s</span>
-        </div>
-
-        <div className="gauge-box">
-          <span className="gauge-label">ACOUSTIC NOISE (12LABS)</span>
-          <div className="gauge-value-wrap">
-            <span className={`gauge-value ${acoustic > 90 ? "danger" : acoustic > 75 ? "warn" : ""}`}>
-              {acoustic.toFixed(1)}
-            </span>
-            <span className="gauge-unit">dB</span>
-          </div>
-          <span className="gauge-hint">Audio chattering squeal index</span>
-        </div>
-
-        <div className="gauge-box">
-          <span className="gauge-label">HOTSPOT TEMP (NOVA IR)</span>
-          <div className="gauge-value-wrap">
-            <span className={`gauge-value ${temp > 80 ? "danger" : temp > 50 ? "warn" : ""}`}>
-              {temp.toFixed(1)}
-            </span>
-            <span className="gauge-unit">°C</span>
-          </div>
-          <span className="gauge-hint">{activeFault === "estop" ? "Dissipating to 22°C ambient" : "Alert limit: 75.0 °C"}</span>
-        </div>
-
-        <div className="gauge-box anchor-box">
-          <span className="gauge-label">3D SPATIAL ANCHOR</span>
-          <div className="anchor-coord-text">
+          ))}
+          <div className="gauge">
+            <span className="xs muted">Camera focus</span>
             {anchor ? (
               <>
-                <strong>{anchor.component}</strong>
-                <code>[{anchor.x.toFixed(1)}, {anchor.y.toFixed(1)}, {anchor.z.toFixed(1)}] mm</code>
+                <span className="small strong">{anchor.component}</span>
+                <span className="xs mono muted">
+                  [{anchor.x.toFixed(1)}, {anchor.y.toFixed(1)}, {anchor.z.toFixed(1)}] mm
+                </span>
               </>
             ) : (
-              <span>Tracking machine coordinates...</span>
+              <span className="small muted">Waiting for position…</span>
             )}
           </div>
-          <span className="gauge-hint">Target camera vector for Three.js</span>
         </div>
-      </div>
 
-      {/* Dispatched Twilio SMS Terminal */}
-      {smsAlert && (
-        <div className="sms-dispatch-terminal">
-          <div className="sms-terminal-header">
-            <span className="terminal-dot green" />
-            <span>TWILIO CELLULAR / WHATSAPP DISPATCH FEED</span>
-            <span className="timestamp">{new Date().toLocaleTimeString()}</span>
+        {smsAlert && (
+          <div className="sms">
+            <div className="row xs">
+              <span className="strong">Text sent to the technician</span>
+              <span className="spacer" />
+              <span className="mono muted">{new Date().toLocaleTimeString()}</span>
+            </div>
+            <p className="small sms-body">{smsAlert}</p>
           </div>
-          <div className="sms-terminal-body">
-            <code>{smsAlert}</code>
-          </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </Panel>
   );
 }
