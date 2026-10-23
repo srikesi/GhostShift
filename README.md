@@ -1,8 +1,4 @@
-# AustinAgenticAIHackathon2026_ManufacturingTeam3
-
-https://meet.google.com/mqd-gbks-ctu
-
----
+GhostShift is a multi agent system that listens to your machines, understands what they're saying using sensor data, machine manuals, and expert knowledge and acts.
 
 # Faultzy
 
