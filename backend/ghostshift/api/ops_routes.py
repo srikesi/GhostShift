@@ -19,9 +19,13 @@ from ..schemas.ops import (
     ScheduleProposal,
     StockLevel,
 )
+from typing import Literal
+
 from pydantic import Field
 
+from ..schemas.agents import ApproverRole
 from ..schemas.common import Contract, utcnow
+from ..schemas.workflow import DecisionRequest
 from .routes import get_container
 
 calendar_router = APIRouter(prefix="/api/calendar", tags=["calendar"])
@@ -147,3 +151,54 @@ def plan(token: str, c=Depends(get_container)):
         "booking": booking.model_dump(mode="json") if booking else None,
         "order": po.model_dump(mode="json") if po else None,
     }
+
+
+# ------------------------------------------------ approve the work order from the phone
+def _grant_incident(c, token: str) -> str:
+    grant = c.store.resolve_grant(token)
+    if grant is None:
+        raise HTTPException(404, "Link not found or expired")
+    return grant.incident_id
+
+
+def _wo_action(c, incident_id: str):
+    inc = c.store.incidents.get(incident_id)
+    act = next((c.store.actions[a] for a in (inc.action_ids if inc else []) if c.store.actions[a].kind.value == "dispatch_work_order"), None)
+    if act is None:
+        raise HTTPException(404, "This problem has no work order to approve")
+    return act
+
+
+class PhoneDecision(Contract):
+    role: ApproverRole
+    approver_name: str = Field(min_length=2, max_length=80)
+    decision: Literal["approve", "reject"]
+    isolation_attestation: bool = False
+
+
+class PhoneRelease(Contract):
+    approver_name: str = Field(min_length=2, max_length=80)
+
+
+@inspect_router.get("/{token}/work-order")
+def phone_work_order(token: str, c=Depends(get_container)):
+    act = _wo_action(c, _grant_incident(c, token))
+    wo = c.store.work_orders.get(act.target_id)
+    return {"action": act.model_dump(mode="json"), "title": wo.title if wo else None}
+
+
+@inspect_router.post("/{token}/work-order/decision")
+def phone_decide(token: str, body: PhoneDecision, c=Depends(get_container)):
+    """Same approval gate as the dashboard: role check, lockout/tagout attestation, one decision per role."""
+    act = _wo_action(c, _grant_incident(c, token))
+    done = c.approvals.decide(act.id, DecisionRequest(role=body.role, approver_name=body.approver_name,
+                                                      decision=body.decision, isolation_attestation=body.isolation_attestation,
+                                                      note="Decided on the phone page"))
+    return done.model_dump(mode="json")
+
+
+@inspect_router.post("/{token}/work-order/release")
+def phone_release(token: str, body: PhoneRelease, c=Depends(get_container)):
+    act = _wo_action(c, _grant_incident(c, token))
+    done = c.approvals.execute(act.id, actor="person", actor_name=body.approver_name)
+    return done.model_dump(mode="json")

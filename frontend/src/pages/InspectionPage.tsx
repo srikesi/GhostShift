@@ -9,6 +9,7 @@ import { PartCard } from "../features/inspection/PartCard";
 import { RepairGuide } from "../features/inspection/RepairGuide";
 import { MachineThumb } from "../features/machine/MachinePhoto";
 import { MODELS } from "../features/model3d/models";
+import { WorkOrderApproval } from "../features/inspection/WorkOrderApproval";
 import { PlanCard } from "../features/schedule/PlanCard";
 import { fmtDateTime } from "../lib/format";
 import "./inspection.css";
@@ -25,6 +26,7 @@ export function InspectionPage() {
   const [view3d, setView3d] = useState(true);
   const [no3d, setNo3d] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const [planKey, setPlanKey] = useState(0); // reload the schedule card after an approval confirms the slot
 
   useEffect(() => {
     api
@@ -84,7 +86,9 @@ export function InspectionPage() {
 
         <MachineThumb drawing={view.drawing} wide />
 
-        <PlanCard token={token} />
+        <PlanCard key={planKey} token={token} />
+
+        <WorkOrderApproval token={token} onChanged={() => setPlanKey((k) => k + 1)} />
 
         <SafetyNotice>Lock out and verify before any physical work. This page does not make the machine safe.</SafetyNotice>
 

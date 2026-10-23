@@ -173,3 +173,16 @@ export const ops = {
   advance: (hours: number) => post<InventoryView>("/api/inventory/advance", { hours }),
   plan: (token: string) => request<PhonePlan>(`/api/inspect/${encodeURIComponent(token)}/plan`),
 };
+
+export interface PhoneWorkOrder {
+  title: string | null;
+  action: import("./types").ProposedAction;
+}
+
+export const phone = {
+  workOrder: (token: string) => request<PhoneWorkOrder>(`/api/inspect/${encodeURIComponent(token)}/work-order`),
+  decide: (token: string, body: { role: string; approver_name: string; decision: "approve" | "reject"; isolation_attestation: boolean }) =>
+    post<import("./types").ProposedAction>(`/api/inspect/${encodeURIComponent(token)}/work-order/decision`, body),
+  release: (token: string, approver_name: string) =>
+    post<import("./types").ProposedAction>(`/api/inspect/${encodeURIComponent(token)}/work-order/release`, { approver_name }),
+};

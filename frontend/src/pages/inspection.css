@@ -159,3 +159,40 @@
   align-self: flex-start;
   margin-top: var(--s-1);
 }
+
+.m-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.m-form input[type="text"],
+.m-form input:not([type]),
+.m-form select {
+  height: 44px;
+  padding: 0 var(--s-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  font: inherit;
+  font-size: var(--fs-md);
+  background: var(--surface);
+}
+.m-form .btn {
+  height: 44px;
+  flex: 1;
+  justify-content: center;
+}
+.m-form .attest {
+  display: flex;
+  gap: var(--s-2);
+  align-items: flex-start;
+}
+.m-form .attest input {
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+}
+.wo-approvals li {
+  display: flex;
+  gap: var(--s-2);
+  padding: 4px 0;
+}
