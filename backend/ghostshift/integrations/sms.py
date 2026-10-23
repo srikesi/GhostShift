@@ -19,6 +19,9 @@ TWILIO_ERRORS = {
     30006: "The number can't receive texts (landline or unreachable carrier)",
     30007: "The carrier filtered the message as spam",
     21610: "The recipient has replied STOP to this number",
+    63015: "This phone hasn't joined the WhatsApp sandbox yet (send the join phrase first)",
+    63016: "WhatsApp only allows free-form messages within 24 hours of the recipient's last message; rejoin the sandbox",
+    63007: "The WhatsApp sender isn't set up on this Twilio account",
 }
 
 
@@ -117,7 +120,7 @@ class TwilioSms:
             return DeliveryStatus(state="pending", provider_status="unknown", error=f"Twilio HTTP {r.status_code}: {_twilio_error(r)}")
         j = r.json()
         status, code = j.get("status"), j.get("error_code")
-        if status == "delivered":
+        if status in ("delivered", "read"):  # WhatsApp also reports "read"
             return DeliveryStatus(state="delivered", provider_status=status)
         if status in ("undelivered", "failed"):
             reason = TWILIO_ERRORS.get(code, j.get("error_message") or "Delivery failed")

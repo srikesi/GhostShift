@@ -27,6 +27,8 @@ def test_delivery_status_mapping():
     d = twilio("undelivered", 30034).delivery_status("SM123")
     assert d.state == "failed" and "A2P 10DLC" in d.error and "30034" in d.error
     assert twilio("sent").delivery_status("SM123").state == "pending"
+    assert twilio("read").delivery_status("SM123").state == "delivered"
+    assert "joined the WhatsApp sandbox" in twilio("failed", 63015).delivery_status("SM123").error
 
 
 def _client(sms):
