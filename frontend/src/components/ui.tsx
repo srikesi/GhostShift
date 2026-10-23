@@ -122,7 +122,7 @@ export function Icon({ name, title }: { name: keyof typeof ICONS; title?: string
   return <C size={15} strokeWidth={1.75} aria-hidden={title ? undefined : true} aria-label={title} />;
 }
 
-/** GhostShift mark: a simple, slightly lopsided ghost (tilted head, one arm, uneven eyes, one cheek). */
+/** GhostShift mark: a simple, slightly lopsided ghost (tilted head, one arm, uneven eyes). */
 export function GhostMark({ size = 22, title }: { size?: number; title?: string }) {
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} role={title ? "img" : undefined} aria-hidden={title ? undefined : true}>
@@ -133,7 +133,6 @@ export function GhostMark({ size = 22, title }: { size?: number; title?: string 
       />
       <ellipse cx="9.7" cy="10.6" rx="1.15" ry="1.55" fill="var(--graphite)" />
       <ellipse cx="14.1" cy="10.1" rx="0.95" ry="1.3" fill="var(--graphite)" />
-      <circle cx="15.6" cy="12.6" r="0.85" fill="var(--amber)" />
     </svg>
   );
 }
