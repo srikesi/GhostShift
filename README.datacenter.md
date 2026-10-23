@@ -49,6 +49,32 @@ All planned agents are **advisory**: they add evidence and answers, and cannot c
 | **Fleet data** | Reads datasets from other companies' similar data centers and compares failure patterns, lead times and fixes. Context only: it never sets your limits | Planned |
 | **Sound and video** | Turns audio, video and photos (fan noise, a drip, a hot spot) into labelled findings that join the diagnosis | Planned |
 
+## Quick start
+
+Requirements: [uv](https://docs.astral.sh/uv/) (it installs Python 3.12 for you), and Node 18+ with npm.
+
+```bash
+make setup
+```
+
+```bash
+make dev
+```
+
+Then open http://localhost:5173. The home page is a floor plan of Austin DC-2: click a monitored machine (solid tile, status shown) to open its page at `/machines/<id>`; dashed tiles are placeholders. The API is at http://localhost:8000 (`/docs` for OpenAPI, `/api/health` for status).
+
+Without `make`, run the two halves separately:
+
+```bash
+cd backend && uv sync --extra dev && uv run uvicorn ghostshift.main:app --reload --port 8000
+```
+
+```bash
+cd frontend && npm install && npm run dev
+```
+
+pip also works: `cd backend && python3.12 -m venv .venv && .venv/bin/pip install -e ".[dev]"`.
+
 ## Demo
 
 The bundled demo has two simulated machines that stand in for data center equipment. This mapping is an analogy: the screens and fixtures still use the names `VMC-07` and `CMP-02`.
@@ -82,3 +108,4 @@ Run `make setup` then `make dev`, and open http://localhost:5173 (see [Quick sta
 - Approvals authorise a record in GhostShift. They do not stop, isolate or make equipment safe.
 - Work-order approval requires attesting that isolation will be done and verified by qualified personnel under the site lockout/tagout procedure.
 - Every finding names its source (sensor, fleet dataset, sound, video, photo or document), and a failed provider shows as a failure, never a success.
+
