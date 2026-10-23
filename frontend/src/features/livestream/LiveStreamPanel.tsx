@@ -10,6 +10,19 @@ interface TelemetryPayload {
   index: number;
   timestamp: string;
   values: {
+    // Data-center cooling / mainframe sensors
+    fan_speed?: number;
+    fan_motor_current?: number;
+    fan_vibration?: number;
+    fan_bearing_temp?: number;
+    chw_supply_pressure?: number;
+    filter_dp?: number;
+    fan_power?: number;
+    compressor_motor_current?: number;
+    compressor_vibration?: number;
+    discharge_temp?: number;
+    oil_temp?: number;
+    // Milling CNC sensors (legacy & testing)
     spindle_motor_current?: number;
     rotational_speed?: number;
     spindle_speed?: number;
@@ -117,11 +130,36 @@ export function LiveStreamPanel({ machineId }: LiveStreamPanelProps) {
     }
   };
 
-  const rpm = telemetry?.values.rotational_speed ?? telemetry?.values.spindle_speed ?? 0;
-  const current = telemetry?.values.spindle_motor_current ?? 0;
-  const vib = telemetry?.values.spindle_vib_rms ?? 0;
-  const acoustic = telemetry?.values.acoustic_db ?? 0;
-  const temp = telemetry?.values.thermal_max_c ?? telemetry?.values.process_temp ?? 0;
+  const rpm =
+    telemetry?.values.rotational_speed ??
+    telemetry?.values.spindle_speed ??
+    telemetry?.values.fan_speed ??
+    0;
+
+  const current =
+    telemetry?.values.fan_motor_current ??
+    telemetry?.values.compressor_motor_current ??
+    telemetry?.values.spindle_motor_current ??
+    0;
+
+  const vib =
+    telemetry?.values.fan_vibration ??
+    telemetry?.values.compressor_vibration ??
+    telemetry?.values.spindle_vib_rms ??
+    0;
+
+  // Synthesize or map acoustic index from vibration/load if not explicitly in stream
+  const acoustic =
+    telemetry?.values.acoustic_db ??
+    (vib > 0 ? Math.round(52.0 + vib * 9.5) : 0);
+
+  const temp =
+    telemetry?.values.fan_bearing_temp ??
+    telemetry?.values.discharge_temp ??
+    telemetry?.values.oil_temp ??
+    telemetry?.values.thermal_max_c ??
+    telemetry?.values.process_temp ??
+    0;
   const anchor = telemetry?.anchor_3d;
   const severity = telemetry?.severity ?? "normal";
 
