@@ -410,6 +410,18 @@ async def stream_telemetry_default(
 
 
 
+def _demo_call(c: Container, machine_id: str) -> dict | None:
+    """Breakdown and emergency stop: phone the scheduler contact straight away to agree a repair date."""
+    inc = c.store.open_incident_for(machine_id)
+    if inc is None:
+        return None
+    try:
+        call = c.calls.start(inc.id)
+    except Exception:  # noqa: BLE001 - no slot, no phone number or a failed dial must not break the trigger
+        return None
+    return {"id": call.id, "status": call.status, "error": call.error}
+
+
 def _demo_link(c: Container, machine_id: str, cursor_offset: int) -> str:
     """Open (or update) a real incident for a demo trigger and return a working technician link.
 
@@ -464,6 +476,7 @@ async def inject_fault(
         "machine_id": machine_id,
         "fault_type": body.fault_type,
         "sms_sent": sms_text,
+        "call": _demo_call(c, machine_id) if body.fault_type == "critical" else None,
     }
 
 
@@ -494,6 +507,7 @@ async def emergency_stop(
         "current_a": 0.0,
         "rpm": 0.0,
         "sms_sent": sms_text,
+        "call": _demo_call(c, machine_id),
     }
 
 

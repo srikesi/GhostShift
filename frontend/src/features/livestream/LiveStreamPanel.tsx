@@ -43,6 +43,12 @@ interface TelemetryPayload {
   severity: "normal" | "watch" | "warning" | "critical";
 }
 
+/** One sentence about the scheduling call that a breakdown or emergency stop starts. */
+function callNote(call: { status: string; error: string | null } | null | undefined): string {
+  if (!call) return "";
+  return call.error ? ` The scheduling call could not be placed: ${call.error}` : " GhostShift is calling to agree a repair date.";
+}
+
 export function LiveStreamPanel({ machineId }: LiveStreamPanelProps) {
   const [telemetry, setTelemetry] = useState<TelemetryPayload | null>(null);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
@@ -89,7 +95,7 @@ export function LiveStreamPanel({ machineId }: LiveStreamPanelProps) {
       setStatusMsg(
         type === "mild"
           ? "Mild anomaly started. Warning limits were crossed and a text with the technician link was sent."
-          : "Breakdown started. Severe overheating and loud grinding detected."
+          : "Breakdown started. Severe overheating and loud grinding detected." + callNote(data.call)
       );
     } catch (err) {
       setStatusMsg(`Error injecting fault: ${err}`);
@@ -107,7 +113,7 @@ export function LiveStreamPanel({ machineId }: LiveStreamPanelProps) {
       const data = await res.json();
       setActiveFault("estop");
       setSmsAlert(data.sms_sent);
-      setStatusMsg("Emergency stop done. Power is cut and the fan has halted. Lockout/tagout is required before any work.");
+      setStatusMsg("Emergency stop done. Power is cut and the fan has halted. Lockout/tagout is required before any work." + callNote(data.call));
     } catch (err) {
       setStatusMsg(`Error executing E-STOP: ${err}`);
     } finally {
