@@ -10,12 +10,106 @@
   width: 100%;
   height: 100%;
 }
-.zone {
-  fill: var(--surface);
+.site-ground {
+  fill: #e4e0d6;
+}
+.floor-tile {
+  fill: #f6f4ee;
+}
+.floor-tile.cold {
+  fill: #eef1f1;
+}
+.floor-seam {
+  fill: none;
+  stroke: #d8d3c8;
+  stroke-width: 0.7;
+}
+.floor-holes circle {
+  fill: #b9bcbc;
+}
+.hot-bg {
+  fill: #f3ece4;
+}
+.hot-line {
+  stroke: #e0d2c2;
+  stroke-width: 2;
+}
+.aisle {
   stroke: var(--line-strong);
+  stroke-width: 0.8;
+  stroke-dasharray: 3 3;
+}
+.aisle-label {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  fill: var(--ink-3);
+  paint-order: stroke;
+  stroke: rgba(251, 250, 247, 0.85);
+  stroke-width: 3px;
+}
+.yard-bg {
+  fill: #e9e5db;
+}
+.yard-dot {
+  fill: #cfc9bb;
+}
+.wall {
+  fill: none;
+  stroke: var(--graphite-3);
+  stroke-width: 5;
+}
+.fence {
+  fill: none;
+  stroke: var(--ink-3);
+  stroke-width: 2;
+  stroke-dasharray: 8 4;
+}
+.column {
+  fill: var(--graphite-3);
+}
+.door-gap {
+  fill: #f6f4ee;
+}
+.door-swing {
+  fill: none;
+  stroke: var(--ink-3);
+  stroke-width: 1;
+}
+.pipe-outer {
+  fill: none;
+  stroke: var(--ink-3);
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+.pipe-inner {
+  fill: none;
+  stroke: #d7dde0;
+  stroke-width: 4;
+  stroke-linecap: round;
 }
 .zone-label {
   font-size: 13px;
+  font-weight: 600;
+  fill: var(--ink-2);
+}
+.scale path {
+  fill: none;
+  stroke: var(--ink-2);
+  stroke-width: 1.5;
+}
+.scale text {
+  font-size: 10px;
+  fill: var(--ink-3);
+}
+.north circle {
+  fill: rgba(251, 250, 247, 0.9);
+  stroke: var(--ink-3);
+}
+.north path {
+  fill: var(--ink-2);
+}
+.north text {
+  font-size: 11px;
   font-weight: 600;
   fill: var(--ink-2);
 }
@@ -199,19 +293,21 @@
   .tile.rack .tile-id {
     display: none; /* too narrow to read; the machine list below names them */
   }
-  .tile.rack .tile-status {
+  .tile.live .tile-status,
+  .tile.chiller .tile-status {
     font-size: 0;
     gap: 0;
   }
-  .tile.rack .tile-status i {
-    width: 10px;
-    height: 10px;
+  .tile.live .tile-status i {
+    width: 7px;
+    height: 7px;
   }
   .tile.chiller .tile-id {
-    font-size: 10px;
+    font-size: 9px;
   }
-  .tile.chiller .tile-status {
-    font-size: 10px;
+  .tile-bar {
+    padding: 2px;
+    gap: 1px;
   }
 }
 .tile.rack .tile-bar::after {

@@ -45,6 +45,40 @@ class PlanLink(Contract):
     label: str
 
 
+class Aisle(Contract):
+    kind: str
+    x: float
+    y: float
+    w: float
+    h: float
+    label: str
+
+
+class Door(Contract):
+    x: float
+    y: float
+    w: float
+    h: float
+    label: str
+    side: str
+
+
+class Pipe(Contract):
+    points: list[tuple[float, float]]
+    label: str
+    lx: float
+    ly: float
+
+
+class Decor(Contract):
+    aisles: list[Aisle] = []
+    doors: list[Door] = []
+    pipes: list[Pipe] = []
+    columns: list[tuple[float, float]] = []
+    scale: dict[str, float] | None = None
+    north: dict[str, float] | None = None
+
+
 class FloorPlan(Contract):
     site: str
     width: float
@@ -53,6 +87,7 @@ class FloorPlan(Contract):
     labels: list[PlanLabel]
     units: list[PlanUnit]
     links: list[PlanLink]
+    decor: Decor = Decor()
 
 
 @router.get("", response_model=FloorPlan)
