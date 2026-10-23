@@ -133,13 +133,16 @@ class CompositeTelemetryProvider:
                 vals["fan_motor_current"] = 0.0
                 vals["compressor_motor_current"] = 0.0
                 vals["spindle_motor_current"] = 0.0
-                vals["fan_speed"] = round(max(0.0, 350.0 * math.exp(-dt * 0.9)), 1)
+                # Realistic mechanical rotor coast-down curve from ~1460 RPM over 7-8 seconds
+                # dt advances every tick (0.5s at 2.0x stream speed)
+                decay_rpm = 1460.0 * math.exp(-dt * 0.45)
+                vals["fan_speed"] = round(decay_rpm if decay_rpm >= 15.0 else 0.0, 1)
                 vals["spindle_speed"] = vals["fan_speed"]
                 vals["rotational_speed"] = vals["fan_speed"]
-                vals["fan_vibration"] = round(max(0.05, 0.05 + 0.1 * math.exp(-dt * 0.5)), 3)
-                vals["fan_bearing_temp"] = round(22.0 + (vals.get("fan_bearing_temp", 45.0) - 22.0) * math.exp(-dt * 0.08), 1)
+                vals["fan_vibration"] = round(max(0.04, 0.04 + 0.3 * math.exp(-dt * 0.3)), 3)
+                vals["fan_bearing_temp"] = round(22.0 + (vals.get("fan_bearing_temp", 45.0) - 22.0) * math.exp(-dt * 0.05), 1)
                 vals["discharge_temp"] = vals["fan_bearing_temp"]
-                vals["acoustic_db"] = round(38.0 + 10.0 * math.exp(-dt * 0.8), 1)
+                vals["acoustic_db"] = round(38.0 + (vals.get("acoustic_db", 65.0) - 38.0) * math.exp(-dt * 0.4), 1)
 
             elif ftype == "critical":
                 phase = "catastrophic_breakdown"
