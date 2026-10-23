@@ -87,6 +87,7 @@ class CompositeTelemetryProvider:
         self._default = default
         self._routes: dict[str, object] = {}
         self.info = default.info
+        self._faults: dict[str, dict] = {}
 
     def add(self, machine_id: str, provider) -> None:
         self._routes[machine_id] = provider
@@ -111,44 +112,94 @@ class CompositeTelemetryProvider:
             if hasattr(p, "stream_tick"):
                 return p.stream_tick(machine_id, cursor)
         from datetime import datetime, timezone
+        import math
         from ..schemas.common import Severity
         from ..schemas.telemetry import Anchor3D, MultimodalTick
         pts = provider.window(machine_id, cursor, cursor).points
         pt = pts[0] if pts else None
+        vals = dict(pt.values) if pt and pt.values else {}
+        phase = "nominal"
+        sev = Severity.normal
+
+        fault = self._faults.get(machine_id)
+        if fault:
+            ftype = fault.get("type")
+            dt = float(fault.get("tick_started", 0))
+            fault["tick_started"] = dt + 1.0
+
+            if ftype == "estop":
+                phase = "emergency_shutdown_loto_active"
+                sev = Severity.critical
+                vals["fan_motor_current"] = 0.0
+                vals["compressor_motor_current"] = 0.0
+                vals["spindle_motor_current"] = 0.0
+                vals["fan_speed"] = round(max(0.0, 350.0 * math.exp(-dt * 0.9)), 1)
+                vals["spindle_speed"] = vals["fan_speed"]
+                vals["rotational_speed"] = vals["fan_speed"]
+                vals["fan_vibration"] = round(max(0.05, 0.05 + 0.1 * math.exp(-dt * 0.5)), 3)
+                vals["fan_bearing_temp"] = round(22.0 + (vals.get("fan_bearing_temp", 45.0) - 22.0) * math.exp(-dt * 0.08), 1)
+                vals["discharge_temp"] = vals["fan_bearing_temp"]
+                vals["acoustic_db"] = round(38.0 + 10.0 * math.exp(-dt * 0.8), 1)
+
+            elif ftype == "critical":
+                phase = "catastrophic_breakdown"
+                sev = Severity.critical
+                vals["fan_motor_current"] = 24.5
+                vals["compressor_motor_current"] = 185.0
+                vals["spindle_motor_current"] = 24.5
+                vals["fan_speed"] = 1310.0
+                vals["spindle_speed"] = 1310.0
+                vals["rotational_speed"] = 1310.0
+                vals["fan_vibration"] = 6.45
+                vals["fan_bearing_temp"] = 89.2
+                vals["discharge_temp"] = 96.5
+                vals["acoustic_db"] = 96.8
+
+            elif ftype == "mild":
+                phase = "incipient_flutter"
+                sev = Severity.warning
+                vals["fan_vibration"] = 3.85
+                vals["fan_motor_current"] = 15.6
+                vals["fan_bearing_temp"] = 52.4
+                vals["acoustic_db"] = 82.4
+
         return MultimodalTick(
             index=cursor,
             timestamp=pt.timestamp if pt else datetime.now(timezone.utc),
-            values=pt.values if pt else {},
-            anchor_3d=Anchor3D(x=0.0, y=100.0, z=250.0, component="CRAH Air Handler Centerline"),
-            phase="nominal",
-            severity=Severity.normal,
+            values=vals,
+            anchor_3d=Anchor3D(x=0.0, y=100.0, z=250.0, component="CRAH Air Handler Centerline" if "CRAH" in machine_id else "Mainframe Rack Fan Centerline"),
+            phase=phase,
+            severity=sev,
         )
 
     def inject_fault(self, machine_id: str, fault_type: str) -> dict:
+        self._faults[machine_id] = {"type": fault_type, "tick_started": 0}
         provider = self._for(machine_id)
         if hasattr(provider, "inject_fault"):
-            return provider.inject_fault(machine_id, fault_type)
+            provider.inject_fault(machine_id, fault_type)
         for p in self._routes.values():
             if hasattr(p, "inject_fault"):
-                return p.inject_fault(machine_id, fault_type)
+                p.inject_fault(machine_id, fault_type)
         return {"status": "injected", "machine_id": machine_id, "fault_type": fault_type}
 
     def emergency_stop(self, machine_id: str) -> dict:
+        self._faults[machine_id] = {"type": "estop", "tick_started": 0}
         provider = self._for(machine_id)
         if hasattr(provider, "emergency_stop"):
-            return provider.emergency_stop(machine_id)
+            provider.emergency_stop(machine_id)
         for p in self._routes.values():
             if hasattr(p, "emergency_stop"):
-                return p.emergency_stop(machine_id)
+                p.emergency_stop(machine_id)
         return {"status": "estop_executed", "machine_id": machine_id}
 
     def reset_fault(self, machine_id: str) -> dict:
+        self._faults.pop(machine_id, None)
         provider = self._for(machine_id)
         if hasattr(provider, "reset_fault"):
-            return provider.reset_fault(machine_id)
+            provider.reset_fault(machine_id)
         for p in self._routes.values():
             if hasattr(p, "reset_fault"):
-                return p.reset_fault(machine_id)
+                p.reset_fault(machine_id)
         return {"status": "nominal_restored", "machine_id": machine_id}
 
     def provider_info(self, machine_id: str):
