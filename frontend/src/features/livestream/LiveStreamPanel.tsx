@@ -52,7 +52,8 @@ export function LiveStreamPanel({ machineId }: LiveStreamPanelProps) {
   const eventSourceRef = useRef<EventSource | null>(null);
 
   useEffect(() => {
-    const sseUrl = `/api/machines/${encodeURIComponent(machineId)}/stream?speed=1.0&loop=true`;
+    // 2.0 Hz stream frequency (0.5s ticks) provides silky real-time deceleration decay
+    const sseUrl = `/api/machines/${encodeURIComponent(machineId)}/stream?speed=2.0&loop=true`;
     const es = new EventSource(sseUrl);
     eventSourceRef.current = es;
 

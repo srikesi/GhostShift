@@ -133,13 +133,16 @@ class CompositeTelemetryProvider:
                 vals["fan_motor_current"] = 0.0
                 vals["compressor_motor_current"] = 0.0
                 vals["spindle_motor_current"] = 0.0
-                vals["fan_speed"] = round(max(0.0, 350.0 * math.exp(-dt * 0.9)), 1)
+                # Realistic mechanical rotor coast-down curve from ~1460 RPM over 7-8 seconds
+                # dt advances every tick (0.5s at 2.0x stream speed)
+                decay_rpm = 1460.0 * math.exp(-dt * 0.45)
+                vals["fan_speed"] = round(decay_rpm if decay_rpm >= 15.0 else 0.0, 1)
                 vals["spindle_speed"] = vals["fan_speed"]
                 vals["rotational_speed"] = vals["fan_speed"]
-                vals["fan_vibration"] = round(max(0.05, 0.05 + 0.1 * math.exp(-dt * 0.5)), 3)
-                vals["fan_bearing_temp"] = round(22.0 + (vals.get("fan_bearing_temp", 45.0) - 22.0) * math.exp(-dt * 0.08), 1)
+                vals["fan_vibration"] = round(max(0.04, 0.04 + 0.3 * math.exp(-dt * 0.3)), 3)
+                vals["fan_bearing_temp"] = round(22.0 + (vals.get("fan_bearing_temp", 45.0) - 22.0) * math.exp(-dt * 0.05), 1)
                 vals["discharge_temp"] = vals["fan_bearing_temp"]
-                vals["acoustic_db"] = round(38.0 + 10.0 * math.exp(-dt * 0.8), 1)
+                vals["acoustic_db"] = round(38.0 + (vals.get("acoustic_db", 65.0) - 38.0) * math.exp(-dt * 0.4), 1)
 
             elif ftype == "critical":
                 phase = "catastrophic_breakdown"
@@ -162,6 +165,27 @@ class CompositeTelemetryProvider:
                 vals["fan_motor_current"] = 15.6
                 vals["fan_bearing_temp"] = 52.4
                 vals["acoustic_db"] = 82.4
+
+            elif ftype == "spinup":
+                phase = "soft_start_spinup"
+                sev = Severity.normal
+                target_rpm = vals.get("fan_speed", 1460.0) or 1460.0
+                target_current = vals.get("fan_motor_current", 14.2) or 14.2
+                # Asymptotic soft-start ramp: 1 - exp(-dt * 0.4)
+                # Starts at ~200 rpm on tick 0, rises smoothly to 98% nominal over 8-10 ticks (~4-5 sec)
+                progress = 1.0 - math.exp(-dt * 0.35)
+                vals["fan_speed"] = round(target_rpm * progress, 1)
+                vals["spindle_speed"] = vals["fan_speed"]
+                vals["rotational_speed"] = vals["fan_speed"]
+                # Inrush current profile: inrush surge at start (~18A) stabilizing to nominal 14.2A
+                inrush = 4.0 * math.exp(-dt * 0.4)
+                vals["fan_motor_current"] = round((target_current * progress) + inrush, 2)
+                vals["fan_vibration"] = round(0.4 + (1.1 * progress), 2)
+                vals["acoustic_db"] = round(42.0 + (22.0 * progress), 1)
+
+                # Once within 98% of target, release to normal baseline
+                if progress >= 0.96 or dt >= 12.0:
+                    self._faults.pop(machine_id, None)
 
         return MultimodalTick(
             index=cursor,
@@ -193,14 +217,15 @@ class CompositeTelemetryProvider:
         return {"status": "estop_executed", "machine_id": machine_id}
 
     def reset_fault(self, machine_id: str) -> dict:
-        self._faults.pop(machine_id, None)
+        # Initiate realistic soft-start motor spin-up ramp
+        self._faults[machine_id] = {"type": "spinup", "tick_started": 0}
         provider = self._for(machine_id)
         if hasattr(provider, "reset_fault"):
             provider.reset_fault(machine_id)
         for p in self._routes.values():
             if hasattr(p, "reset_fault"):
                 p.reset_fault(machine_id)
-        return {"status": "nominal_restored", "machine_id": machine_id}
+        return {"status": "spinup_initiated", "machine_id": machine_id}
 
     def provider_info(self, machine_id: str):
         return self._for(machine_id).info
