@@ -1,0 +1,61 @@
+.copilot .copilot-turn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.copilot .copilot-q {
+  align-self: flex-end;
+  max-width: 85%;
+  margin: 0;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-md);
+  background: var(--surface-sunk);
+  color: var(--ink);
+}
+
+.copilot .copilot-a {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  padding-left: var(--s-3);
+  border-left: 2px solid var(--line-strong);
+}
+
+.copilot .copilot-meta:empty {
+  display: none;
+}
+
+.copilot .copilot-text {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.copilot .copilot-steps summary {
+  cursor: pointer;
+}
+
+.copilot .copilot-form {
+  display: flex;
+  gap: var(--s-2);
+  align-items: flex-end;
+}
+
+.copilot .copilot-form textarea {
+  flex: 1;
+  min-width: 0;
+  resize: vertical;
+  font: inherit;
+  font-size: var(--fs-sm);
+  padding: var(--s-2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.copilot .copilot-form textarea:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
