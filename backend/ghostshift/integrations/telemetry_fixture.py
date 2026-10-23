@@ -166,6 +166,27 @@ class CompositeTelemetryProvider:
                 vals["fan_bearing_temp"] = 52.4
                 vals["acoustic_db"] = 82.4
 
+            elif ftype == "spinup":
+                phase = "soft_start_spinup"
+                sev = Severity.normal
+                target_rpm = vals.get("fan_speed", 1460.0) or 1460.0
+                target_current = vals.get("fan_motor_current", 14.2) or 14.2
+                # Asymptotic soft-start ramp: 1 - exp(-dt * 0.4)
+                # Starts at ~200 rpm on tick 0, rises smoothly to 98% nominal over 8-10 ticks (~4-5 sec)
+                progress = 1.0 - math.exp(-dt * 0.35)
+                vals["fan_speed"] = round(target_rpm * progress, 1)
+                vals["spindle_speed"] = vals["fan_speed"]
+                vals["rotational_speed"] = vals["fan_speed"]
+                # Inrush current profile: inrush surge at start (~18A) stabilizing to nominal 14.2A
+                inrush = 4.0 * math.exp(-dt * 0.4)
+                vals["fan_motor_current"] = round((target_current * progress) + inrush, 2)
+                vals["fan_vibration"] = round(0.4 + (1.1 * progress), 2)
+                vals["acoustic_db"] = round(42.0 + (22.0 * progress), 1)
+
+                # Once within 98% of target, release to normal baseline
+                if progress >= 0.96 or dt >= 12.0:
+                    self._faults.pop(machine_id, None)
+
         return MultimodalTick(
             index=cursor,
             timestamp=pt.timestamp if pt else datetime.now(timezone.utc),
@@ -196,14 +217,15 @@ class CompositeTelemetryProvider:
         return {"status": "estop_executed", "machine_id": machine_id}
 
     def reset_fault(self, machine_id: str) -> dict:
-        self._faults.pop(machine_id, None)
+        # Initiate realistic soft-start motor spin-up ramp
+        self._faults[machine_id] = {"type": "spinup", "tick_started": 0}
         provider = self._for(machine_id)
         if hasattr(provider, "reset_fault"):
             provider.reset_fault(machine_id)
         for p in self._routes.values():
             if hasattr(p, "reset_fault"):
                 p.reset_fault(machine_id)
-        return {"status": "nominal_restored", "machine_id": machine_id}
+        return {"status": "spinup_initiated", "machine_id": machine_id}
 
     def provider_info(self, machine_id: str):
         return self._for(machine_id).info
