@@ -10,6 +10,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Dashboard } from "./pages/Dashboard";
+import { HomePage } from "./pages/HomePage";
 import { InspectionPage } from "./pages/InspectionPage";
 
 createRoot(document.getElementById("root")!).render(
@@ -17,7 +18,8 @@ createRoot(document.getElementById("root")!).render(
     <BrowserRouter>
       <Routes>
         <Route path="/m/:token" element={<InspectionPage />} />
-        <Route path="*" element={<Dashboard />} />
+        <Route path="/machines/:machineId" element={<Dashboard />} />
+        <Route path="*" element={<HomePage />} />
       </Routes>
     </BrowserRouter>
   </StrictMode>,

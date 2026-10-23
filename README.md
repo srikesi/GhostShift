@@ -25,7 +25,7 @@ make setup
 make dev
 ```
 
-Then open http://localhost:5173. The API is at http://localhost:8000 (`/docs` for OpenAPI, `/api/health` for status).
+Then open http://localhost:5173. The home page is a floor plan of Austin DC-2: click a monitored machine (solid tile, status shown) to open its page at `/machines/<id>`; dashed tiles are placeholders. The API is at http://localhost:8000 (`/docs` for OpenAPI, `/api/health` for status).
 
 Without `make`, run the two halves separately:
 
@@ -154,6 +154,7 @@ Diagnosis, risk, safety and approvals are deterministic in every mode. The LLM o
 | GET | `/api/work-orders`, `/api/requisitions`, `/api/notifications` | Records |
 | GET | `/api/inspect/{token}` | Token-scoped mobile payload. Unknown and expired tokens both return 404 |
 | GET / PUT | `/api/autonomy` | Read or change Autopilot (`{"level": "advise" \| "autopilot", "auto_order_limit_usd"}`). Turning it on applies to open problems immediately |
+| GET | `/api/floorplan` | Floor plan layout for the home page (zones, units, failover pairs) |
 | GET | `/api/calendar/events?start=&end=` | Roster, shifts, planned windows, existing jobs, holds and bookings for a week |
 | POST | `/api/calendar/propose` · `/api/calendar/holds` | `{work_order_id}`. Best slot with rationale and rejected alternatives; create or refresh the tentative hold |
 | GET | `/api/calendar/bookings?incident_id=` | Bookings for an incident |

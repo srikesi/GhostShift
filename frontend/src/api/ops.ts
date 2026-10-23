@@ -145,7 +145,8 @@ export interface PhonePlan {
 
 export const ops = {
   calendar: (start?: string) => request<CalendarView>(`/api/calendar/events${start ? `?start=${encodeURIComponent(start)}` : ""}`),
-  bookings: (incidentId: string) => request<Booking[]>(`/api/calendar/bookings?incident_id=${encodeURIComponent(incidentId)}`),
+  bookings: (incidentId?: string) =>
+    request<Booking[]>(`/api/calendar/bookings${incidentId ? `?incident_id=${encodeURIComponent(incidentId)}` : ""}`),
   propose: (workOrderId: string) => post<ScheduleProposal>("/api/calendar/propose", { work_order_id: workOrderId }),
   reschedule: (bookingId: string, start: string) => post<Booking>(`/api/calendar/bookings/${bookingId}/reschedule`, { start }),
   cancel: (bookingId: string) => post<Booking>(`/api/calendar/bookings/${bookingId}/cancel`),

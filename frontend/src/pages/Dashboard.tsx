@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { api, ApiError } from "../api/client";
 import type {
   AutonomySettings,
@@ -37,7 +38,10 @@ export function Dashboard() {
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [autonomy, setAutonomy] = useState<AutonomySettings | null>(null);
   const [machines, setMachines] = useState<MachineSummary[]>([]);
-  const [machineId, setMachineId] = useState<string | null>(null);
+  const { machineId: routeId } = useParams();
+  const navigate = useNavigate();
+  const machineId = routeId ?? null;
+  const setMachineId = (id: string) => navigate(`/machines/${id}`);
   const [detail, setDetail] = useState<MachineDetail | null>(null);
   const [telemetry, setTelemetry] = useState<TelemetryResponse | null>(null);
   const [incident, setIncident] = useState<IncidentView | null>(null);
@@ -66,7 +70,6 @@ export function Dashboard() {
         setHealth(h);
         setAutonomy(a);
         setMachines(ms);
-        setMachineId((cur) => cur ?? ms[0]?.id ?? null);
       } catch (e) {
         setError(e instanceof ApiError ? e.message : String(e));
       }
@@ -150,6 +153,9 @@ export function Dashboard() {
       <TopBar health={health} autonomy={autonomy} onToggleAutopilot={toggleAutopilot} onReset={resetAll} />
       <div className="layout">
         <aside className="sidebar" aria-label="Machines">
+          <Link className="back-link" to="/">
+            ← Floor plan
+          </Link>
           <MachineList machines={machines} selected={machineId} onSelect={setMachineId} />
           {health && <Connections health={health} />}
         </aside>
@@ -247,7 +253,7 @@ export function Dashboard() {
   );
 }
 
-function TopBar({
+export function TopBar({
   health,
   autonomy,
   onToggleAutopilot,

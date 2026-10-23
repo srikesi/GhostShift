@@ -1,0 +1,245 @@
+{
+  "_comment": "Simplified floor plan of Austin DC-2 for the home page. Layout only; machines marked monitored have fixtures and telemetry, the rest are placeholders. Simulated.",
+  "site": "Austin DC-2",
+  "width": 900,
+  "height": 520,
+  "zones": [
+    {
+      "id": "hall",
+      "label": "Data hall 2",
+      "x": 20,
+      "y": 20,
+      "w": 620,
+      "h": 480
+    },
+    {
+      "id": "plant",
+      "label": "Chiller plant (outdoors)",
+      "x": 660,
+      "y": 20,
+      "w": 220,
+      "h": 480
+    }
+  ],
+  "labels": [
+    {
+      "text": "Row B",
+      "x": 50,
+      "y": 84
+    },
+    {
+      "text": "Row C",
+      "x": 50,
+      "y": 299
+    },
+    {
+      "text": "COLD AISLE",
+      "x": 330,
+      "y": 255
+    },
+    {
+      "text": "Hot aisle",
+      "x": 330,
+      "y": 70
+    },
+    {
+      "text": "Hot aisle",
+      "x": 330,
+      "y": 437
+    }
+  ],
+  "units": [
+    {
+      "id": "B1",
+      "label": "B1",
+      "kind": "rack",
+      "x": 50,
+      "y": 95,
+      "w": 58,
+      "h": 100,
+      "machine_id": null
+    },
+    {
+      "id": "B2",
+      "label": "B2",
+      "kind": "rack",
+      "x": 120,
+      "y": 95,
+      "w": 58,
+      "h": 100,
+      "machine_id": null
+    },
+    {
+      "id": "B3",
+      "label": "B3",
+      "kind": "rack",
+      "x": 190,
+      "y": 95,
+      "w": 58,
+      "h": 100,
+      "machine_id": null
+    },
+    {
+      "id": "B4",
+      "label": "B4",
+      "kind": "rack",
+      "x": 260,
+      "y": 95,
+      "w": 58,
+      "h": 100,
+      "machine_id": null
+    },
+    {
+      "id": "B5",
+      "label": "B5",
+      "kind": "rack",
+      "x": 330,
+      "y": 95,
+      "w": 58,
+      "h": 100,
+      "machine_id": null
+    },
+    {
+      "id": "B6",
+      "label": "B6",
+      "kind": "rack",
+      "x": 400,
+      "y": 95,
+      "w": 58,
+      "h": 100,
+      "machine_id": null
+    },
+    {
+      "id": "B7",
+      "label": "B7",
+      "kind": "rack",
+      "x": 470,
+      "y": 95,
+      "w": 58,
+      "h": 100,
+      "machine_id": null
+    },
+    {
+      "id": "B8",
+      "label": "B8",
+      "kind": "rack",
+      "x": 540,
+      "y": 95,
+      "w": 58,
+      "h": 100,
+      "machine_id": null
+    },
+    {
+      "id": "C1",
+      "label": "C1",
+      "kind": "rack",
+      "x": 50,
+      "y": 310,
+      "w": 58,
+      "h": 100,
+      "machine_id": null
+    },
+    {
+      "id": "C2",
+      "label": "C2",
+      "kind": "rack",
+      "x": 120,
+      "y": 310,
+      "w": 58,
+      "h": 100,
+      "machine_id": null
+    },
+    {
+      "id": "MF-07",
+      "label": "MF-07",
+      "kind": "rack",
+      "x": 190,
+      "y": 310,
+      "w": 58,
+      "h": 100,
+      "machine_id": "MF-07"
+    },
+    {
+      "id": "MF-08",
+      "label": "MF-08",
+      "kind": "rack",
+      "x": 260,
+      "y": 310,
+      "w": 58,
+      "h": 100,
+      "machine_id": "MF-08"
+    },
+    {
+      "id": "C5",
+      "label": "C5",
+      "kind": "rack",
+      "x": 330,
+      "y": 310,
+      "w": 58,
+      "h": 100,
+      "machine_id": null
+    },
+    {
+      "id": "C6",
+      "label": "C6",
+      "kind": "rack",
+      "x": 400,
+      "y": 310,
+      "w": 58,
+      "h": 100,
+      "machine_id": null
+    },
+    {
+      "id": "C7",
+      "label": "C7",
+      "kind": "rack",
+      "x": 470,
+      "y": 310,
+      "w": 58,
+      "h": 100,
+      "machine_id": null
+    },
+    {
+      "id": "C8",
+      "label": "C8",
+      "kind": "rack",
+      "x": 540,
+      "y": 310,
+      "w": 58,
+      "h": 100,
+      "machine_id": null
+    },
+    {
+      "id": "CH-02",
+      "label": "CH-02",
+      "kind": "chiller",
+      "x": 690,
+      "y": 120,
+      "w": 170,
+      "h": 90,
+      "machine_id": "CH-02"
+    },
+    {
+      "id": "CH-03",
+      "label": "CH-03",
+      "kind": "chiller",
+      "x": 690,
+      "y": 300,
+      "w": 170,
+      "h": 90,
+      "machine_id": null
+    }
+  ],
+  "links": [
+    {
+      "a": "MF-07",
+      "b": "MF-08",
+      "label": "Failover pair"
+    },
+    {
+      "a": "CH-02",
+      "b": "CH-03",
+      "label": "Standby pair"
+    }
+  ]
+}

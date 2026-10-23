@@ -1,0 +1,150 @@
+.plan {
+  position: relative;
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+}
+.plan-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.zone {
+  fill: var(--surface);
+  stroke: var(--line-strong);
+}
+.zone-label {
+  font-size: 13px;
+  font-weight: 600;
+  fill: var(--ink-2);
+}
+.plan-label {
+  font-size: 11px;
+  fill: var(--ink-3);
+  letter-spacing: 0.04em;
+}
+.bracket path {
+  fill: none;
+  stroke: var(--ink-4);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+.bracket text {
+  font-size: 11px;
+  fill: var(--ink-3);
+}
+
+.tile {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 2px;
+  border-radius: var(--r-md);
+  text-align: center;
+  overflow: hidden;
+  min-width: 0;
+}
+.tile.idle {
+  background: var(--surface-sunk);
+  border: 1px dashed var(--line-strong);
+  color: var(--ink-4);
+}
+.tile.live {
+  background: var(--surface);
+  border: 2px solid var(--line-strong);
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: var(--shadow-1);
+}
+.tile.live:hover {
+  border-color: var(--ink);
+}
+.tile.live:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+.tile-id {
+  font-size: 11px;
+  font-weight: 500;
+}
+.tile.chiller .tile-id {
+  font-size: 15px;
+}
+.tile-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.tile.chiller .tile-status {
+  font-size: 13px;
+}
+.tile-status i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ok);
+}
+.tile-name {
+  font-size: 11px;
+  color: var(--ink-3);
+  padding: 0 6px;
+}
+.tile.sev-watch,
+.tile.tier-elevated {
+  border-color: var(--amber-line);
+  background: var(--watch-bg);
+}
+.tile.sev-warning,
+.tile.tier-high {
+  border-color: var(--amber);
+  background: var(--amber-bg);
+}
+.tile.sev-critical,
+.tile.tier-critical {
+  border-color: var(--red);
+  background: var(--red-bg);
+}
+.tile.sev-watch i,
+.tile.tier-elevated i {
+  background: var(--watch);
+}
+.tile.sev-warning i,
+.tile.tier-high i {
+  background: var(--amber);
+}
+.tile.sev-critical i,
+.tile.tier-critical i {
+  background: var(--red);
+}
+
+@media (max-width: 640px) {
+  .tile.rack .tile-id {
+    display: none; /* too narrow to read; the machine list below names them */
+  }
+  .tile.rack .tile-status i {
+    width: 10px;
+    height: 10px;
+  }
+  .tile-status {
+    font-size: 0;
+    gap: 0;
+  }
+  .tile.chiller .tile-id {
+    font-size: 11px;
+  }
+  .tile.chiller .tile-status {
+    font-size: 11px;
+    gap: 3px;
+  }
+  .tile-name {
+    display: none;
+  }
+}
